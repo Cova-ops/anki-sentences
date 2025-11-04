@@ -4,7 +4,7 @@ use color_eyre::eyre::{Context, Result};
 
 use crate::{
     db::SetzeRepo,
-    helpers::{extract_sentences_csv, is_csv_valid},
+    helpers::{extract_sentences_csv, is_csv_valid, ui},
     utils::{clean_screen, path_file_oder_dir},
 };
 
@@ -64,18 +64,17 @@ pub fn menu_1_add_sentences() -> Result<()> {
 
     println!("{}", TEXT_MENU);
 
-    let mut input = String::new();
-
-    io::stdin()
-        .read_line(&mut input)
-        .context("[menu_1_add_sentences] - Error al recibir el input")?;
-
-    input = input.trim().to_string();
-    if input == "exit" {
-        return Ok(());
-    }
-
+    let mut csv_path: String = String::new();
     loop {
+        let Some(input) = ui::prompt_nonempty("> ")? else {
+            break;
+        };
+
+        if input == "exit" {
+            return Ok(());
+        }
+
+        csv_path = input.clone();
         let mut err_2_show: Option<&str> = None;
         let valid_1 = path_file_oder_dir(&input);
 
@@ -96,18 +95,9 @@ pub fn menu_1_add_sentences() -> Result<()> {
         // clean_screen();
         // println!("valid_1: {:?}", valid_1.is_err());
         println!("{}", err_2_show.unwrap());
-        input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .context("[menu_1_add_sentences] - Error al leer la línea")?;
-
-        input = input.trim().to_string();
-        if input == "exit" {
-            return Ok(());
-        }
     }
 
-    let new_data = extract_sentences_csv(&input)?;
+    let new_data = extract_sentences_csv(&csv_path)?;
     SetzeRepo::bulk_insert(new_data)?;
     //
     // println!("{:#?}", SetzeRepo::fetch_random(100)?);

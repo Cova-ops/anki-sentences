@@ -8,9 +8,6 @@ mod helpers;
 mod utils;
 fn main() -> Result<()> {
     color_eyre::install().unwrap();
-
-    // return Err(eyre!("Error de pruebas"));
-
     run()
 }
 

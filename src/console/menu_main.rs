@@ -6,6 +6,7 @@ use crate::{
     console::{
         _1_add_sentences::menu_1_add_sentences, _2_practice_sentences::menu_2_practice_sentences,
     },
+    helpers::ui,
     utils::clean_screen,
 };
 
@@ -24,18 +25,16 @@ pub fn menu_main() -> Result<()> {
 
     loop {
         println!("{}", MENU_MAIN_TEXT);
-
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .context("Error al leer la línea")?;
+        let Some(input) = ui::prompt_nonempty("> ")? else {
+            break;
+        };
 
         // clean_screen();
         match input.trim() {
             "1" => menu_1_add_sentences()?,
             "2" => menu_2_practice_sentences()?,
             "3" => todo!(),
-            "9" => break,
+            "exit" => return Ok(()),
             _ => println!("Comando no reconocido"),
         }
     }

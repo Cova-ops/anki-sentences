@@ -4,6 +4,7 @@ use color_eyre::eyre::{Context, Result};
 
 use crate::{
     db::SetzeRepo::fetch_random,
+    helpers::ui,
     utils::{clean_screen, clean_sentences},
 };
 
@@ -22,9 +23,6 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
 
     loop {
         let setze = fetch_random(100)?;
-        let stdin = io::stdin();
-        let mut reader = stdin.lock(); // StdinLock implementa BufRead
-        let mut buffer = Vec::new();
 
         for s in setze {
             clean_screen();
@@ -33,12 +31,10 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
             for _ in 0..3 {
                 println!("{}", TEXT_MENU.replace("{satz}", &s.setze_spanisch));
 
-                buffer.clear(); // importante: limpia el buffer entre lecturas
-                reader
-                    .read_until(b'\n', &mut buffer)
-                    .context("[menu_2_practice_sentences] - Error al recibir el input")?;
+                let Some(input) = ui::prompt_nonempty("> ")? else {
+                    break;
+                };
 
-                let input = String::from_utf8_lossy(&buffer).trim().to_string();
                 if input == "exit" {
                     return Ok(());
                 }
@@ -64,12 +60,9 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
                 println!("Schreib es gut, bitte.");
 
                 loop {
-                    buffer.clear(); // importante: limpia el buffer entre lecturas
-                    reader
-                        .read_until(b'\n', &mut buffer)
-                        .context("[menu_2_practice_sentences] - Error al recibir el input")?;
-
-                    let input = String::from_utf8_lossy(&buffer).trim().to_string();
+                    let Some(input) = ui::prompt_nonempty("> ")? else {
+                        break;
+                    };
                     if input == "exit" {
                         return Ok(());
                     }
