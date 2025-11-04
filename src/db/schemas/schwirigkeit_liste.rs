@@ -15,6 +15,10 @@ pub struct SchwirigkeitListe {
 }
 
 impl SchwirigkeitListe {
+    pub fn init_data() {
+        SchwirigkeitListeFetchAll();
+    }
+
     pub fn from_id(id: impl Into<i32>) -> Result<Self> {
         let id = id.into();
         SchwirigkeitListeFetchAll()

@@ -13,5 +13,6 @@ pub use seeders::*;
 pub fn init_db() -> Result<()> {
     init_schemas()?;
     init_seeds()?;
+    init_data();
     Ok(())
 }

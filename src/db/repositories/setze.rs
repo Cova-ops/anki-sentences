@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use chrono::{DateTime, NaiveDateTime, Utc};
 use color_eyre::eyre::{Context, Result};
 use rusqlite::{fallible_iterator::FallibleIterator, params};
@@ -20,7 +22,7 @@ pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
             created_at,
             deleted_at
         FROM setze
-        ORDER BY RANDOM()
+        WHERE rowid >= (abs(random()) % (SELECT IFNULL(MAX(rowid),1) FROM setze))
         LIMIT {limit}"
     );
 
@@ -29,48 +31,67 @@ pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
         .prepare(&sql)
         .context("[fetch_random] - Error al iniciar la conexión de la DB. Error: {}")?;
 
+    struct Raw {
+        id: i32,
+        setze_spanisch: String,
+        setze_deutsch: String,
+        thema: String,
+        schwirig_id_num: i32,
+        created_at: String,
+        deleted_at: Option<String>,
+    }
     let rows = stmt
         .query([])
         .with_context(|| format!("[fetch_random] - Error al ejecutar el query: {}", sql))?
-        .map(|row| {
-            let created_at_str: String = row.get(5)?;
-            let deleted_at_str: Option<String> = row.get::<_, Option<String>>(6)?;
+        .mapped(|row| {
+            Ok(Raw {
+                id: row.get(0)?,
+                setze_spanisch: row.get(1)?,
+                setze_deutsch: row.get(2)?,
+                thema: row.get(3)?,
+                schwirig_id_num: row.get(4)?,
+                created_at: row.get(5)?,
+                deleted_at: row.get(6).ok(),
+            })
+        })
+        .collect::<Result<Vec<Raw>, _>>()
+        .context("[fetch_random] - recolectar filas")?;
 
-            let naive_created_at =
-                NaiveDateTime::parse_from_str(&created_at_str, "%Y-%m-%d %H:%M:%S").unwrap();
-            let created_at = DateTime::<Utc>::from_naive_utc_and_offset(naive_created_at, Utc);
+    drop(stmt);
+    drop(conn);
 
-            let mut deleted_at: Option<DateTime<Utc>> = None;
-            if let Some(aux_date) = deleted_at_str {
-                let naive_deleted_at =
-                    NaiveDateTime::parse_from_str(&aux_date, "%Y-%m-%d %H:%M:%S").unwrap();
-                deleted_at = Some(DateTime::<Utc>::from_naive_utc_and_offset(
-                    naive_deleted_at,
-                    Utc,
-                ));
-            }
+    let result: Vec<SetzeSchema> = rows
+        .into_iter()
+        .map(|r| -> Result<SetzeSchema> {
+            let created_at =
+                NaiveDateTime::parse_from_str(&r.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
+            let created_at = DateTime::<Utc>::from_naive_utc_and_offset(created_at, Utc);
 
-            let id: i32 = row.get(0)?;
-            let setze_spanisch: String = row.get(1)?;
-            let setze_deutsch: String = row.get(2)?;
-            let thema: String = row.get(3)?;
-            let schwirig_id = SchwirigkeitListeSchema::from_id(row.get::<_, i32>(4)?)
+            let deleted_at = match r.deleted_at {
+                Some(val) => {
+                    let deleted_at =
+                        NaiveDateTime::parse_from_str(&val, "%Y-%m-%d %H:%M:%S").unwrap();
+                    Some(DateTime::<Utc>::from_naive_utc_and_offset(deleted_at, Utc))
+                }
+                None => None,
+            };
+
+            let schwirig_id = SchwirigkeitListeSchema::from_id(r.schwirig_id_num)
                 .expect("[fetch_random] - Error al obtener la relación de dificultad");
 
             Ok(SetzeSchema {
-                id,
-                setze_spanisch,
-                setze_deutsch,
-                thema,
+                id: r.id,
+                setze_spanisch: r.setze_spanisch,
+                setze_deutsch: r.setze_deutsch,
+                thema: r.thema,
                 schwirig_id,
                 created_at,
                 deleted_at,
             })
-        });
-
-    let result: Vec<SetzeSchema> = rows
-        .collect()
+        })
+        .collect::<Result<Vec<SetzeSchema>, _>>()
         .context("[fetch_random] - Error al recolectar la información")?;
+
     Ok(result)
 }
 

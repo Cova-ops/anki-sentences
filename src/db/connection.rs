@@ -4,7 +4,7 @@ use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
 use rusqlite::Connection;
 
-use crate::db::{SEED_SCHWIRIGKEIT_LISTE, SchwirigkeitListeBulkInsert};
+use crate::db::{SEED_SCHWIRIGKEIT_LISTE, SchwirigkeitListeBulkInsert, SchwirigkeitListeSchema};
 
 const DB_NAME: &str = "anki_satze.sql";
 
@@ -105,4 +105,8 @@ pub fn init_seeds() -> Result<()> {
     //     )?;
     // }
     Ok(())
+}
+
+pub fn init_data() {
+    SchwirigkeitListeSchema::init_data();
 }

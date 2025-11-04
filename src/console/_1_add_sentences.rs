@@ -107,10 +107,10 @@ pub fn menu_1_add_sentences() -> Result<()> {
         }
     }
 
-    let new_data = extract_sentences_csv(&input)?;
-    SetzeRepo::bulk_insert(new_data)?;
-
-    println!("{:#?}", SetzeRepo::fetch_random(100)?);
+    let _new_data = extract_sentences_csv(&input)?;
+    // SetzeRepo::bulk_insert(new_data)?;
+    //
+    // println!("{:#?}", SetzeRepo::fetch_random(100)?);
 
     Ok(())
 }
