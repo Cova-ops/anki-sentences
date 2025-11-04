@@ -1,12 +1,9 @@
-use std::error::Error;
-
-use chrono::{DateTime, NaiveDateTime, Utc};
 use color_eyre::eyre::{Context, Result};
-use rusqlite::{fallible_iterator::FallibleIterator, params};
+use rusqlite::params;
 
 use crate::{
     db::{NewSetzeSchema, SchwirigkeitListeSchema, SetzeSchema, get_conn},
-    to_strings,
+    helpers, to_strings,
 };
 
 pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
@@ -63,18 +60,8 @@ pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
     let result: Vec<SetzeSchema> = rows
         .into_iter()
         .map(|r| -> Result<SetzeSchema> {
-            let created_at =
-                NaiveDateTime::parse_from_str(&r.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
-            let created_at = DateTime::<Utc>::from_naive_utc_and_offset(created_at, Utc);
-
-            let deleted_at = match r.deleted_at {
-                Some(val) => {
-                    let deleted_at =
-                        NaiveDateTime::parse_from_str(&val, "%Y-%m-%d %H:%M:%S").unwrap();
-                    Some(DateTime::<Utc>::from_naive_utc_and_offset(deleted_at, Utc))
-                }
-                None => None,
-            };
+            let created_at = helpers::time::string_2_datetime(Some(r.created_at)).unwrap();
+            let deleted_at = helpers::time::string_2_datetime(r.deleted_at);
 
             let schwirig_id = SchwirigkeitListeSchema::from_id(r.schwirig_id_num)
                 .expect("[fetch_random] - Error al obtener la relación de dificultad");

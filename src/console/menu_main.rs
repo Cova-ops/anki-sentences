@@ -7,15 +7,15 @@ use crate::{
     helpers::ui,
 };
 
-const MENU_MAIN_TEXT: &str = "
+const MENU_MAIN_TEXT: &str = r#"
 Herzliche Willkommen zu meinem Programm.
 📋 Das Menu:
     1.- Hinzufügen neue Sätze.
     2.- Üben neue Sätze.
     3.- Ver Estadisticas.
 
-    9.- Salir.
-";
+Para salir favor de escribir "exit"
+"#;
 
 pub fn menu_main() -> Result<()> {
     // clean_screen();

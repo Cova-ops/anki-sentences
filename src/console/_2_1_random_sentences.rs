@@ -1,7 +1,7 @@
 use color_eyre::eyre::Result;
 
 use crate::{
-    db::SetzeRepo::fetch_random,
+    db::{self, SetzeRepo::fetch_random},
     helpers::ui,
     utils::{clean_screen, clean_sentences},
 };
@@ -25,12 +25,13 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
         for s in setze {
             clean_screen();
             let mut s_done = false;
+
             let db_s = clean_sentences(&s.setze_deutsch);
-            for _ in 0..3 {
+            for i in 0..3 {
                 println!("{}", TEXT_MENU.replace("{satz}", &s.setze_spanisch));
 
                 let Some(input) = ui::prompt_nonempty("> ")? else {
-                    break;
+                    continue;
                 };
 
                 if input == "exit" {
@@ -38,13 +39,14 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
                 }
 
                 let input = clean_sentences(&input);
-
-                println!("Oración de DB: {}", db_s);
-                println!("Oración del usuairo: {}", input);
                 if input == db_s {
                     println!("Oración perfecta.");
                     s_done = true;
-                    // TODO: Agregar el registro a DB
+
+                    // Si "i" vale 0, quiere decir que respondio al oración a la primera,
+                    // se pasa un true
+                    db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(i == 0)?;
+
                     break;
                 } else {
                     // clean_screen();
@@ -64,9 +66,10 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
                     if input == "exit" {
                         return Ok(());
                     }
-                    let input = clean_sentences(&input);
 
+                    let input = clean_sentences(&input);
                     if input == db_s {
+                        db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(false)?;
                         break;
                     }
                 }

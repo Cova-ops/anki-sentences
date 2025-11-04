@@ -6,4 +6,5 @@ pub struct GeschichtlichSetze {
     pub setze_id: i32,
     pub result: bool, // 0: schlecht, 1: gut
     pub created_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
