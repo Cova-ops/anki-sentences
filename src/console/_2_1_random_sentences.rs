@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, BufRead, BufReader};
 
 use color_eyre::eyre::{Context, Result};
 
@@ -22,6 +22,10 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
 
     loop {
         let setze = fetch_random(100)?;
+        let stdin = io::stdin();
+        let mut reader = stdin.lock(); // StdinLock implementa BufRead
+        let mut buffer = Vec::new();
+
         for s in setze {
             clean_screen();
             let mut s_done = false;
@@ -29,17 +33,17 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
             for _ in 0..3 {
                 println!("{}", TEXT_MENU.replace("{satz}", &s.setze_spanisch));
 
-                let mut input = String::new();
-                io::stdin()
-                    .read_line(&mut input)
+                buffer.clear(); // importante: limpia el buffer entre lecturas
+                reader
+                    .read_until(b'\n', &mut buffer)
                     .context("[menu_2_practice_sentences] - Error al recibir el input")?;
 
-                let input = input.trim();
+                let input = String::from_utf8_lossy(&buffer).trim().to_string();
                 if input == "exit" {
                     return Ok(());
                 }
 
-                let input = clean_sentences(input);
+                let input = clean_sentences(&input);
 
                 println!("Oración de DB: {}", db_s);
                 println!("Oración del usuairo: {}", input);
@@ -60,16 +64,16 @@ pub fn menu_2_1_random_sentences() -> Result<()> {
                 println!("Schreib es gut, bitte.");
 
                 loop {
-                    let mut input = String::new();
-                    io::stdin()
-                        .read_line(&mut input)
+                    buffer.clear(); // importante: limpia el buffer entre lecturas
+                    reader
+                        .read_until(b'\n', &mut buffer)
                         .context("[menu_2_practice_sentences] - Error al recibir el input")?;
 
-                    let input = input.trim();
+                    let input = String::from_utf8_lossy(&buffer).trim().to_string();
                     if input == "exit" {
                         return Ok(());
                     }
-                    let input = clean_sentences(input);
+                    let input = clean_sentences(&input);
 
                     if input == db_s {
                         break;
