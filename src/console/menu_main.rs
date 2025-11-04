@@ -22,11 +22,10 @@ Herzliche Willkommen zu meinem Programm.
 pub fn menu_main() -> Result<()> {
     // clean_screen();
 
-    let mut input = String::new();
-
     loop {
         println!("{}", MENU_MAIN_TEXT);
 
+        let mut input = String::new();
         io::stdin()
             .read_line(&mut input)
             .context("Error al leer la línea")?;
