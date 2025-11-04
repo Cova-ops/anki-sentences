@@ -1,6 +1,6 @@
 use color_eyre::eyre::{Context, Result, eyre};
 use csv::ReaderBuilder;
-use std::{fs::File, path::Path};
+use std::fs::File;
 
 use crate::db::{NewSetzeSchema, SchwirigkeitListeSchema};
 

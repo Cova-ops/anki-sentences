@@ -1,11 +1,9 @@
-use std::io;
-
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 
 use crate::{
     db::SetzeRepo,
     helpers::{extract_sentences_csv, is_csv_valid, ui},
-    utils::{clean_screen, path_file_oder_dir},
+    utils::path_file_oder_dir,
 };
 
 const TEXT_MENU: &str = r##"

@@ -1,4 +1,4 @@
-use color_eyre::eyre::{Result, eyre};
+use color_eyre::eyre::Result;
 
 use crate::{console::menu_main, db::init_db};
 

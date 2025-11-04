@@ -1,7 +1,7 @@
 // ui.rs
 use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
-use rustyline::{DefaultEditor, error::ReadlineError, history::History};
+use rustyline::{DefaultEditor, error::ReadlineError};
 use std::sync::Mutex;
 
 /// Editor global para conservar historial en todo el programa.

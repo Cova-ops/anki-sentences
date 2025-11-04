@@ -1,13 +1,10 @@
-use std::io;
-
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 
 use crate::{
     console::{
         _1_add_sentences::menu_1_add_sentences, _2_practice_sentences::menu_2_practice_sentences,
     },
     helpers::ui,
-    utils::clean_screen,
 };
 
 const MENU_MAIN_TEXT: &str = "

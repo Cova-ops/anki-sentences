@@ -33,7 +33,7 @@ pub fn path_file_oder_dir(path: &str) -> Result<(bool, bool)> {
 /// return:
 /// - None - En caso de la ruta no sea pueda resolver
 /// - Some(Path) - Con la ruta convertida a absoluta
-pub fn path_relativ_2_absolute(path: &str) -> Result<String> {
+pub fn _path_relativ_2_absolute(path: &str) -> Result<String> {
     if !path_format_valid(path) {
         return Err(eyre!(
             "[path_relativ_2_absolute] - El archivo proporcionado no existe"
@@ -42,11 +42,9 @@ pub fn path_relativ_2_absolute(path: &str) -> Result<String> {
 
     match canonicalize(path) {
         Ok(abs) => Ok(abs.display().to_string()),
-        Err(e) => {
-            return Err(eyre!(
-                "[path_relativ_2_absolute] - ❌ No se pudo resolver: {}",
-                e
-            ));
-        }
+        Err(e) => Err(eyre!(
+            "[path_relativ_2_absolute] - ❌ No se pudo resolver: {}",
+            e
+        )),
     }
 }

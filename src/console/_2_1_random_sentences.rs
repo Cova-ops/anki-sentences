@@ -1,6 +1,4 @@
-use std::io::{self, BufRead, BufReader};
-
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 
 use crate::{
     db::SetzeRepo::fetch_random,

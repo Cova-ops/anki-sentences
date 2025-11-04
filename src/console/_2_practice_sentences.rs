@@ -1,6 +1,4 @@
-use std::io;
-
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 
 use crate::{console::_2_1_random_sentences::menu_2_1_random_sentences, helpers::ui};
 
