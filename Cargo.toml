@@ -10,3 +10,4 @@ chrono = { version = "0.4.42", features = ["serde"]}
 color-eyre = "0.6.5"
 csv = "1.4.0"
 rustyline = "17.0.2"
+inquire="0.9.1"
