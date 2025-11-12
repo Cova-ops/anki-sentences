@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use color_eyre::eyre::{Context, Result};
 use rand::seq::SliceRandom;
 use rusqlite::{params, params_from_iter};
@@ -41,15 +43,17 @@ fn from_raw_to_setze(rows: Vec<RawStruct>) -> Result<Vec<SetzeSchema>> {
         .collect::<Result<Vec<SetzeSchema>, _>>()
 }
 
-pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
+pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result<Vec<SetzeSchema>> {
     let limit = limit.into().unwrap_or(50);
 
-    let mut ids = fetch_all_only_ids()?;
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
 
     let mut seed_rand = rand::rng();
     ids.shuffle(&mut seed_rand);
 
-    let select_ids: Vec<i32> = ids.into_iter().take(limit as usize).collect();
+    let select_ids: Vec<i32> = ids.drain(..limit as usize).collect();
     let placeholders = std::iter::repeat_n("?", select_ids.len())
         .collect::<Vec<_>>()
         .join(",");
