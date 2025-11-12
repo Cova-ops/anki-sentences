@@ -11,6 +11,7 @@ Para salir pon la palara "exit".
 Algunas letras que te pueden ayudar. :)
           - ß ẞ ä ö ü Ä Ö Ü 
 
+  Tema: {thema}
   Oración: {satz}
 
 Por favor traducela...
@@ -26,7 +27,12 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
 
         let db_s = utils::clean_sentences(&s.setze_deutsch);
         for i in 0..2 {
-            println!("{}", TEXT_SETZE.replace("{satz}", &s.setze_spanisch));
+            println!(
+                "{}",
+                TEXT_SETZE
+                    .replace("{satz}", &s.setze_spanisch)
+                    .replace("{thema}", &s.thema)
+            );
 
             let Some(input) = ui::prompt_nonempty("> ")? else {
                 continue;
@@ -47,8 +53,8 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
 
                 break;
             } else {
+                println!();
                 println!("Oración incorrecta");
-                println!("{}", TEXT_SETZE.replace("{satz}", &s.setze_spanisch));
             }
         }
 

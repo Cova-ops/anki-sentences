@@ -1,4 +1,5 @@
 use color_eyre::eyre::{Context, Result};
+use rand::seq::SliceRandom;
 use rusqlite::{params, params_from_iter};
 
 use crate::{
@@ -7,6 +8,7 @@ use crate::{
     helpers, to_strings, with_ctx,
 };
 
+#[derive(Debug)]
 struct RawStruct {
     id: i32,
     setze_spanisch: String,
@@ -42,6 +44,16 @@ fn from_raw_to_setze(rows: Vec<RawStruct>) -> Result<Vec<SetzeSchema>> {
 pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
     let limit = limit.into().unwrap_or(50);
 
+    let mut ids = fetch_all_only_ids()?;
+
+    let mut seed_rand = rand::rng();
+    ids.shuffle(&mut seed_rand);
+
+    let select_ids: Vec<i32> = ids.into_iter().take(limit as usize).collect();
+    let placeholders = std::iter::repeat_n("?", select_ids.len())
+        .collect::<Vec<_>>()
+        .join(",");
+
     let sql = format!(
         "SELECT
             id,
@@ -52,18 +64,20 @@ pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
             created_at,
             deleted_at
         FROM setze
-        WHERE rowid >= (abs(random()) % (SELECT IFNULL(MAX(rowid),1) FROM setze))
-        LIMIT {limit}"
+        WHERE id IN ({}) AND deleted_at IS NULL
+        LIMIT {limit}",
+        placeholders
     );
 
+    println!("sql: {}", sql);
+    println!("select_ids: {:#?}", select_ids);
+
     let conn = get_conn();
-    let mut stmt = conn
-        .prepare(&sql)
-        .context("[fetch_random] - Error al iniciar la conexión de la DB. Error: {}")?;
+    let mut stmt = conn.prepare(&sql).context(ctx!())?;
 
     let rows = stmt
-        .query([])
-        .with_context(|| format!("[fetch_random] - Error al ejecutar el query: {}", sql))?
+        .query(params_from_iter(select_ids))
+        .context(with_ctx!(format!("Error query - {}", sql)))?
         .mapped(|row| {
             Ok(RawStruct {
                 id: row.get(0)?,
@@ -76,11 +90,12 @@ pub fn fetch_random(limit: impl Into<Option<u32>>) -> Result<Vec<SetzeSchema>> {
             })
         })
         .collect::<Result<Vec<RawStruct>, _>>()
-        .context("[fetch_random] - recolectar filas")?;
+        .context(ctx!())?;
 
     drop(stmt);
     drop(conn);
 
+    println!("rows: {:#?}", rows);
     let result = from_raw_to_setze(rows)?;
     Ok(result)
 }
@@ -102,6 +117,30 @@ pub fn fetch_all_titles() -> Result<Vec<String>> {
         .mapped(|row| row.get(0))
         .collect::<Result<Vec<String>, _>>()
         .context("[fetch_random] - recolectar filas")?;
+
+    drop(stmt);
+    drop(conn);
+
+    Ok(rows)
+}
+
+pub fn fetch_all_only_ids() -> Result<Vec<i32>> {
+    let sql: &'static str = r#"
+        SELECT
+            id
+        FROM setze s
+        WHERE s.deleted_at IS NULL
+        "#;
+
+    let conn = get_conn();
+    let mut stmt = conn.prepare(sql).context(ctx!())?;
+
+    let rows = stmt
+        .query([])
+        .context(with_ctx!(format!("Error query - {}", sql)))?
+        .mapped(|row| row.get(0))
+        .collect::<Result<Vec<i32>, _>>()
+        .context(ctx!())?;
 
     drop(stmt);
     drop(conn);
