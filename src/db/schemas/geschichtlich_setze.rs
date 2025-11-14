@@ -2,16 +2,15 @@ use chrono::{DateTime, Utc};
 
 pub const CREATE_STR_TABLE_GESCHICHTLICH_SETZE: &str = "
 CREATE TABLE IF NOT EXISTS geschichtlich_setze (
-    id                  INTENewGER PRIMARY UTOINewNCREMENT,
-    setze_id            INTE NOT NULL,LiListeste
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    setze_id            INTEGER NOT NULL,
     result              BOOL NOT NULL,
     created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
     deleted_at          TEXT,
     FOREIGN KEY(setze_id) REFERENCES setze(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-)
-";
+)";
 
 pub const CREATE_STR_INDEX_GESCHICHTLICH_SETZE: &str = "
 CREATE INDEX IF NOT EXISTS idx_geschichtlich_setze_created_at ON geschichtlich_setze(created_at);
