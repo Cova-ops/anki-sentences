@@ -6,7 +6,10 @@ use rusqlite::{params, params_from_iter};
 
 use crate::{
     ctx,
-    db::{NewSetzeSchema, SchwirigkeitListeSchema, SetzeSchema, get_conn},
+    db::{
+        get_conn,
+        schemas::setze::{NewSetzeSchema, SetzeSchema},
+    },
     helpers, to_strings, with_ctx,
 };
 
@@ -27,7 +30,10 @@ fn from_raw_to_setze(rows: Vec<RawStruct>) -> Result<Vec<SetzeSchema>> {
             let created_at = helpers::time::string_2_datetime(Some(r.created_at)).unwrap();
             let deleted_at = helpers::time::string_2_datetime(r.deleted_at);
 
-            let schwirig_id = SchwirigkeitListeSchema::from_id(r.schwirig_id_num)
+            let schwirig_id =
+                crate::db::schemas::schwirigkeit_liste::SchwirigkeitListeSchema::from_id(
+                    r.schwirig_id_num,
+                )
                 .expect("[fetch_random] - Error al obtener la relación de dificultad");
 
             Ok(SetzeSchema {
@@ -264,85 +270,6 @@ pub fn fetch_where_thema(
 
     let params: Vec<&dyn rusqlite::ToSql> =
         titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
-
-    let rows = stmt
-        .query(params_from_iter(params))
-        .context(with_ctx!(format!("Sql - {}", sql)))?
-        .mapped(|row| {
-            Ok(RawStruct {
-                id: row.get(0)?,
-                setze_spanisch: row.get(1)?,
-                setze_deutsch: row.get(2)?,
-                thema: row.get(3)?,
-                schwirig_id_num: row.get(4)?,
-                created_at: row.get(5)?,
-                deleted_at: row.get(6).ok(),
-            })
-        })
-        .collect::<Result<Vec<RawStruct>, _>>()?;
-
-    drop(stmt);
-    drop(conn);
-
-    let result = from_raw_to_setze(rows)?;
-    Ok(result)
-}
-
-pub fn fetch_schwirig_thema(
-    titles: Option<&[String]>,
-    offset: impl Into<u32>,
-    limit: impl Into<u32>,
-) -> Result<Vec<SetzeSchema>> {
-    let offset = offset.into();
-    let limit = limit.into();
-
-    let (sql, params) = if titles.is_some() && !titles.unwrap().is_empty() {
-        let Some(titles) = titles else { panic!() };
-        let placeholders = std::iter::repeat_n("?", titles.len())
-            .collect::<Vec<_>>()
-            .join(",");
-
-        let sql = format!(
-            "SELECT
-                id,
-                setze_spanisch,
-                setze_deutsch,
-                thema,
-                schwirigkeit_id,
-                created_at,
-                deleted_at
-            FROM setze
-            WHERE thema in ({placeholders}) AND schwirigkeit_id = 2
-            ORDER BY setze_deutsch
-            LIMIT {limit} OFFSET {offset}"
-        );
-
-        let params: Vec<&dyn rusqlite::ToSql> =
-            titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
-
-        (sql, params)
-    } else {
-        let sql = format!(
-            "SELECT
-                id,
-                setze_spanisch,
-                setze_deutsch,
-                thema,
-                schwirigkeit_id,
-                created_at,
-                deleted_at
-            FROM setze
-            WHERE schwirigkeit_id = 2
-            ORDER BY setze_deutsch
-            LIMIT {limit} OFFSET {offset}"
-        );
-
-        let params: Vec<&dyn rusqlite::ToSql> = vec![];
-        (sql, params)
-    };
-
-    let conn = get_conn();
-    let mut stmt = conn.prepare(&sql)?;
 
     let rows = stmt
         .query(params_from_iter(params))

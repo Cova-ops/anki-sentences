@@ -3,18 +3,26 @@ use color_eyre::eyre::{Result, eyre};
 
 use crate::db::SchwirigkeitListeFetchAll;
 
+pub const CREATE_STR_TABLE_SCHWIRIGKEIT_LISTE: &str = "
+CREATE TABLE IF NOT EXISTS schwirigkeit_liste (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    schwirigkeit        TEXT,
+    created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
+    deleted_at          TEXT
+)";
+
 // 0: einfag
 // 1: normal
 // 2: schwirig
 #[derive(Debug, Clone)]
-pub struct SchwirigkeitListe {
+pub struct SchwirigkeitListeSchema {
     pub id: i32,
     pub schwirigkeit: String,
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-impl SchwirigkeitListe {
+impl SchwirigkeitListeSchema {
     pub fn init_data() {
         SchwirigkeitListeFetchAll();
     }
@@ -41,12 +49,12 @@ impl SchwirigkeitListe {
 // 1: normal
 // 2: schwirig
 #[derive(Debug, Clone)]
-pub struct NewSchwirigkeit {
+pub struct NewSchwirigkeitSchema {
     pub id: i32,
     pub schwirigkeit: String,
 }
 
-impl NewSchwirigkeit {
+impl NewSchwirigkeitSchema {
     pub fn new(id: impl Into<i32>, schwirigkeit: impl Into<String>) -> Self {
         Self {
             id: id.into(),

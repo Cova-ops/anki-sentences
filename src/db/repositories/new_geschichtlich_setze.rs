@@ -3,7 +3,7 @@ use rusqlite::params;
 
 use crate::{
     ctx,
-    db::{GeschichtlichSetzeSchema, get_conn},
+    db::{get_conn, schemas::geschichtlich_setze::GeschichtlichSetzeSchema},
     helpers, to_strings, with_ctx,
 };
 

@@ -1,7 +1,7 @@
 use color_eyre::eyre::Result;
 
 use crate::{
-    db::{self, SetzeSchema},
+    db::{self, schemas::setze::SetzeSchema},
     helpers::ui,
     utils,
 };

@@ -4,7 +4,13 @@ use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
 use rusqlite::Connection;
 
-use crate::db::{SEED_SCHWIRIGKEIT_LISTE, SchwirigkeitListeBulkInsert, SchwirigkeitListeSchema};
+use crate::{
+    ctx,
+    db::{
+        SEED_SCHWIRIGKEIT_LISTE, SchwirigkeitListeBulkInsert,
+        schemas::{geschichtlich_setze, schwirigkeit_liste, setze},
+    },
+};
 
 const DB_NAME: &str = "anki_satze.sql";
 
@@ -23,73 +29,26 @@ pub fn init_schemas() -> Result<()> {
     let conn = get_conn();
     // Activar las llaves foráneas
     conn.execute("PRAGMA foreign_keys = ON", [])
-        .context("[init_schemas] - banderas para llaver foraneas")?;
+        .context(ctx!())?;
 
     // Dificultad
-    conn.execute(
-        "
-            CREATE TABLE IF NOT EXISTS schwirigkeit_liste (
-                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-                schwirigkeit        TEXT,
-                created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
-                deleted_at          TEXT
-            )",
-        [],
-    )
-    .context("[init_schemas] - Creación tabla schwirigkeit_liste")?;
+    conn.execute(schwirigkeit_liste::CREATE_STR_TABLE_SCHWIRIGKEIT_LISTE, [])
+        .context(ctx!())?;
 
     // Oraciones
-    conn.execute(
-        "
-            CREATE TABLE IF NOT EXISTS setze (
-                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-                setze_spanisch      TEXT NOT NULL,
-                setze_deutsch       TEXT NOT NULL,
-                thema               TEXT NOT NULL,
-                schwirigkeit_id     INTEGER NOT NULL,
-                created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
-                deleted_at          TEXT,
-                FOREIGN KEY(schwirigkeit_id) REFERENCES schwirigkeit_liste(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-            )",
-        [],
-    )
-    .context("[init_schemas] - Creación tabla setze")?;
-
-    conn.execute_batch(
-        "
-            CREATE INDEX IF NOT EXISTS idx_setze_setze_spanisch ON setze(setze_spanisch);
-            CREATE INDEX IF NOT EXISTS idx_setze_setze_deutsch ON setze(setze_deutsch);
-            CREATE INDEX IF NOT EXISTS idx_setze_thema ON setze(thema);
-            CREATE INDEX IF NOT EXISTS idx_setze_schwirigkeit_id ON setze(schwirigkeit_id);
-        ",
-    )
-    .context("[init_schemas] - Creación particiones setze")?;
+    conn.execute(setze::CREATE_STR_TABLE_SETZE, [])
+        .context(ctx!())?;
+    conn.execute_batch(setze::CREATE_STR_INDEX_SETZE)
+        .context(ctx!())?;
 
     // Historico de oraciones
     conn.execute(
-        "
-            CREATE TABLE IF NOT EXISTS geschichtlich_setze (
-                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-                setze_id            INTEGER NOT NULL,
-                result              BOOL NOT NULL,
-                created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
-                deleted_at          TEXT,
-                FOREIGN KEY(setze_id) REFERENCES setze(id)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-            )",
+        geschichtlich_setze::CREATE_STR_TABLE_GESCHICHTLICH_SETZE,
         [],
     )
-    .context("[init_schemas] - Creación tabla geschichtlich_setze")?;
-
-    conn.execute_batch(
-        "
-            CREATE INDEX IF NOT EXISTS idx_geschichtlich_setze_created_at ON geschichtlich_setze(created_at);
-        ",
-    )
-    .context("[init_schemas] - Creación partiaciones geschichtlich_setze")?;
+    .context(ctx!())?;
+    conn.execute_batch(geschichtlich_setze::CREATE_STR_INDEX_GESCHICHTLICH_SETZE)
+        .context(ctx!())?;
 
     Ok(())
 }
@@ -108,5 +67,5 @@ pub fn init_seeds() -> Result<()> {
 }
 
 pub fn init_data() {
-    SchwirigkeitListeSchema::init_data();
+    schwirigkeit_liste::SchwirigkeitListeSchema::init_data();
 }

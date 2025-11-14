@@ -5,7 +5,10 @@ use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
 use rusqlite::params;
 
-use crate::db::{NewSchwirigkeitSchema, SchwirigkeitListeSchema, get_conn};
+use crate::db::{
+    get_conn,
+    schemas::schwirigkeit_liste::{NewSchwirigkeitSchema, SchwirigkeitListeSchema},
+};
 
 pub static SCHWIRIGKEIT_CACHE: Lazy<HashMap<i32, SchwirigkeitListeSchema>> = Lazy::new(|| {
     let sql = "

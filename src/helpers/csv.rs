@@ -2,7 +2,7 @@ use color_eyre::eyre::{Context, Result, eyre};
 use csv::ReaderBuilder;
 use std::fs::File;
 
-use crate::db::{NewSetzeSchema, SchwirigkeitListeSchema};
+use crate::db::schemas::{schwirigkeit_liste::SchwirigkeitListeSchema, setze::NewSetzeSchema};
 
 const HEADER_CSV: [&str; 4] = ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];
 

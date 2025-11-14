@@ -12,7 +12,8 @@ Herzliche Willkommen zu meinem Programm.
 📋 Das Menu:
     1.- Hinzufügen neue Sätze.
     2.- Üben neue Sätze.
-    3.- Ver Estadisticas.
+    3-. Hinzufügen neue Nomen.
+    4.- Üben Artikel Geschlecht.
 
 Para salir favor de escribir "exit"
 "#;
@@ -31,6 +32,7 @@ pub fn menu_main() -> Result<()> {
             "1" => menu_1_add_sentences()?,
             "2" => menu_2_practice_sentences()?,
             "3" => todo!(),
+            "4" => todo!(),
             "exit" => return Ok(()),
             _ => println!("Comando no reconocido"),
         }
