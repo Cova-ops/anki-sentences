@@ -1,8 +1,11 @@
+pub mod gender_worte;
 mod new_geschichtlich_setze;
-mod schwirigkeit_liste;
+pub mod niveau_worte;
+pub mod schwirigkeit_liste;
 pub mod setze;
 
+pub use gender_worte as GenderWorteRepo;
 pub use new_geschichtlich_setze::NewGeschichtlichSetze as NewGeschichtlichSetzeStruct;
-pub use schwirigkeit_liste::bulk_insert as SchwirigkeitListeBulkInsert;
-pub use schwirigkeit_liste::fetch_all_schwirigkeit_list as SchwirigkeitListeFetchAll;
+pub use niveau_worte as NiveauWorteRepo;
+pub use schwirigkeit_liste as SchwirigkeitListeRepo;
 pub use setze as SetzeRepo;

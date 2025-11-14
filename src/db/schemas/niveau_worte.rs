@@ -1,0 +1,43 @@
+use chrono::{DateTime, Utc};
+
+pub const CREATE_STR_TABLE_GENDER_WORTE: &str = "
+CREATE TABLE IF NOT EXISTS niveau_worte (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    niveau              TEXT NOT NULL,                         
+
+    -- Generic
+    created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
+    deleted_at          TEXT
+)";
+
+pub const CREATE_STR_INDEX_NIVEAU_WORTE: &str = "
+CREATE INDEX IF NOT EXISTS idx_niveau_worte_created_at ON niveau_worte(created_at);
+";
+
+#[derive(Debug, Clone)]
+pub struct NiveauWorteSchema {
+    pub id: i32,
+    pub niveau: String,
+
+    // Generic
+    pub created_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NewNiveauWorteSchema {
+    pub id: i32,
+    pub niveau: String,
+}
+
+impl NewNiveauWorteSchema {
+    pub fn new<S>(id: impl Into<i32>, gender: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Self {
+            id: id.into(),
+            niveau: gender.into(),
+        }
+    }
+}

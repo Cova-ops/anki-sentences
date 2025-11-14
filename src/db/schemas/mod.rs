@@ -2,7 +2,9 @@ use color_eyre::eyre::{Context, Result};
 
 use crate::{ctx, db::get_conn};
 
+pub mod gender_worte;
 pub mod geschichtlich_setze;
+pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
 pub mod wort;
@@ -15,6 +17,18 @@ pub fn init_schemas() -> Result<()> {
 
     // Dificultad
     conn.execute(schwirigkeit_liste::CREATE_STR_TABLE_SCHWIRIGKEIT_LISTE, [])
+        .context(ctx!())?;
+
+    // Gender Worte
+    conn.execute(gender_worte::CREATE_STR_TABLE_GENDER_WORTE, [])
+        .context(ctx!())?;
+    conn.execute_batch(gender_worte::CREATE_STR_INDEX_GENDER_WORTE)
+        .context(ctx!())?;
+
+    // Niveau worte
+    conn.execute(niveau_worte::CREATE_STR_TABLE_GENDER_WORTE, [])
+        .context(ctx!())?;
+    conn.execute_batch(niveau_worte::CREATE_STR_INDEX_NIVEAU_WORTE)
         .context(ctx!())?;
 
     // Oraciones

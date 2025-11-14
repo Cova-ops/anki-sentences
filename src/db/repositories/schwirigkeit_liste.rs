@@ -5,9 +5,13 @@ use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
 use rusqlite::params;
 
-use crate::db::{
-    get_conn,
-    schemas::schwirigkeit_liste::{NewSchwirigkeitSchema, SchwirigkeitListeSchema},
+use crate::{
+    ctx,
+    db::{
+        get_conn,
+        schemas::schwirigkeit_liste::{NewSchwirigkeitSchema, SchwirigkeitListeSchema},
+    },
+    with_ctx,
 };
 
 pub static SCHWIRIGKEIT_CACHE: Lazy<HashMap<i32, SchwirigkeitListeSchema>> = Lazy::new(|| {
@@ -73,7 +77,7 @@ pub static SCHWIRIGKEIT_CACHE: Lazy<HashMap<i32, SchwirigkeitListeSchema>> = Laz
 });
 
 // Función para obtener referencia inmutable al cache
-pub fn fetch_all_schwirigkeit_list() -> &'static HashMap<i32, SchwirigkeitListeSchema> {
+pub fn fetch_all() -> &'static HashMap<i32, SchwirigkeitListeSchema> {
     &SCHWIRIGKEIT_CACHE
 }
 
@@ -82,14 +86,12 @@ pub fn bulk_insert(data: &Vec<NewSchwirigkeitSchema>) -> Result<()> {
         VALUES (?1,?2) ON CONFLICT(id) DO UPDATE SET schwirigkeit = ?3;";
 
     let mut conn = get_conn();
-    let tx = conn
-        .transaction()
-        .context("[bulk_insert] - Error al crear la transacción")?;
+    let tx = conn.transaction().context(ctx!())?;
 
     {
         let mut stmt = tx
             .prepare_cached(sql)
-            .with_context(|| format!("[bulk_insert] - Error en sql: {}", sql))?;
+            .context(with_ctx!(format!("error sql: {}", sql)))?;
 
         for d in data {
             stmt.execute(params![d.id, d.schwirigkeit, d.schwirigkeit])

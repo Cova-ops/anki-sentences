@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use color_eyre::eyre::{Result, eyre};
 
-use crate::db::SchwirigkeitListeFetchAll;
+use crate::db::SchwirigkeitListeRepo;
 
 pub const CREATE_STR_TABLE_SCHWIRIGKEIT_LISTE: &str = "
 CREATE TABLE IF NOT EXISTS schwirigkeit_liste (
@@ -24,12 +24,12 @@ pub struct SchwirigkeitListeSchema {
 
 impl SchwirigkeitListeSchema {
     pub fn init_data() {
-        SchwirigkeitListeFetchAll();
+        SchwirigkeitListeRepo::fetch_all();
     }
 
     pub fn from_id(id: impl Into<i32>) -> Result<Self> {
         let id = id.into();
-        SchwirigkeitListeFetchAll()
+        SchwirigkeitListeRepo::fetch_all()
             .get(&id)
             .cloned()
             .ok_or_else(|| eyre!("[SchwirigkeitListe.from_id] id no encontrado: {}", id))
@@ -37,7 +37,7 @@ impl SchwirigkeitListeSchema {
 
     pub fn from_name(name: impl Into<String>) -> Result<Self> {
         let name = name.into();
-        SchwirigkeitListeFetchAll()
+        SchwirigkeitListeRepo::fetch_all()
             .iter()
             .find(|(_, value)| value.schwirigkeit == name)
             .map(|(_, value)| Self { ..value.clone() })
