@@ -152,6 +152,49 @@ pub fn fetch_all_only_ids() -> Result<Vec<i32>> {
     Ok(rows)
 }
 
+pub fn fetch_id_schwirig_thema(titles: Option<&[String]>) -> Result<Vec<i32>> {
+    let (sql, params) = if titles.is_some() && !titles.unwrap().is_empty() {
+        let Some(titles) = titles else { panic!() };
+        let placeholders = std::iter::repeat_n("?", titles.len())
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let sql = format!(
+            "SELECT
+                id
+            FROM setze
+            WHERE thema in ({placeholders}) AND schwirigkeit_id = 2 AND deleted_at IS NULL
+            ORDER BY id"
+        );
+
+        let params: Vec<&dyn rusqlite::ToSql> =
+            titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
+
+        (sql, params)
+    } else {
+        let sql = "SELECT
+                id
+            FROM setze
+            WHERE schwirigkeit_id = 2 AND deleted_at IS NULL
+            ORDER BY id"
+            .to_string();
+
+        let params: Vec<&dyn rusqlite::ToSql> = vec![];
+        (sql, params)
+    };
+
+    let conn = get_conn();
+    let mut stmt = conn.prepare(&sql)?;
+
+    let ids = stmt
+        .query(params_from_iter(params))
+        .context(with_ctx!(format!("Sql - {}", sql)))?
+        .mapped(|r| r.get(0))
+        .collect::<Result<Vec<i32>, _>>()?;
+
+    Ok(ids)
+}
+
 pub fn bulk_insert(data: Vec<NewSetzeSchema>) -> Result<()> {
     let sql = "INSERT INTO setze (setze_spanisch, setze_deutsch, thema, schwirigkeit_id)
         VALUES (?1,?2,?3,?4);";
@@ -221,6 +264,132 @@ pub fn fetch_where_thema(
 
     let params: Vec<&dyn rusqlite::ToSql> =
         titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
+
+    let rows = stmt
+        .query(params_from_iter(params))
+        .context(with_ctx!(format!("Sql - {}", sql)))?
+        .mapped(|row| {
+            Ok(RawStruct {
+                id: row.get(0)?,
+                setze_spanisch: row.get(1)?,
+                setze_deutsch: row.get(2)?,
+                thema: row.get(3)?,
+                schwirig_id_num: row.get(4)?,
+                created_at: row.get(5)?,
+                deleted_at: row.get(6).ok(),
+            })
+        })
+        .collect::<Result<Vec<RawStruct>, _>>()?;
+
+    drop(stmt);
+    drop(conn);
+
+    let result = from_raw_to_setze(rows)?;
+    Ok(result)
+}
+
+pub fn fetch_schwirig_thema(
+    titles: Option<&[String]>,
+    offset: impl Into<u32>,
+    limit: impl Into<u32>,
+) -> Result<Vec<SetzeSchema>> {
+    let offset = offset.into();
+    let limit = limit.into();
+
+    let (sql, params) = if titles.is_some() && !titles.unwrap().is_empty() {
+        let Some(titles) = titles else { panic!() };
+        let placeholders = std::iter::repeat_n("?", titles.len())
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let sql = format!(
+            "SELECT
+                id,
+                setze_spanisch,
+                setze_deutsch,
+                thema,
+                schwirigkeit_id,
+                created_at,
+                deleted_at
+            FROM setze
+            WHERE thema in ({placeholders}) AND schwirigkeit_id = 2
+            ORDER BY setze_deutsch
+            LIMIT {limit} OFFSET {offset}"
+        );
+
+        let params: Vec<&dyn rusqlite::ToSql> =
+            titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
+
+        (sql, params)
+    } else {
+        let sql = format!(
+            "SELECT
+                id,
+                setze_spanisch,
+                setze_deutsch,
+                thema,
+                schwirigkeit_id,
+                created_at,
+                deleted_at
+            FROM setze
+            WHERE schwirigkeit_id = 2
+            ORDER BY setze_deutsch
+            LIMIT {limit} OFFSET {offset}"
+        );
+
+        let params: Vec<&dyn rusqlite::ToSql> = vec![];
+        (sql, params)
+    };
+
+    let conn = get_conn();
+    let mut stmt = conn.prepare(&sql)?;
+
+    let rows = stmt
+        .query(params_from_iter(params))
+        .context(with_ctx!(format!("Sql - {}", sql)))?
+        .mapped(|row| {
+            Ok(RawStruct {
+                id: row.get(0)?,
+                setze_spanisch: row.get(1)?,
+                setze_deutsch: row.get(2)?,
+                thema: row.get(3)?,
+                schwirig_id_num: row.get(4)?,
+                created_at: row.get(5)?,
+                deleted_at: row.get(6).ok(),
+            })
+        })
+        .collect::<Result<Vec<RawStruct>, _>>()?;
+
+    drop(stmt);
+    drop(conn);
+
+    let result = from_raw_to_setze(rows)?;
+    Ok(result)
+}
+
+pub fn fetch_by_id(ids: &[i32]) -> Result<Vec<SetzeSchema>> {
+    let placeholders = std::iter::repeat_n("?", ids.len())
+        .collect::<Vec<_>>()
+        .join(",");
+
+    let sql = format!(
+        "SELECT
+            id,
+            setze_spanisch,
+            setze_deutsch,
+            thema,
+            schwirigkeit_id,
+            created_at,
+            deleted_at
+        FROM setze
+        WHERE id in ({placeholders})
+        ORDER BY setze_deutsch"
+    );
+
+    let conn = get_conn();
+    let mut stmt = conn.prepare(&sql)?;
+
+    let params: Vec<&dyn rusqlite::ToSql> = ids.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
 
     let rows = stmt
         .query(params_from_iter(params))
