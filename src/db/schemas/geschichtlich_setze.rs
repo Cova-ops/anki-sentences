@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 
 pub const CREATE_STR_TABLE_GESCHICHTLICH_SETZE: &str = "
-CREATE TABLE IF NOT EXISTS geschichtlich_setze (
+CREATE TABLE IF NOT EXISTS  (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
     setze_id            INTEGER NOT NULL,
     result              BOOL NOT NULL,

@@ -1,13 +1,14 @@
 mod connection;
 mod repositories;
 pub mod schemas;
-mod seeders;
+pub mod seeders;
 
 use color_eyre::eyre::Result;
 
 pub use connection::*;
 pub use repositories::*;
-pub use seeders::*;
+
+use crate::db::{schemas::init_schemas, seeders::init_seeds};
 
 pub fn init_db() -> Result<()> {
     init_schemas()?;
