@@ -24,3 +24,8 @@ pub struct GeschichtlichSetzeSchema {
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
+
+#[derive(Debug, Clone)]
+pub struct NewGeschichtlichSetzeSchema {
+    pub setze_id: i32,
+}

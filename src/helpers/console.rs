@@ -1,7 +1,10 @@
 use color_eyre::eyre::Result;
 
 use crate::{
-    db::{self, schemas::setze::SetzeSchema},
+    db::{
+        self, GeschichlichSetzeRepo,
+        schemas::{geschichtlich_setze::NewGeschichtlichSetzeSchema, setze::SetzeSchema},
+    },
     helpers::ui,
     utils,
 };
@@ -49,7 +52,8 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
 
                 // Si "i" vale 0, quiere decir que respondio al oración a la primera,
                 // se pasa un true
-                db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(i == 0)?;
+                let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
+                GeschichlichSetzeRepo::insert_db(&[new_data], i == 0)?;
 
                 break;
             } else {
@@ -72,7 +76,8 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
 
                 let input = utils::clean_sentences(&input);
                 if input == db_s {
-                    db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(false)?;
+                    let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
+                    GeschichlichSetzeRepo::insert_db(&[new_data], false)?;
                     break;
                 }
             }
@@ -118,7 +123,8 @@ pub fn make_setze_exercise_repeat(arr: &[SetzeSchema]) -> Result<u8> {
                 // Si "i" vale 0, quiere decir que respondio al oración a la primera,
                 // se pasa un true
                 if i == 0 {
-                    db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(true)?;
+                    let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
+                    GeschichlichSetzeRepo::insert_db(&[new_data], true)?;
                     setze_correct.remove(i);
                 }
 
@@ -143,7 +149,8 @@ pub fn make_setze_exercise_repeat(arr: &[SetzeSchema]) -> Result<u8> {
 
                 let input = utils::clean_sentences(&input);
                 if input == db_s {
-                    db::NewGeschichtlichSetzeStruct::new(s.id).insert_db(false)?;
+                    let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
+                    GeschichlichSetzeRepo::insert_db(&[new_data], false)?;
                     break;
                 }
             }
