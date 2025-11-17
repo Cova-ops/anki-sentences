@@ -9,6 +9,7 @@ pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
 pub mod wort;
+pub mod wort_gram_type;
 
 pub fn init_schemas() -> Result<()> {
     let conn = get_conn();

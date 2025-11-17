@@ -42,12 +42,15 @@ impl GramTypeSchema {
         Ok(())
     }
 
-    pub fn from_id(id: impl Into<i32>) -> Result<Self> {
+    pub fn from_id<I>(id: I) -> Result<Self>
+    where
+        I: Into<i32>,
+    {
         let id = id.into();
         let hash = HASH_VALUES.lock().unwrap();
         hash.get(&id)
             .cloned()
-            .ok_or_else(|| eyre!("[NiveauWorteSchema.from_id] id no encontrado: {}", id))
+            .ok_or_else(|| eyre!("[GramTypeSchema.from_id] id no encontrado: {}", id))
     }
 }
 

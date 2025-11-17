@@ -86,7 +86,6 @@ pub static SEED_GRAM_TYPE_LISTE: Lazy<Vec<NewGramTypeSchema>> = Lazy::new(|| {
     ])
 });
 
-// TODO: Hacer init_data de la tabla intermedia NxM
 pub fn init_data() -> Result<()> {
     // SchwirigkeitListe
     let data = SchwirigkeitListeRepo::bulk_insert(&SEED_SCHWIRIGKEIT_LISTE)?;
