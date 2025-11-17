@@ -4,6 +4,7 @@ use crate::{ctx, db::get_conn};
 
 pub mod gender_worte;
 pub mod geschichtlich_setze;
+pub mod gram_type;
 pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
@@ -29,6 +30,12 @@ pub fn init_schemas() -> Result<()> {
     conn.execute(niveau_worte::CREATE_STR_TABLE_GENDER_WORTE, [])
         .context(ctx!())?;
     conn.execute_batch(niveau_worte::CREATE_STR_INDEX_NIVEAU_WORTE)
+        .context(ctx!())?;
+
+    // Gram Type
+    conn.execute(gram_type::CREATE_STR_TABLE_GRAM_TYPE, [])
+        .context(ctx!())?;
+    conn.execute_batch(gram_type::CREATE_STR_INDEX_GRAM_TYPE)
         .context(ctx!())?;
 
     // Oraciones

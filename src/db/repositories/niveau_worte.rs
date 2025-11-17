@@ -19,9 +19,9 @@ struct Raw {
 }
 pub fn bulk_insert(data: &[NewNiveauWorteSchema]) -> Result<Vec<NiveauWorteSchema>> {
     let sql = r#"
-    INSERT INTO niveau_worte (id, niveau)
-    VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET niveau = ?2
-    RETURNING id, niveau,created_at,deleted_at;
+        INSERT INTO niveau_worte (id, niveau)
+        VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET niveau = ?2
+        RETURNING id, niveau,created_at,deleted_at;
     "#;
 
     let mut conn = get_conn();

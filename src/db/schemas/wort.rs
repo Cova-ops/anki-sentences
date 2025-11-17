@@ -33,9 +33,9 @@ CREATE TABLE IF NOT EXISTS worte(
 )";
 
 pub const CREATE_STR_INDEX_WORTE: &str = "
-CREATE INDEX IF NOT EXISTS idx_worte_created_at ON worte(created_at);
-CREATE INDEX IF NOT EXISTS idx_worte_gender_id ON worte(gender_id);
-CREATE INDEX IF NOT EXISTS idx_worte_niveau_id ON worte(niveau_id);
+    CREATE INDEX IF NOT EXISTS idx_worte_created_at ON worte(created_at);
+    CREATE INDEX IF NOT EXISTS idx_worte_gender_id ON worte(gender_id);
+    CREATE INDEX IF NOT EXISTS idx_worte_niveau_id ON worte(niveau_id);
 ";
 
 #[derive(Debug, Clone)]
