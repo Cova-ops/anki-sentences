@@ -16,7 +16,6 @@ pub fn build_ctx<T: AsRef<str>>(msg: Option<T>) -> String {
     }
 }
 
-// macro para azucar sintáctica
 #[macro_export]
 macro_rules! ctx {
     () => {{ $crate::utils::ctx::build_ctx::<&str>(None) }};
@@ -45,7 +44,6 @@ pub fn build_with_ctx<T: AsRef<str>>(s1: T, s2: Option<T>) -> String {
     }
 }
 
-// macro para azucar sintáctica
 #[macro_export]
 macro_rules! with_ctx {
     ($exp:expr) => {{ $crate::utils::ctx::build_with_ctx($exp, None) }};
