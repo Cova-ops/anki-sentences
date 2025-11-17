@@ -7,11 +7,21 @@ use crate::{
     helpers, to_strings, with_ctx,
 };
 
+#[derive(Debug)]
+struct Raw {
+    id: i32,
+    setze_id: i32,
+    result: i32,
+    created_at: String,
+    deleted_at: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub struct NewGeschichtlichSetze {
     pub setze_id: i32,
 }
 
+// TODO: Pasar esto al schema de geschichtlich_setze
 impl NewGeschichtlichSetze {
     pub fn new(s_id: impl Into<i32>) -> Self {
         Self {
@@ -23,15 +33,11 @@ impl NewGeschichtlichSetze {
         let mut conn = get_conn();
         let tx = conn.transaction().context(ctx!())?;
 
-        let sql = "INSERT INTO geschichtlich_setze (setze_id, result) values (?1,?2) RETURNING id,setze_id, result, created_at, deleted_at;";
+        let sql = r#"
+        INSERT INTO geschichtlich_setze (setze_id, result)
+        VALUES (?1,?2)
+        RETURNING id,setze_id, result, created_at,deleted_at;"#;
 
-        struct Raw {
-            id: i32,
-            setze_id: i32,
-            result: i32,
-            created_at: String,
-            deleted_at: Option<String>,
-        }
         let raw: Raw = {
             let mut stmt = tx
                 .prepare_cached(sql)

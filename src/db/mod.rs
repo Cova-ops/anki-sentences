@@ -8,11 +8,10 @@ use color_eyre::eyre::Result;
 pub use connection::*;
 pub use repositories::*;
 
-use crate::db::{schemas::init_schemas, seeders::init_seeds};
+use crate::db::{schemas::init_schemas, seeders::init_data};
 
 pub fn init_db() -> Result<()> {
     init_schemas()?;
-    init_seeds()?;
-    init_data();
+    init_data()?;
     Ok(())
 }

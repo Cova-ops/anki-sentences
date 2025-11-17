@@ -5,16 +5,17 @@ use crate::db::{
     NiveauWorteRepo, SchwirigkeitListeRepo,
     repositories::GenderWorteRepo,
     schemas::{
-        gender_worte::NewGenderWorteSchema, niveau_worte::NewNiveauWorteSchema,
-        schwirigkeit_liste::NewSchwirigkeitSchema,
+        gender_worte::{GenderWorteSchema, NewGenderWorteSchema},
+        niveau_worte::{NewNiveauWorteSchema, NiveauWorteSchema},
+        schwirigkeit_liste::{NewSchwirigkeitListeSchema, SchwirigkeitListeSchema},
     },
 };
 
-pub static SEED_SCHWIRIGKEIT_LISTE: Lazy<Vec<NewSchwirigkeitSchema>> = Lazy::new(|| {
+pub static SEED_SCHWIRIGKEIT_LISTE: Lazy<Vec<NewSchwirigkeitListeSchema>> = Lazy::new(|| {
     Vec::from([
-        NewSchwirigkeitSchema::new(0, "Einfag"),
-        NewSchwirigkeitSchema::new(1, "Normal"),
-        NewSchwirigkeitSchema::new(2, "Schwirig"),
+        NewSchwirigkeitListeSchema::new(0, "Einfag"),
+        NewSchwirigkeitListeSchema::new(1, "Normal"),
+        NewSchwirigkeitListeSchema::new(2, "Schwirig"),
     ])
 });
 
@@ -38,10 +39,14 @@ pub static SEED_NIVEAU_LISTE: Lazy<Vec<NewNiveauWorteSchema>> = Lazy::new(|| {
     ])
 });
 
-pub fn init_seeds() -> Result<()> {
-    SchwirigkeitListeRepo::bulk_insert(&SEED_SCHWIRIGKEIT_LISTE)?;
-    GenderWorteRepo::bulk_insert(&SEED_GENDER_WORTE_LISTE)?;
-    NiveauWorteRepo::bulk_insert(&SEED_NIVEAU_LISTE)?;
+pub fn init_data() -> Result<()> {
+    let data_sch = SchwirigkeitListeRepo::bulk_insert(&SEED_SCHWIRIGKEIT_LISTE)?;
+    let data_gen = GenderWorteRepo::bulk_insert(&SEED_GENDER_WORTE_LISTE)?;
+    let data_niv = NiveauWorteRepo::bulk_insert(&SEED_NIVEAU_LISTE)?;
+
+    SchwirigkeitListeSchema::init_data(&data_sch)?;
+    GenderWorteSchema::init_data(&data_gen)?;
+    NiveauWorteSchema::init_data(&data_niv)?;
 
     Ok(())
 }
