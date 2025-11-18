@@ -38,7 +38,7 @@ pub fn insert_db(
                     setze_id: r.get(1)?,
                     result: r.get(2)?,
                     created_at: r.get(3)?,
-                    deleted_at: r.get(4).ok(),
+                    deleted_at: r.get(4)?,
                 })
             })
             .context(with_ctx!(format!("sql: {} & params: {:#?}", sql, d)))?;
