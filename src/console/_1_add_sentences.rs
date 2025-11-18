@@ -77,7 +77,7 @@ pub fn menu_1_add_sentences() -> Result<()> {
         let valid_1 = path_file_oder_dir(&input);
 
         // No existe la dirección ó no es un archivo
-        if valid_1.is_err() || !valid_1.ok().unwrap().0 {
+        if valid_1.is_err() || !valid_1?.0 {
             err_2_show = Some(TEXT_ERROR_FILE_NO_EXIST);
         }
 

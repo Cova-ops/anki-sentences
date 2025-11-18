@@ -62,7 +62,7 @@ pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result
                 thema: row.get(3)?,
                 schwirig_id_num: row.get(4)?,
                 created_at: row.get(5)?,
-                deleted_at: row.get(6).ok(),
+                deleted_at: row.get(6)?,
             })
         })
         .collect::<Result<Vec<RawSetzeSchema>, _>>()
@@ -248,7 +248,7 @@ pub fn fetch_where_thema(
                 thema: row.get(3)?,
                 schwirig_id_num: row.get(4)?,
                 created_at: row.get(5)?,
-                deleted_at: row.get(6).ok(),
+                deleted_at: row.get(6)?,
             })
         })
         .collect::<Result<Vec<RawSetzeSchema>, _>>()?;
@@ -295,7 +295,7 @@ pub fn fetch_by_id(ids: &[i32]) -> Result<Vec<SetzeSchema>> {
                 thema: row.get(3)?,
                 schwirig_id_num: row.get(4)?,
                 created_at: row.get(5)?,
-                deleted_at: row.get(6).ok(),
+                deleted_at: row.get(6)?,
             })
         })
         .collect::<Result<Vec<RawSetzeSchema>, _>>()?;

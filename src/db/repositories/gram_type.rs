@@ -28,7 +28,7 @@ pub fn bulk_insert(data: &[NewGramTypeSchema]) -> Result<Vec<GramTypeSchema>> {
                 code: r.get(1)?,
                 name: r.get(2)?,
                 created_at: r.get(3)?,
-                deleted_at: r.get(4).ok(),
+                deleted_at: r.get(4)?,
             })
         })?;
 

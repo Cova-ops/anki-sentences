@@ -26,7 +26,7 @@ pub fn bulk_insert(data: &[NewNiveauWorteSchema]) -> Result<Vec<NiveauWorteSchem
                 id: r.get(0)?,
                 niveau: r.get(1)?,
                 created_at: r.get(2)?,
-                deleted_at: r.get(3).ok(),
+                deleted_at: r.get(3)?,
             })
         })?;
 
