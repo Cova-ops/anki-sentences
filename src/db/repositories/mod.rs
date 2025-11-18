@@ -4,6 +4,7 @@ pub mod gram_type;
 pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
+pub mod wort;
 
 pub use gender_worte as GenderWorteRepo;
 pub use geschichtlich_setze as GeschichlichSetzeRepo;
@@ -11,3 +12,4 @@ pub use gram_type as GramTypeRepo;
 pub use niveau_worte as NiveauWorteRepo;
 pub use schwirigkeit_liste as SchwirigkeitListeRepo;
 pub use setze as SetzeRepo;
+pub use wort as WortRepo;

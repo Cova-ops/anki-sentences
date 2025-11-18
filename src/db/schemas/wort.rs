@@ -39,7 +39,7 @@ pub const CREATE_STR_INDEX_WORTE: &str = "
 ";
 
 #[derive(Debug, Clone)]
-pub struct WorteSchema {
+pub struct WortSchema {
     pub id: i32,
     pub gender_id: Option<GenderWorteSchema>,
     pub worte_de: String,

@@ -5,19 +5,13 @@ use crate::{
     ctx,
     db::{
         get_conn,
-        schemas::geschichtlich_setze::{GeschichtlichSetzeSchema, NewGeschichtlichSetzeSchema},
+        schemas::geschichtlich_setze::{
+            GeschichtlichSetzeSchema, NewGeschichtlichSetzeSchema, RawGeschichtlichSetzeSchema,
+        },
+        traits::FromRaw,
     },
-    helpers, to_strings, with_ctx,
+    with_ctx,
 };
-
-#[derive(Debug)]
-struct Raw {
-    id: i32,
-    setze_id: i32,
-    result: i32,
-    created_at: String,
-    deleted_at: Option<String>,
-}
 
 pub fn insert_db(
     data: &[NewGeschichtlichSetzeSchema],
@@ -31,15 +25,15 @@ pub fn insert_db(
         VALUES (?1,?2)
         RETURNING id,setze_id, result, created_at,deleted_at;"#;
 
-    let mut vec_raw: Vec<Raw> = Vec::with_capacity(data.len());
+    let mut vec_raw: Vec<RawGeschichtlichSetzeSchema> = Vec::with_capacity(data.len());
 
     let mut stmt = tx
         .prepare_cached(sql)
         .context(with_ctx!(format!("sql: {}", sql)))?;
     for d in data {
-        let raw: Raw = stmt
+        let raw: RawGeschichtlichSetzeSchema = stmt
             .query_row(params![d.setze_id, result], |r| {
-                Ok(Raw {
+                Ok(RawGeschichtlichSetzeSchema {
                     id: r.get(0)?,
                     setze_id: r.get(1)?,
                     result: r.get(2)?,
@@ -47,32 +41,13 @@ pub fn insert_db(
                     deleted_at: r.get(4).ok(),
                 })
             })
-            .context(with_ctx!(format!(
-                "sql: {} & params: {:#?}",
-                sql,
-                to_strings!(d.setze_id, result)
-            )))?;
+            .context(with_ctx!(format!("sql: {} & params: {:#?}", sql, d)))?;
         vec_raw.push(raw);
     }
 
     drop(stmt);
     tx.commit().context(ctx!())?;
 
-    let vec_result: Vec<GeschichtlichSetzeSchema> = vec_raw
-        .into_iter()
-        .map(|r| {
-            let created_at = helpers::time::string_2_datetime(Some(r.created_at)).unwrap();
-            let deleted_at = helpers::time::string_2_datetime(r.deleted_at);
-
-            GeschichtlichSetzeSchema {
-                id: r.id,
-                setze_id: r.setze_id,
-                result: r.result != 0,
-                created_at,
-                deleted_at,
-            }
-        })
-        .collect();
-
+    let vec_result = GeschichtlichSetzeSchema::from_vec_raw(vec_raw)?;
     Ok(vec_result)
 }

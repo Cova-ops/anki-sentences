@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS geschichtlich_setze (
 )";
 
 pub const CREATE_STR_INDEX_GESCHICHTLICH_SETZE: &str = "
-CREATE INDEX IF NOT EXISTS idx_geschichtlich_setze_created_at ON geschichtlich_setze(created_at);
+    CREATE INDEX IF NOT EXISTS idx_geschichtlich_setze_created_at ON geschichtlich_setze(created_at);
 ";
 
 #[derive(Debug, Clone)]
@@ -28,4 +28,13 @@ pub struct GeschichtlichSetzeSchema {
 #[derive(Debug, Clone)]
 pub struct NewGeschichtlichSetzeSchema {
     pub setze_id: i32,
+}
+
+#[derive(Debug)]
+pub struct RawGeschichtlichSetzeSchema {
+    pub id: i32,
+    pub setze_id: i32,
+    pub result: i32,
+    pub created_at: String,
+    pub deleted_at: Option<String>,
 }

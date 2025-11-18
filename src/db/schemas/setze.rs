@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS setze (
 )";
 
 pub const CREATE_STR_INDEX_SETZE: &str = "
-CREATE INDEX IF NOT EXISTS idx_setze_setze_spanisch ON setze(setze_spanisch);
-CREATE INDEX IF NOT EXISTS idx_setze_setze_deutsch ON setze(setze_deutsch);
-CREATE INDEX IF NOT EXISTS idx_setze_thema ON setze(thema);
-CREATE INDEX IF NOT EXISTS idx_setze_schwirigkeit_id ON setze(schwirigkeit_id);
+    CREATE INDEX IF NOT EXISTS idx_setze_setze_spanisch ON setze(setze_spanisch);
+    CREATE INDEX IF NOT EXISTS idx_setze_setze_deutsch ON setze(setze_deutsch);
+    CREATE INDEX IF NOT EXISTS idx_setze_thema ON setze(thema);
+    CREATE INDEX IF NOT EXISTS idx_setze_schwirigkeit_id ON setze(schwirigkeit_id);
 ";
 
 #[derive(Debug, Clone)]
@@ -42,18 +42,13 @@ pub struct NewSetzeSchema {
     pub thema: String,
 }
 
-impl NewSetzeSchema {
-    pub fn new(
-        setze_spanisch: impl Into<String>,
-        setze_deutsch: impl Into<String>,
-        thema: impl Into<String>,
-        schwirig_id: impl Into<i32>,
-    ) -> Self {
-        Self {
-            setze_spanisch: setze_spanisch.into(),
-            setze_deutsch: setze_deutsch.into(),
-            schwirig_id: schwirig_id.into(),
-            thema: thema.into(),
-        }
-    }
+#[derive(Debug)]
+pub struct RawSetzeSchema {
+    pub id: i32,
+    pub setze_spanisch: String,
+    pub setze_deutsch: String,
+    pub thema: String,
+    pub schwirig_id_num: i32,
+    pub created_at: String,
+    pub deleted_at: Option<String>,
 }

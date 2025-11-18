@@ -1,5 +1,3 @@
-use std::ops::DerefMut;
-
 use color_eyre::eyre::{Context, Result};
 use rand::seq::SliceRandom;
 use rusqlite::{params, params_from_iter};
@@ -8,46 +6,14 @@ use crate::{
     ctx,
     db::{
         get_conn,
-        schemas::setze::{NewSetzeSchema, SetzeSchema},
+        schemas::{
+            schwirigkeit_liste::SchwirigkeitListeSchema,
+            setze::{NewSetzeSchema, RawSetzeSchema, SetzeSchema},
+        },
+        traits::FromRaw,
     },
     helpers, to_strings, with_ctx,
 };
-
-#[derive(Debug)]
-struct RawStruct {
-    id: i32,
-    setze_spanisch: String,
-    setze_deutsch: String,
-    thema: String,
-    schwirig_id_num: i32,
-    created_at: String,
-    deleted_at: Option<String>,
-}
-
-fn from_raw_to_setze(rows: Vec<RawStruct>) -> Result<Vec<SetzeSchema>> {
-    rows.into_iter()
-        .map(|r| -> Result<SetzeSchema> {
-            let created_at = helpers::time::string_2_datetime(Some(r.created_at)).unwrap();
-            let deleted_at = helpers::time::string_2_datetime(r.deleted_at);
-
-            let schwirig_id =
-                crate::db::schemas::schwirigkeit_liste::SchwirigkeitListeSchema::from_id(
-                    r.schwirig_id_num,
-                )
-                .expect("[fetch_random] - Error al obtener la relación de dificultad");
-
-            Ok(SetzeSchema {
-                id: r.id,
-                setze_spanisch: r.setze_spanisch,
-                setze_deutsch: r.setze_deutsch,
-                thema: r.thema,
-                schwirig_id,
-                created_at,
-                deleted_at,
-            })
-        })
-        .collect::<Result<Vec<SetzeSchema>, _>>()
-}
 
 pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result<Vec<SetzeSchema>> {
     let limit = limit.into().unwrap_or(50);
@@ -89,7 +55,7 @@ pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result
         .query(params_from_iter(select_ids))
         .context(with_ctx!(format!("Error query - {}", sql)))?
         .mapped(|row| {
-            Ok(RawStruct {
+            Ok(RawSetzeSchema {
                 id: row.get(0)?,
                 setze_spanisch: row.get(1)?,
                 setze_deutsch: row.get(2)?,
@@ -99,14 +65,14 @@ pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result
                 deleted_at: row.get(6).ok(),
             })
         })
-        .collect::<Result<Vec<RawStruct>, _>>()
+        .collect::<Result<Vec<RawSetzeSchema>, _>>()
         .context(ctx!())?;
 
     drop(stmt);
     drop(conn);
 
     println!("rows: {:#?}", rows);
-    let result = from_raw_to_setze(rows)?;
+    let result = SetzeSchema::from_vec_raw(rows)?;
     Ok(result)
 }
 
@@ -275,7 +241,7 @@ pub fn fetch_where_thema(
         .query(params_from_iter(params))
         .context(with_ctx!(format!("Sql - {}", sql)))?
         .mapped(|row| {
-            Ok(RawStruct {
+            Ok(RawSetzeSchema {
                 id: row.get(0)?,
                 setze_spanisch: row.get(1)?,
                 setze_deutsch: row.get(2)?,
@@ -285,12 +251,12 @@ pub fn fetch_where_thema(
                 deleted_at: row.get(6).ok(),
             })
         })
-        .collect::<Result<Vec<RawStruct>, _>>()?;
+        .collect::<Result<Vec<RawSetzeSchema>, _>>()?;
 
     drop(stmt);
     drop(conn);
 
-    let result = from_raw_to_setze(rows)?;
+    let result = SetzeSchema::from_vec_raw(rows)?;
     Ok(result)
 }
 
@@ -322,7 +288,7 @@ pub fn fetch_by_id(ids: &[i32]) -> Result<Vec<SetzeSchema>> {
         .query(params_from_iter(params))
         .context(with_ctx!(format!("Sql - {}", sql)))?
         .mapped(|row| {
-            Ok(RawStruct {
+            Ok(RawSetzeSchema {
                 id: row.get(0)?,
                 setze_spanisch: row.get(1)?,
                 setze_deutsch: row.get(2)?,
@@ -332,11 +298,11 @@ pub fn fetch_by_id(ids: &[i32]) -> Result<Vec<SetzeSchema>> {
                 deleted_at: row.get(6).ok(),
             })
         })
-        .collect::<Result<Vec<RawStruct>, _>>()?;
+        .collect::<Result<Vec<RawSetzeSchema>, _>>()?;
 
     drop(stmt);
     drop(conn);
 
-    let result = from_raw_to_setze(rows)?;
+    let result = SetzeSchema::from_vec_raw(rows)?;
     Ok(result)
 }

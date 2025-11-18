@@ -6,6 +6,7 @@ mod console;
 mod db;
 mod helpers;
 mod utils;
+
 fn main() -> Result<()> {
     color_eyre::install().unwrap();
     run()
