@@ -24,8 +24,7 @@ CREATE TABLE IF NOT EXISTS worte(
 
     FOREIGN KEY(gender_id) REFERENCES gender_worte(id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
-    
+        ON UPDATE CASCADE,    
 
     FOREIGN KEY(niveau_id) REFERENCES niveau_worte(id)
         ON DELETE CASCADE
@@ -57,4 +56,42 @@ pub struct WortSchema {
     // Generic
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug)]
+pub struct NewWortSchema {
+    pub id: i32,
+    pub gender_id: Option<i32>,
+    pub worte_de: String,
+    pub worte_es: String,
+    pub plural: Option<String>,
+    pub niveau_id: Option<i32>,
+    pub example_de: Option<String>,
+    pub example_es: Option<String>,
+
+    // nur verben
+    pub verb_aux: Option<String>,
+    pub trennbar: Option<bool>,
+    pub reflexiv: Option<bool>,
+}
+
+#[derive(Debug)]
+pub struct RawWortSchema {
+    pub id: i32,
+    pub gender_id: Option<i32>,
+    pub worte_de: String,
+    pub worte_es: String,
+    pub plural: Option<String>,
+    pub niveau_id: Option<i32>,
+    pub example_de: Option<String>,
+    pub example_es: Option<String>,
+
+    // nur verben
+    pub verb_aux: Option<String>,
+    pub trennbar: Option<bool>,
+    pub reflexiv: Option<bool>,
+
+    // Generic
+    pub created_at: String,
+    pub deleted_at: Option<String>,
 }
