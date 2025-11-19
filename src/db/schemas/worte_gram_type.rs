@@ -26,22 +26,22 @@ pub const CREATE_STR_INDEX_WORTE_TYPE_GRAM: &str = "
 ";
 
 #[derive(Debug, Clone)]
-pub struct WortGramTypeSchema {
-    pub id_wort: i32,
+pub struct WorteGramTypeSchema {
+    pub id_worte: i32,
     pub id_gram_type: i32,
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct NewWortGramTypeSchema {
-    pub id_wort: i32,
+pub struct NewWorteGramTypeSchema {
+    pub id_worte: i32,
     pub id_gram_type: i32,
 }
 
 #[derive(Debug)]
-pub struct RawWortGramTypeSchema {
-    pub id_wort: i32,
+pub struct RawWorteGramTypeSchema {
+    pub id_worte: i32,
     pub id_gram_type: i32,
     pub created_at: String,
     pub deleted_at: Option<String>,

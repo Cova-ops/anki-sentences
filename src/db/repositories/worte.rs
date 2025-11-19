@@ -2,12 +2,15 @@ use color_eyre::eyre::Result;
 use rusqlite::params;
 
 use crate::db::{
-    get_conn,
-    schemas::wort::{NewWortSchema, RawWortSchema, WortSchema},
+    WorteGramTypeRepo, WorteRepo, get_conn,
+    schemas::{
+        worte::{NewWorteSchema, RawWorteSchema, WorteSchema},
+        worte_gram_type::NewWorteGramTypeSchema,
+    },
     traits::FromRaw,
 };
 
-pub fn insert_many(data: &[NewWortSchema]) -> Result<Vec<WortSchema>> {
+pub fn bulk_insert(data: &[NewWorteSchema]) -> Result<Vec<WorteSchema>> {
     if data.is_empty() {
         return Ok(vec![]);
     }
@@ -23,7 +26,7 @@ pub fn insert_many(data: &[NewWortSchema]) -> Result<Vec<WortSchema>> {
     let tx = conn.transaction()?;
     let mut stmt = tx.prepare_cached(sql)?;
 
-    let mut vec_raw: Vec<RawWortSchema> = Vec::with_capacity(data.len());
+    let mut vec_raw: Vec<RawWorteSchema> = Vec::with_capacity(data.len());
     for d in data {
         let params = params![
             d.gender_id,
@@ -38,7 +41,7 @@ pub fn insert_many(data: &[NewWortSchema]) -> Result<Vec<WortSchema>> {
             d.reflexiv
         ];
         let raw = stmt.query_one(params, |r| {
-            Ok(RawWortSchema {
+            Ok(RawWorteSchema {
                 id: r.get(0)?,
                 gender_id: r.get(1)?,
                 worte_de: r.get(2)?,
@@ -58,8 +61,21 @@ pub fn insert_many(data: &[NewWortSchema]) -> Result<Vec<WortSchema>> {
     }
 
     drop(stmt);
+
+    let mut vec_mn: Vec<NewWorteGramTypeSchema> = vec![];
+    for (wort, new) in vec_raw.iter().zip(data.iter()) {
+        for gram_type_id in &new.gram_type {
+            vec_mn.push(NewWorteGramTypeSchema {
+                id_worte: wort.id,
+                id_gram_type: *gram_type_id,
+            });
+        }
+    }
+
+    WorteGramTypeRepo::bulk_insert_tx(&tx, &vec_mn)?;
+
     tx.commit()?;
 
-    let vec_result = WortSchema::from_vec_raw(vec_raw)?;
+    let vec_result = WorteSchema::from_vec_raw(vec_raw)?;
     Ok(vec_result)
 }

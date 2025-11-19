@@ -38,15 +38,15 @@ pub const CREATE_STR_INDEX_WORTE: &str = "
 ";
 
 #[derive(Debug, Clone)]
-pub struct WortSchema {
+pub struct WorteSchema {
     pub id: i32,
     pub gender_id: Option<GenderWorteSchema>,
     pub worte_de: String,
     pub worte_es: String,
     pub plural: Option<String>,
-    pub niveau_id: Option<NiveauWorteSchema>,
-    pub example_de: Option<String>,
-    pub example_es: Option<String>,
+    pub niveau_id: NiveauWorteSchema,
+    pub example_de: String,
+    pub example_es: String,
 
     // nur verben
     pub verb_aux: Option<String>,
@@ -59,15 +59,15 @@ pub struct WortSchema {
 }
 
 #[derive(Debug)]
-pub struct NewWortSchema {
-    pub id: i32,
+pub struct NewWorteSchema {
+    pub gram_type: Vec<i32>,
     pub gender_id: Option<i32>,
     pub worte_de: String,
     pub worte_es: String,
     pub plural: Option<String>,
-    pub niveau_id: Option<i32>,
-    pub example_de: Option<String>,
-    pub example_es: Option<String>,
+    pub niveau_id: i32,
+    pub example_de: String,
+    pub example_es: String,
 
     // nur verben
     pub verb_aux: Option<String>,
@@ -76,15 +76,15 @@ pub struct NewWortSchema {
 }
 
 #[derive(Debug)]
-pub struct RawWortSchema {
+pub struct RawWorteSchema {
     pub id: i32,
     pub gender_id: Option<i32>,
     pub worte_de: String,
     pub worte_es: String,
     pub plural: Option<String>,
-    pub niveau_id: Option<i32>,
-    pub example_de: Option<String>,
-    pub example_es: Option<String>,
+    pub niveau_id: i32,
+    pub example_de: String,
+    pub example_es: String,
 
     // nur verben
     pub verb_aux: Option<String>,

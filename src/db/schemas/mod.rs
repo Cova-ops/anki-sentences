@@ -1,6 +1,6 @@
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 
-use crate::{ctx, db::get_conn};
+use crate::db::get_conn;
 
 pub mod gender_worte;
 pub mod geschichtlich_setze;
@@ -8,8 +8,8 @@ pub mod gram_type;
 pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
-pub mod wort;
-pub mod wort_gram_type;
+pub mod worte;
+pub mod worte_gram_type;
 
 pub fn init_schemas() -> Result<()> {
     let conn = get_conn();
@@ -43,11 +43,11 @@ pub fn init_schemas() -> Result<()> {
     conn.execute_batch(geschichtlich_setze::CREATE_STR_INDEX_GESCHICHTLICH_SETZE)?;
 
     // Palabras
-    conn.execute(wort::CREATE_STR_TABLE_WORTE, [])?;
-    conn.execute_batch(wort::CREATE_STR_INDEX_WORTE)?;
+    conn.execute(worte::CREATE_STR_TABLE_WORTE, [])?;
+    conn.execute_batch(worte::CREATE_STR_INDEX_WORTE)?;
 
-    conn.execute(wort_gram_type::CREATE_STR_TABLE_WORTE_TYPE_GRAM, [])?;
-    conn.execute_batch(wort_gram_type::CREATE_STR_INDEX_WORTE_TYPE_GRAM)?;
+    conn.execute(worte_gram_type::CREATE_STR_TABLE_WORTE_TYPE_GRAM, [])?;
+    conn.execute_batch(worte_gram_type::CREATE_STR_INDEX_WORTE_TYPE_GRAM)?;
 
     Ok(())
 }

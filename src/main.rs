@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 
-use crate::{console::menu_main, db::init_db};
+use crate::{console::menu_main::menu_main, db::init_db};
 
 mod console;
 mod db;

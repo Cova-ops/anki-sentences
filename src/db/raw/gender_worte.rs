@@ -1,9 +1,10 @@
 use std::{
     collections::HashMap,
+    result,
     sync::{LazyLock, Mutex},
 };
 
-use color_eyre::eyre::{Result, eyre};
+use color_eyre::eyre::{Result, bail, eyre};
 
 use crate::{
     db::{
@@ -28,9 +29,25 @@ impl GenderWorteSchema {
     pub fn from_id(id: impl Into<i32>) -> Result<Self> {
         let id = id.into();
         let hash = HASH_VALUES.lock().unwrap();
-        hash.get(&id)
-            .cloned()
-            .ok_or_else(|| eyre!("[GenderWorteSchema.from_id] id no encontrado: {}", id))
+        let result = hash.get(&id).cloned();
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("No se encontro GenderWorteSchema del id: {}", id),
+        }
+    }
+
+    pub fn from_gender(gender: impl Into<String>) -> Result<Self> {
+        let gender = gender.into();
+        let hash = HASH_VALUES.lock().unwrap();
+        let result = hash
+            .iter()
+            .find(|(_, v)| v.gender == gender)
+            .map(|(_, v)| Self { ..v.clone() });
+
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("No se encontro GenderWorteSchema del genero: {}", gender),
+        }
     }
 }
 

@@ -1,9 +1,10 @@
 use std::{
     collections::HashMap,
+    result,
     sync::{LazyLock, Mutex},
 };
 
-use color_eyre::eyre::{Result, eyre};
+use color_eyre::eyre::{Result, bail, eyre};
 
 use crate::{
     db::{
@@ -31,9 +32,28 @@ impl GramTypeSchema {
     {
         let id = id.into();
         let hash = HASH_VALUES.lock().unwrap();
-        hash.get(&id)
-            .cloned()
-            .ok_or_else(|| eyre!("[GramTypeSchema.from_id] id no encontrado: {}", id))
+        let result = hash.get(&id).cloned();
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("Gram Type no encontrado con el id: {}", id),
+        }
+    }
+
+    pub fn from_code<S>(code: S) -> Result<Self>
+    where
+        S: Into<String>,
+    {
+        let code = code.into();
+        let hash = HASH_VALUES.lock().unwrap();
+        let result = hash
+            .iter()
+            .find(|(_, val)| val.code == code)
+            .map(|(_, val)| Self { ..val.clone() });
+
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("Gram Type no encontrado con el código: {}", code),
+        }
     }
 }
 

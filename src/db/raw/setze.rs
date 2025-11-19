@@ -31,7 +31,7 @@ impl NewSetzeSchema {
 impl FromRaw<RawSetzeSchema> for SetzeSchema {
     fn from_raw(r: RawSetzeSchema) -> Result<Self> {
         let created_at = string_2_datetime(Some(r.created_at)).unwrap();
-       let deleted_at = string_2_datetime(r.deleted_at);
+        let deleted_at = string_2_datetime(r.deleted_at);
 
         let schwirig_id = SchwirigkeitListeSchema::from_id(r.schwirig_id_num).context(ctx!())?;
 

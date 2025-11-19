@@ -28,7 +28,7 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
         utils::clean_screen();
         let mut s_done = false;
 
-        let db_s = utils::clean_sentences(&s.setze_deutsch);
+        let db_s = utils::string::clean_sentences(&s.setze_deutsch);
         for i in 0..2 {
             println!(
                 "{}",
@@ -45,7 +45,7 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
                 return Ok(1);
             }
 
-            let input = utils::clean_sentences(&input);
+            let input = utils::string::clean_sentences(&input);
             if input == db_s {
                 println!("Oración perfecta.");
                 s_done = true;
@@ -74,7 +74,7 @@ pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<u8> {
                     return Ok(1);
                 }
 
-                let input = utils::clean_sentences(&input);
+                let input = utils::string::clean_sentences(&input);
                 if input == db_s {
                     let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
                     GeschichlichSetzeRepo::insert_db(&[new_data], false)?;
@@ -98,7 +98,7 @@ pub fn make_setze_exercise_repeat(arr: &[SetzeSchema]) -> Result<u8> {
 
         utils::clean_screen();
         let mut s_done = false;
-        let db_s = utils::clean_sentences(&s.setze_deutsch);
+        let db_s = utils::string::clean_sentences(&s.setze_deutsch);
         for i in 0..2 {
             println!(
                 "{}",
@@ -115,7 +115,7 @@ pub fn make_setze_exercise_repeat(arr: &[SetzeSchema]) -> Result<u8> {
                 return Ok(1);
             }
 
-            let input = utils::clean_sentences(&input);
+            let input = utils::string::clean_sentences(&input);
             if input == db_s {
                 println!("Oración perfecta.");
                 s_done = true;
@@ -147,7 +147,7 @@ pub fn make_setze_exercise_repeat(arr: &[SetzeSchema]) -> Result<u8> {
                     return Ok(1);
                 }
 
-                let input = utils::clean_sentences(&input);
+                let input = utils::string::clean_sentences(&input);
                 if input == db_s {
                     let new_data = NewGeschichtlichSetzeSchema { setze_id: s.id };
                     GeschichlichSetzeRepo::insert_db(&[new_data], false)?;

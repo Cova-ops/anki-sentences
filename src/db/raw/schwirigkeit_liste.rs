@@ -3,7 +3,7 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
-use color_eyre::eyre::{Result, eyre};
+use color_eyre::eyre::{Result, bail, eyre};
 
 use crate::{
     db::{
@@ -30,18 +30,25 @@ impl SchwirigkeitListeSchema {
     pub fn from_id(id: impl Into<i32>) -> Result<Self> {
         let id = id.into();
         let hash = HASH_VALUES.lock().unwrap();
-        hash.get(&id)
-            .cloned()
-            .ok_or_else(|| eyre!("[SchwirigkeitListe.from_id] id no encontrado: {}", id))
+        let result = hash.get(&id).cloned();
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("Schwirigkeit Liste no encontrado con el id: {}", id),
+        }
     }
 
     pub fn from_name(name: impl Into<String>) -> Result<Self> {
         let name = name.into();
         let hash = HASH_VALUES.lock().unwrap();
-        hash.iter()
+        let result = hash
+            .iter()
             .find(|(_, value)| value.schwirigkeit == name)
-            .map(|(_, value)| Self { ..value.clone() })
-            .ok_or_else(|| eyre!("[SchwirigkeitListe.from_name] name no encontrado: {}", name))
+            .map(|(_, value)| Self { ..value.clone() });
+
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("Schwirigkeit Liste no encontrado con el nombre: {}", name),
+        }
     }
 }
 

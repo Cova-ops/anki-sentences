@@ -3,7 +3,7 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
-use color_eyre::eyre::{Result, eyre};
+use color_eyre::eyre::{Result, bail, eyre};
 
 use crate::{
     db::{
@@ -28,9 +28,25 @@ impl NiveauWorteSchema {
     pub fn from_id(id: impl Into<i32>) -> Result<Self> {
         let id = id.into();
         let hash = HASH_VALUES.lock().unwrap();
-        hash.get(&id)
-            .cloned()
-            .ok_or_else(|| eyre!("[NiveauWorteSchema.from_id] id no encontrado: {}", id))
+        let result = hash.get(&id).cloned();
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("No se encontro Niveau Worte con id: {}", id),
+        }
+    }
+
+    pub fn from_niveau(niveau: impl Into<String>) -> Result<Self> {
+        let niveau = niveau.into();
+        let hash = HASH_VALUES.lock().unwrap();
+        let result = hash
+            .iter()
+            .find(|(_, val)| val.niveau == niveau)
+            .map(|(_, val)| Self { ..val.clone() });
+
+        match result {
+            Some(v) => Ok(v),
+            None => bail!("No se encontro Niveau Worte con el nombre: {}", niveau),
+        }
     }
 }
 

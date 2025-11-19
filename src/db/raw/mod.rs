@@ -4,6 +4,5 @@ pub mod gram_type;
 pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
-pub mod wort;
-pub mod wort_gram_type;
-
+pub mod worte;
+pub mod worte_gram_type;
