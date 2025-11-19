@@ -5,6 +5,7 @@ use crate::{console::menu_main::menu_main, db::init_db};
 mod console;
 mod db;
 mod helpers;
+mod traits;
 mod utils;
 
 #[cfg(test)]

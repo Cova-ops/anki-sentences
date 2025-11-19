@@ -8,7 +8,7 @@ use crate::{
         niveau_worte::NiveauWorteSchema, schwirigkeit_liste::SchwirigkeitListeSchema,
         setze::NewSetzeSchema, worte::NewWorteSchema,
     },
-    utils::string::StringBoolConvertion,
+    traits::string::StringBoolConvertion,
 };
 
 const HEADER_CSV: [&str; 4] = ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];

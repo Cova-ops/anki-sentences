@@ -6,13 +6,10 @@ use crate::{
     ctx,
     db::{
         get_conn,
-        schemas::{
-            schwirigkeit_liste::SchwirigkeitListeSchema,
-            setze::{NewSetzeSchema, RawSetzeSchema, SetzeSchema},
-        },
+        schemas::setze::{NewSetzeSchema, RawSetzeSchema, SetzeSchema},
         traits::FromRaw,
     },
-    helpers, to_strings, with_ctx,
+    with_ctx,
 };
 
 pub fn fetch_random(limit: impl Into<Option<u32>>, ids: &mut Vec<i32>) -> Result<Vec<SetzeSchema>> {
@@ -190,9 +187,8 @@ pub fn bulk_insert(data: Vec<NewSetzeSchema>) -> Result<()> {
             ])
             .with_context(|| {
                 format!(
-                    "[bulk_insert] - Error con sql: {}. Con parametros: {:?}",
-                    sql,
-                    to_strings!(d.setze_spanisch, d.setze_deutsch, d.thema, d.schwirig_id)
+                    "[bulk_insert] - Error con sql: {}. Con parametros: {:#?}",
+                    sql, d
                 )
             })?;
         }
