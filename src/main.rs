@@ -7,6 +7,9 @@ mod db;
 mod helpers;
 mod utils;
 
+#[cfg(test)]
+pub mod test_helpers;
+
 fn main() -> Result<()> {
     color_eyre::install().unwrap();
     run()
