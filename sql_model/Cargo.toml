@@ -1,0 +1,10 @@
+[package]
+name = "sql_model"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rusqlite = "0.37.0"
+chrono = { version = "0.4", features = ["clock"] }
+color-eyre = "0.6.5"
+sql_model_derive = { path = "../sql_model_derive" }
