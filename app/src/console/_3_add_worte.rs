@@ -72,17 +72,17 @@ gram_type:
 
 gender_id: 
     - Maskuline
-	- Femenin
-	- Neutrum
-	- Plural
+    - Femenin
+    - Neutrum
+    - Plural
 
 niveau_id:
     - A1
-	- A2
-	- B1
-	- B2
-	- C1
-	- C2
+    - A2
+    - B1
+    - B2
+    - C1
+    - C2
 
 Consideraciones:
     1. Poner las oraciones entre comillas dobles, en caso de tener "," dentro de las mismas.
