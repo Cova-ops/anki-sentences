@@ -3,7 +3,7 @@ use color_eyre::eyre::Result;
 use crate::{
     console::{
         _1_add_sentences::menu_1_add_sentences, _2_practice_sentences::menu_2_practice_sentences,
-        _3_add_worte::menu_3_add_worte,
+        _3_add_worte::menu_3_add_worte, _4_practice_worte::menu_4_practice_worte,
     },
     db::get_conn,
     helpers::ui,
@@ -15,7 +15,8 @@ Herzliche Willkommen zu meinem Programm.
     1.- Hinzufügen neue Sätze.
     2.- Üben Sätze.
     3.- Hinzufügen neue Worte.
-    4.- Üben Artikel Geschlecht.
+    4.- Üben Worte.
+    5.- Üben Artikel Geschlecht.
 
 Para salir favor de escribir "exit"
 "#;
@@ -35,7 +36,8 @@ pub fn menu_main() -> Result<()> {
             "1" => menu_1_add_sentences(&mut conn)?,
             "2" => menu_2_practice_sentences(&mut conn)?,
             "3" => menu_3_add_worte(&mut conn)?,
-            "4" => todo!(),
+            "4" => menu_4_practice_worte(&mut conn)?,
+            "5" => todo!(),
             "exit" => return Ok(()),
             _ => println!("Comando no reconocido"),
         }

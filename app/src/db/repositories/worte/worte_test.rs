@@ -4,10 +4,7 @@ use crate::db::setup_test_db;
 mod test_worte_repo {
 
     use crate::db::{
-        schemas::{
-            gender_worte::GenderWorteSchema,
-            worte::{NewWorteSchema as New, WorteSchema as Schema},
-        },
+        schemas::worte::{NewWorteSchema as New, WorteSchema as Schema},
         worte::WorteRepo,
     };
 
@@ -216,6 +213,105 @@ mod test_worte_repo {
                 tx.commit()?;
                 Ok(out)
             });
+        }
+    }
+
+    mod fetch {
+
+        use super::*;
+        use color_eyre::eyre::Result;
+        use rusqlite::Connection;
+
+        use crate::{
+            db::{
+                schemas::worte_review::NewWorteReviewSchema, seeders::init_data, setup_test_db,
+                worte_review::WorteReviewRepo,
+            },
+            helpers::time::fixed_date,
+        };
+
+        fn init_data_local(conn: &mut Connection) -> Result<()> {
+            init_data(conn)?;
+            let data = [
+                New {
+                    gram_type: vec![1],
+                    gender_id: Some(1),
+                    worte_de: "Hund".into(),
+                    worte_es: "Perro".into(),
+                    plural: Some("Hunde".into()),
+                    niveau_id: 1,
+                    example_de: "Beispiel".into(),
+                    example_es: "Ejemplo".into(),
+                    verb_aux: None,
+                    trennbar: None,
+                    reflexiv: None,
+                },
+                New {
+                    gram_type: vec![2, 3],
+                    gender_id: None,
+                    worte_de: "laufen".into(),
+                    worte_es: "correr".into(),
+                    plural: None,
+                    niveau_id: 2,
+                    example_de: "Beispiel".into(),
+                    example_es: "Ejemplo".into(),
+                    verb_aux: Some("sein".into()),
+                    trennbar: Some(false),
+                    reflexiv: Some(false),
+                },
+            ];
+            WorteRepo::bulk_insert(conn, &data)?;
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_by_id() {
+            let mut conn = setup_test_db().unwrap();
+            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+
+            let res_1 = WorteRepo::fetch_by_id(&conn, &[1, 2]).expect("Error al hacer el fetch");
+
+            assert_eq!(res_1.len(), 2);
+            assert_eq!(res_1[0].worte_de, "Hund");
+            assert_eq!(res_1[0].gram_type_id.len(), 1);
+            assert_eq!(res_1[1].worte_de, "laufen");
+
+            let res_1 = placeholder_dates(res_1);
+            insta::assert_debug_snapshot!(res_1);
+        }
+
+        #[test]
+        fn test_fetch_id_neue_worte() {
+            let mut conn = setup_test_db().unwrap();
+            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+
+            let res_1 = WorteRepo::fetch_id_neue_worte(&conn).expect("Error al hacer el fetch");
+
+            assert_eq!(res_1.len(), 2);
+            assert_eq!(res_1[0], 1);
+            assert_eq!(res_1[1], 2);
+
+            insta::assert_debug_snapshot!(res_1);
+
+            WorteReviewRepo::bulk_insert(
+                &mut conn,
+                &[NewWorteReviewSchema {
+                    wort_id: 1,
+                    repetitions: 1,
+                    ease_factor: 2.0,
+                    interval: 1,
+                    last_review: "2025-01-10 12:00:00".into(),
+                    next_review: "2025-01-10 12:00:00".into(),
+                }],
+            )
+            .expect("Error al hacer el insert de worte review");
+
+            let res_2 = WorteRepo::fetch_id_neue_worte(&conn).expect("Error al hacer el fetch");
+
+            assert_eq!(res_2.len(), 1);
+            assert_eq!(res_2[0], 2);
+
+            insta::assert_debug_snapshot!(res_2);
         }
     }
 }

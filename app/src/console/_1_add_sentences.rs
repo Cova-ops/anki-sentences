@@ -3,7 +3,7 @@ use rusqlite::Connection;
 
 use crate::{
     db::setze::SetzeRepo,
-    helpers::{extract_sentences_csv, is_csv_valid, ui},
+    helpers::{csv, ui},
     utils::path_file_oder_dir,
 };
 
@@ -82,7 +82,7 @@ pub fn menu_1_add_sentences(conn: &mut Connection) -> Result<()> {
             err_2_show = Some(TEXT_ERROR_FILE_NO_EXIST);
         }
 
-        let valid_2 = is_csv_valid(&input, crate::helpers::CsvType::Setze);
+        let valid_2 = csv::is_csv_valid(&input, csv::CsvType::Setze);
         if valid_2.is_err() && err_2_show.is_none() {
             err_2_show = Some(TEXT_ERROR_FILE_NO_CSV);
         }
@@ -96,7 +96,7 @@ pub fn menu_1_add_sentences(conn: &mut Connection) -> Result<()> {
         println!("{}", err_2_show.unwrap());
     }
 
-    let new_data = extract_sentences_csv(&csv_path)?;
+    let new_data = csv::extract_sentences_csv(&csv_path)?;
     SetzeRepo::bulk_insert(conn, &new_data)?;
 
     // println!("{:#?}", SetzeRepo::fetch_random(100)?);

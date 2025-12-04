@@ -6,3 +6,5 @@ pub mod schwirigkeit_liste;
 pub mod setze;
 pub mod worte;
 pub mod worte_gram_type;
+pub mod worte_review;
+

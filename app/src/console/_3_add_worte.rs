@@ -3,7 +3,7 @@ use rusqlite::Connection;
 
 use crate::{
     db::worte::WorteRepo,
-    helpers::{extract_worte_csv, is_csv_valid, ui},
+    helpers::{csv, ui},
     utils::path_file_oder_dir,
 };
 
@@ -110,7 +110,6 @@ const TEXT_ERROR_FILE_WRONG: &str = r##"
 El archivo proporcionado no existe o no es un archivo CSV válido.
 "##;
 
-// TODO: Probar que esta cosa funcione bien
 pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
     // clean_screen();
 
@@ -129,15 +128,15 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
         csv_path = input.clone();
         let mut err_2_show: Option<&str> = None;
         let valid_1 = path_file_oder_dir(&input);
-        println!("valid_1: {:#?}", valid_1);
+        // println!("valid_1: {:#?}", valid_1);
 
         // No existe la dirección ó no es un archivo
         if valid_1.is_err() || !valid_1?.0 {
             err_2_show = Some(TEXT_ERROR_FILE_WRONG);
         }
 
-        let valid_2 = is_csv_valid(&input, crate::helpers::CsvType::Worte);
-        println!("valid_2: {:#?}", valid_2);
+        let valid_2 = csv::is_csv_valid(&input, csv::CsvType::Worte);
+        // println!("valid_2: {:#?}", valid_2);
 
         if valid_2.is_err() && err_2_show.is_none() {
             err_2_show = Some(TEXT_ERROR_FILE_WRONG);
@@ -148,8 +147,8 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
             continue;
         }
 
-        let new_data = extract_worte_csv(&csv_path)?;
-        println!("new_data: {:#?}", new_data);
+        let new_data = csv::extract_worte_csv(&csv_path)?;
+        // println!("new_data: {:#?}", new_data);
         let res = WorteRepo::bulk_insert(conn, &new_data);
 
         if res.is_err() {

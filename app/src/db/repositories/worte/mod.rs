@@ -1,12 +1,14 @@
+use std::collections::HashMap;
+
 use color_eyre::eyre::{Context, Result};
-use rusqlite::{Connection, Transaction, params};
+use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
     schemas::{
         gram_type::GramTypeSchema,
         worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},
-        worte_gram_type::NewWorteGramTypeSchema,
+        worte_gram_type::{NewWorteGramTypeSchema, WorteGramTypeSchema},
     },
     worte_gram_type::WorteGramTypeRepo,
 };
@@ -20,7 +22,7 @@ impl WorteRepo {
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
-        println!("out: {:#?}", out);
+        // println!("out: {:#?}", out);
         tx.commit()?;
         Ok(out)
     }
@@ -64,7 +66,85 @@ impl WorteRepo {
 
         WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
 
-        println!("vec_out: {:#?}", vec_out);
+        Ok(vec_out)
+    }
+
+    pub fn fetch_id_neue_worte(conn: &Connection) -> Result<Vec<i32>> {
+        let sql = "
+            SELECT
+                w.id
+            FROM worte w
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM worte_review wr
+                WHERE wr.wort_id = w.id
+            )
+            AND w.deleted_at IS NULL
+            ORDER BY w.id ASC;
+        "
+        .to_string();
+
+        let mut stmt = conn.prepare_cached(&sql)?;
+
+        let ids = stmt
+            .query([])
+            .context(format!("Sql - {}", sql))?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(ids)
+    }
+
+    pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let placeholders = vec!["?"; ids.len()].join(",");
+
+        let sql = format!(
+            "
+            SELECT 
+                id, gender_id, wort_de, wort_es, plural, niveau_id, example_de,
+                example_es, verb_aux, trennbar, reflexiv, created_at, deleted_at
+            FROM worte w
+            WHERE w.deleted_at is NULL AND
+            w.id in ({placeholders})
+            ORDER BY w.id;
+        "
+        );
+
+        let mut stmt = conn.prepare(&sql)?;
+        let raw = stmt
+            .query(params_from_iter(ids.iter()))?
+            .mapped(Raw::from_sql)
+            .collect::<Result<Vec<Raw>, _>>()?;
+
+        // Tenemos que consultar de la tabla WorteGramType cuales le corresponde a cada palabra
+        let worte_gram_type = WorteGramTypeRepo::fetch_by_wort_id(conn, ids)?;
+        let hash_worte_gram_type = {
+            let mut hash: HashMap<i32, Vec<WorteGramTypeSchema>> = HashMap::new();
+
+            for wgt in worte_gram_type {
+                hash.entry(wgt.id_worte).or_default().push(wgt);
+            }
+
+            hash
+        };
+
+        let mut vec_out = Schema::from_vec_raw(raw)?;
+
+        // Llenamos el schema de Worte con la info de GramType
+        for wort in vec_out.iter_mut() {
+            if let Some(vec_wgt) = hash_worte_gram_type.get(&wort.id) {
+                for wgt in vec_wgt {
+                    // Llenamos arreglo para la información del Schema para el regreso
+                    wort.gram_type_id
+                        .push(GramTypeSchema::from_id(wgt.id_gram_type)?);
+                }
+            };
+        }
+
         Ok(vec_out)
     }
 }

@@ -1,6 +1,5 @@
 use color_eyre::eyre::{Context, Result, bail, eyre};
 use csv::ReaderBuilder;
-use inquire::type_aliases;
 use std::fs::File;
 
 use crate::{

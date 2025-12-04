@@ -3,11 +3,11 @@ use sql_model::SqlModel;
 
 pub const CREATE_STR_TABLE_GRAM_TYPE: &str = "
 CREATE TABLE IF NOT EXISTS gram_type(
-    id INTEGER PRIMARY KEY,
-    code TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TEXT
+    id              INTEGER PRIMARY KEY,
+    code            TEXT UNIQUE NOT NULL,
+    name            TEXT NOT NULL,
+    created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
+    deleted_at      TEXT
 );";
 
 pub const CREATE_STR_INDEX_GRAM_TYPE: &str = "
