@@ -1,14 +1,18 @@
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Context, Result};
 use rusqlite::{Connection, Transaction, params};
-use sql_model::{FromRaw, SqlRaw};
+use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::gender_worte::{
     GenderWorteSchema as Schema, NewGenderWorteSchema as New, RawGenderWorteSchema as Raw,
 };
 
+#[cfg(test)]
+mod gender_worte_test;
+
 pub struct GenderWorteRepo;
 
 impl GenderWorteRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -16,6 +20,7 @@ impl GenderWorteRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -31,8 +36,9 @@ impl GenderWorteRepo {
         let mut stmt = tx.prepare_cached(sql)?;
 
         for d in data {
-            let raw = stmt.query_one(params![d.id, d.gender, d.artikel], Raw::from_sql)?;
-
+            let raw = stmt
+                .query_one(d.to_params(), Raw::from_sql)
+                .with_context(|| format!("sql: {}, params: {:#?}", sql, d))?;
             vec_out.push(Schema::from_raw(raw)?);
         }
 

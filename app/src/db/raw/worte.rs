@@ -23,6 +23,7 @@ impl FromRaw<Raw> for Schema {
 
         Ok(Schema {
             id: r.id,
+            gram_type_id: vec![],
             gender_id,
             worte_de: r.worte_de,
             worte_es: r.worte_es,

@@ -1,0 +1,18 @@
+---
+source: app/src/db/repositories/schwirigkeit_liste/schwirigkeit_liste_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id: 1,
+        schwirigkeit: "einfag",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        schwirigkeit: "normal",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

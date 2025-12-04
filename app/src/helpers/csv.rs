@@ -1,5 +1,6 @@
 use color_eyre::eyre::{Context, Result, bail, eyre};
 use csv::ReaderBuilder;
+use inquire::type_aliases;
 use std::fs::File;
 
 use crate::{
@@ -11,31 +12,61 @@ use crate::{
     traits::string::StringConvertion,
 };
 
-const HEADER_CSV: [&str; 4] = ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];
+pub enum CsvType {
+    Setze,
+    Worte,
+}
 
-pub fn is_csv_valid(path: &str) -> Result<()> {
+static HEADER_SETZE_CSV: [&str; 4] = ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];
+static HEADER_WORTE_CSV: [&str; 11] = [
+    "gram_type",
+    "gender_id",
+    "worte_de",
+    "worte_es",
+    "plural",
+    "niveau_id",
+    "example_de",
+    "example_es",
+    "verb_aux",
+    "trennbar",
+    "reflexiv",
+];
+
+/// Función para validar si un archivo tiene la estructura adecuada
+/// params:
+/// - path: Ruta local donde se aloja el CSV.
+/// - type_file: CsvType Tipo de archivo a subir
+///
+/// return:
+/// Regresa un Result ó Report segun el caso
+pub fn is_csv_valid(path: &str, type_file: CsvType) -> Result<()> {
     let file = File::open(path)
         .with_context(|| format!("[is_csv_valid] - No se puede abrir el archivo: {}", path))?;
+
+    let header_csv: &'static [&'static str] = match type_file {
+        CsvType::Setze => &HEADER_SETZE_CSV,
+        CsvType::Worte => &HEADER_WORTE_CSV,
+    };
 
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
     let headers = reader
         .headers()
         .context("[is_csv_valid] - Error en encabezados")?;
 
-    if headers.len() != HEADER_CSV.len() {
+    if headers.len() != header_csv.len() {
         return Err(eyre!(
             "[is_csv_valid] - Número de columnas inválido esperado {}, recibido {}",
-            HEADER_CSV.len(),
+            header_csv.len(),
             headers.len()
         ));
     }
 
     for (i, h) in headers.iter().enumerate() {
-        if h != HEADER_CSV[i] {
+        if h != header_csv[i] {
             return Err(eyre!(
                 "[is_csv_valid] - La cabera {} no corresponde con {} (pos {})",
                 h,
-                HEADER_CSV[i],
+                header_csv[i],
                 i
             ));
         }

@@ -15,14 +15,15 @@ impl FromRaw<Raw> for Schema {
         let created_at = string_2_datetime(Some(r.created_at)).unwrap();
         let deleted_at = string_2_datetime(r.deleted_at);
 
-        let schwirig_id = SchwirigkeitListeSchema::from_id(r.schwirig_id).context(ctx!())?;
+        let schwirigkeit_id =
+            SchwirigkeitListeSchema::from_id(r.schwirigkeit_id).context(ctx!())?;
 
         Ok(Schema {
             id: r.id,
             setze_spanisch: r.setze_spanisch,
             setze_deutsch: r.setze_deutsch,
             thema: r.thema,
-            schwirig_id,
+            schwirigkeit_id,
             created_at,
             deleted_at,
         })
@@ -38,13 +39,13 @@ impl New {
         setze_spanisch: String,
         setze_deutsch: String,
         thema: String,
-        schwirig_id: i32,
+        schwirigkeit_id: i32,
     ) -> Self {
         Self {
             setze_spanisch,
             setze_deutsch,
             thema,
-            schwirig_id,
+            schwirigkeit_id,
         }
     }
 }

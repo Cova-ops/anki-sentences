@@ -88,6 +88,9 @@ Consideraciones:
     1. Poner las oraciones entre comillas dobles, en caso de tener "," dentro de las mismas.
     2. Para el gram_type, si hay palabras que pueden tener mas de una se debera poner separadas por coma ','. Ejemplo:
         ...","particle_modal,interjection","...
+    3. Para los campos worte_de y worte_es no debes poner el articulo de los sustantivos, solo el sustantivo en cuestion. Ejemplo:
+        - "der Tisch" - ERROR
+        - "Tisch" - Correcto
 
 Ejemplo:
 gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
@@ -126,13 +129,16 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
         csv_path = input.clone();
         let mut err_2_show: Option<&str> = None;
         let valid_1 = path_file_oder_dir(&input);
+        println!("valid_1: {:#?}", valid_1);
 
         // No existe la dirección ó no es un archivo
         if valid_1.is_err() || !valid_1?.0 {
             err_2_show = Some(TEXT_ERROR_FILE_WRONG);
         }
 
-        let valid_2 = is_csv_valid(&input);
+        let valid_2 = is_csv_valid(&input, crate::helpers::CsvType::Worte);
+        println!("valid_2: {:#?}", valid_2);
+
         if valid_2.is_err() && err_2_show.is_none() {
             err_2_show = Some(TEXT_ERROR_FILE_WRONG);
         }
@@ -143,6 +149,7 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
         }
 
         let new_data = extract_worte_csv(&csv_path)?;
+        println!("new_data: {:#?}", new_data);
         let res = WorteRepo::bulk_insert(conn, &new_data);
 
         if res.is_err() {
@@ -153,9 +160,6 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
 
         break;
     }
-
-    //
-    // println!("{:#?}", SetzeRepo::fetch_random(100)?);
 
     Ok(())
 }

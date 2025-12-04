@@ -1,0 +1,24 @@
+---
+source: app/src/db/repositories/worte_gram_type/worte_gram_type_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id_worte: 1,
+        id_gram_type: 1,
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id_worte: 1,
+        id_gram_type: 2,
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id_worte: 2,
+        id_gram_type: 2,
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

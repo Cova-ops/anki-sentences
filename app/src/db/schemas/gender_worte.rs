@@ -21,7 +21,7 @@ pub const CREATE_STR_INDEX_GENDER_WORTE: &str = "
 // 1 - Femenin - die
 // 2 - Neutrum - das
 // 3 - Plural - die
-#[derive(Debug, Clone, SqlModel)]
+#[derive(Debug, Clone, SqlModel, PartialEq, Eq)]
 #[sql(raw_type = "RawGenderWorteSchema")]
 #[sql(raw(id, gender, artikel, created_at, deleted_at))]
 pub struct GenderWorteSchema {

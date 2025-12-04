@@ -82,7 +82,7 @@ pub fn menu_1_add_sentences(conn: &mut Connection) -> Result<()> {
             err_2_show = Some(TEXT_ERROR_FILE_NO_EXIST);
         }
 
-        let valid_2 = is_csv_valid(&input);
+        let valid_2 = is_csv_valid(&input, crate::helpers::CsvType::Setze);
         if valid_2.is_err() && err_2_show.is_none() {
             err_2_show = Some(TEXT_ERROR_FILE_NO_CSV);
         }

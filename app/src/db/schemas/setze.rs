@@ -30,18 +30,19 @@ pub struct SetzeSchema {
     pub id: i32,
     pub setze_spanisch: String,
     pub setze_deutsch: String,
-    pub schwirig_id: SchwirigkeitListeSchema,
+    pub schwirigkeit_id: SchwirigkeitListeSchema,
     pub thema: String,
+
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, SqlModel)]
-#[sql(insert(setze_spanisch, setze_deutsch, schwirig_id, thema))]
+#[sql(insert(setze_spanisch, setze_deutsch, schwirigkeit_id, thema))]
 pub struct NewSetzeSchema {
     pub setze_spanisch: String,
     pub setze_deutsch: String,
-    pub schwirig_id: i32,
+    pub schwirigkeit_id: i32,
     pub thema: String,
 }
 
@@ -50,8 +51,8 @@ pub struct NewSetzeSchema {
     id,
     setze_spanisch,
     setze_deutsch,
+    schwirigkeit_id,
     thema,
-    schwirig_id,
     created_at,
     deleted_at
 ))]
@@ -59,8 +60,8 @@ pub struct RawSetzeSchema {
     pub id: i32,
     pub setze_spanisch: String,
     pub setze_deutsch: String,
+    pub schwirigkeit_id: i32,
     pub thema: String,
-    pub schwirig_id: i32,
     pub created_at: String,
     pub deleted_at: Option<String>,
 }

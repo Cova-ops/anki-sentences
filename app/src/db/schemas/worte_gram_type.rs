@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
 pub const CREATE_STR_TABLE_WORTE_TYPE_GRAM: &str = "
-CREATE TABLE IF NOT EXISTS worte_type_gram(
+CREATE TABLE IF NOT EXISTS worte_gram_type(
     id_worte            INTEGER NOT NULL,
     id_gram_type        INTEGER NOT NULL,
 
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS worte_type_gram(
 
     PRIMARY KEY(id_worte,id_gram_type),
 
-    FOREIGN KEY(id_worte) REFERENCES wort(id)
+    FOREIGN KEY(id_worte) REFERENCES worte(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS worte_type_gram(
 )";
 
 pub const CREATE_STR_INDEX_WORTE_TYPE_GRAM: &str = "
-    CREATE INDEX IF NOT EXISTS idx_worte_gram_type_id_worte ON worte_type_gram(id_worte);
-    CREATE INDEX IF NOT EXISTS idx_worte_gram_type_id_gram_type ON worte_type_gram(id_gram_type);
+    CREATE INDEX IF NOT EXISTS idx_worte_gram_type_id_worte ON worte_gram_type(id_worte);
+    CREATE INDEX IF NOT EXISTS idx_worte_gram_type_id_gram_type ON worte_gram_type(id_gram_type);
 ";
 
 #[derive(Debug, Clone, SqlModel)]

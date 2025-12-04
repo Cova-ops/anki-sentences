@@ -22,7 +22,7 @@ pub fn menu_2_2_select_thema(conn: &mut Connection) -> Result<()> {
 
     let mut offset: u32 = 0;
     let mut limit: u32 = 10;
-    let mut setze = SetzeRepo::fetch_where_thema(conn, &ans, offset, limit)?;
+    let mut setze = SetzeRepo::fetch_where_thema(conn, &ans, limit, offset)?;
 
     while !setze.is_empty() {
         let r = helpers::console::make_setze_exercise(&setze)?;
@@ -32,7 +32,7 @@ pub fn menu_2_2_select_thema(conn: &mut Connection) -> Result<()> {
             return Ok(());
         }
 
-        setze = SetzeRepo::fetch_where_thema(conn, &ans, offset, limit)?;
+        setze = SetzeRepo::fetch_where_thema(conn, &ans, limit, offset)?;
         offset += 10;
         limit += 10;
     }

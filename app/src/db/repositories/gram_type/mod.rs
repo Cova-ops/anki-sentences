@@ -1,14 +1,18 @@
 use color_eyre::eyre::Result;
 use rusqlite::{Connection, Transaction, params};
-use sql_model::{FromRaw, SqlRaw};
+use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::gram_type::{
     GramTypeSchema as Schema, NewGramTypeSchema as New, RawGramTypeSchema as Raw,
 };
 
+#[cfg(test)]
+mod gram_type_test;
+
 pub struct GramTypeRepo;
 
 impl GramTypeRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -16,6 +20,7 @@ impl GramTypeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -33,7 +38,7 @@ impl GramTypeRepo {
         let mut vec_out = Vec::with_capacity(data.len());
 
         for d in data {
-            let raw = stmt.query_one(params![d.id, d.code, d.name], Raw::from_sql)?;
+            let raw = stmt.query_one(d.to_params(), Raw::from_sql)?;
             vec_out.push(Schema::from_raw(raw)?);
         }
 

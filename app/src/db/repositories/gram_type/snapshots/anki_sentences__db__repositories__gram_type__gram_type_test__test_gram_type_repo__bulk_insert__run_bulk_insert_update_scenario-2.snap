@@ -1,0 +1,20 @@
+---
+source: app/src/db/repositories/gram_type/gram_type_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id: 1,
+        code: "123",
+        name: "456",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        code: "987",
+        name: "654",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

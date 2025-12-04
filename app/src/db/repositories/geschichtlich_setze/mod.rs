@@ -7,9 +7,13 @@ use crate::db::schemas::geschichtlich_setze::{
     RawGeschichtlichSetzeSchema as Raw,
 };
 
+#[cfg(test)]
+mod geschichtlich_setze_test;
+
 pub struct GeschichtlichSetzeRepo;
 
 impl GeschichtlichSetzeRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -17,6 +21,7 @@ impl GeschichtlichSetzeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);

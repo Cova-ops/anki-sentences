@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
-use crate::db::schemas::{gender_worte::GenderWorteSchema, niveau_worte::NiveauWorteSchema};
+use crate::db::schemas::{
+    gender_worte::GenderWorteSchema, gram_type::GramTypeSchema, niveau_worte::NiveauWorteSchema,
+};
 
 pub const CREATE_STR_TABLE_WORTE: &str = "
 CREATE TABLE IF NOT EXISTS worte(
@@ -41,6 +43,7 @@ pub const CREATE_STR_INDEX_WORTE: &str = "
 #[derive(Debug, Clone)]
 pub struct WorteSchema {
     pub id: i32,
+    pub gram_type_id: Vec<GramTypeSchema>,
     pub gender_id: Option<GenderWorteSchema>,
     pub worte_de: String,
     pub worte_es: String,

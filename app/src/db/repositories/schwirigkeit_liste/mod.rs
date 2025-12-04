@@ -7,9 +7,13 @@ use crate::db::schemas::schwirigkeit_liste::{
     SchwirigkeitListeSchema as Schema,
 };
 
+#[cfg(test)]
+mod schwirigkeit_liste_test;
+
 pub struct SchwirigkeitListeRepo;
 
 impl SchwirigkeitListeRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -17,6 +21,7 @@ impl SchwirigkeitListeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
