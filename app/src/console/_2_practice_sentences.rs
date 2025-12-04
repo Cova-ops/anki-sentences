@@ -5,6 +5,7 @@ use crate::{
     console::{
         _2_1_random_sentences::menu_2_1_random_sentences, _2_2_select_thema::menu_2_2_select_thema,
         _2_3_schwirig_sentences::menu_2_3_schwirig_sentences,
+        _2_4_neue_setze::menu_2_4_neue_sentences,
     },
     helpers::ui,
 };
@@ -13,8 +14,9 @@ const TEXT_MENU: &str = r##"¿Cuál de entrenamiento quieres realizar?
   1. Oraciones aleatorias.
   2. Tema en especifico.
   3. Oraciones dificiles.
-  4. Oraciones dificiles con tema.
-  5. Solo errores anteriores.
+  4. Oraciones nuevas.
+  5. Oraciones dificiles con tema.
+  6. Solo errores anteriores.
 
 Para regresar al menu principal favor de escribir "exit".
 "##;
@@ -36,8 +38,9 @@ pub fn menu_2_practice_sentences(conn: &mut Connection) -> Result<()> {
             "1" => menu_2_1_random_sentences(conn)?,
             "2" => menu_2_2_select_thema(conn)?,
             "3" => menu_2_3_schwirig_sentences(conn)?,
-            "4" => todo!(),
+            "4" => menu_2_4_neue_sentences(conn)?,
             "5" => todo!(),
+            "6" => todo!(),
             "exit" => return Ok(()),
             _ => println!("Comando no reconocido"),
         }

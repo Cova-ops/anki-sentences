@@ -41,7 +41,6 @@ impl SetzeRepo {
                 id
             FROM setze s
             WHERE s.deleted_at IS NULL
-            ORDER BY s.id
         "#;
 
         let mut stmt = conn.prepare_cached(sql)?;
@@ -93,6 +92,30 @@ impl SetzeRepo {
 
         let ids = stmt
             .query(params_from_iter(params))
+            .context(with_ctx!(format!("Sql - {}", sql)))?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(ids)
+    }
+
+    pub fn fetch_id_neue_sentences(conn: &Connection) -> Result<Vec<i32>> {
+        let sql = "
+            SELECT
+                s.id
+            FROM setze s
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM geschichtlich_setze g
+                WHERE g.setze_id = s.id
+            )
+            AND s.deleted_at IS NULL;"
+            .to_string();
+
+        let mut stmt = conn.prepare_cached(&sql)?;
+
+        let ids = stmt
+            .query([])
             .context(with_ctx!(format!("Sql - {}", sql)))?
             .mapped(|r| r.get(0))
             .collect::<Result<Vec<i32>, _>>()?;

@@ -13,7 +13,7 @@ const MENU_MAIN_TEXT: &str = r#"
 Herzliche Willkommen zu meinem Programm.
 📋 Das Menu:
     1.- Hinzufügen neue Sätze.
-    2.- Üben neue Sätze.
+    2.- Üben Sätze.
     3.- Hinzufügen neue Worte.
     4.- Üben Artikel Geschlecht.
 

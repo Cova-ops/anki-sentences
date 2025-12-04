@@ -141,7 +141,11 @@ mod test_setze_repo {
         use rusqlite::Connection;
 
         use super::*;
-        use crate::db::{seeders::init_data, setup_test_db, setze::SetzeRepo};
+        use crate::db::{
+            geschichtlich_setze::GeschichtlichSetzeRepo,
+            schemas::geschichtlich_setze::NewGeschichtlichSetzeSchema, seeders::init_data,
+            setup_test_db, setze::SetzeRepo,
+        };
 
         fn init_data_local(conn: &mut Connection) -> Result<()> {
             init_data(conn)?;
@@ -311,6 +315,36 @@ mod test_setze_repo {
             assert_eq!(res.len(), 2);
             assert_eq!(res[0], "Thema 1");
             assert_eq!(res[1], "Thema 2");
+
+            insta::assert_debug_snapshot!(res);
+        }
+
+        #[test]
+        fn test_fetch_neue_sentences() {
+            let mut conn = setup_test_db().expect("Error al crear db test");
+            init_data_local(&mut conn).expect("Error al iniciar data test");
+
+            let res = SetzeRepo::fetch_id_neue_sentences(&conn).expect("Error al hacer fetch");
+
+            assert_eq!(res.len(), 2);
+            assert_eq!(res[0], 1);
+            assert_eq!(res[1], 2);
+
+            insta::assert_debug_snapshot!(res);
+
+            GeschichtlichSetzeRepo::bulk_insert(
+                &mut conn,
+                &[NewGeschichtlichSetzeSchema {
+                    result: true,
+                    setze_id: 1,
+                }],
+            )
+            .expect("Error al guardar los resultados del historial");
+
+            let res = SetzeRepo::fetch_id_neue_sentences(&conn).expect("Error al hacer fetch");
+
+            assert_eq!(res.len(), 1);
+            assert_eq!(res[0], 2);
 
             insta::assert_debug_snapshot!(res);
         }
