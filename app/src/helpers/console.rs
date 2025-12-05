@@ -1,10 +1,15 @@
 use std::collections::{HashMap, HashSet};
 
 use color_eyre::eyre::Result;
+use rusqlite::Connection;
 
 use crate::{
-    db::schemas::{
-        geschichtlich_setze::NewGeschichtlichSetzeSchema, setze::SetzeSchema, worte::WorteSchema,
+    db::{
+        schemas::{
+            geschichtlich_setze::NewGeschichtlichSetzeSchema, setze::SetzeSchema,
+            worte::WorteSchema,
+        },
+        worte::WorteRepo,
     },
     helpers::ui,
     utils,
@@ -239,12 +244,22 @@ Por favor traducela...
 ///     - 0 -> No se la sabe
 ///     - 1 -> Se la sabe pero dificil
 ///     - 2 -> Se la sabe facil
-pub fn make_worte_exercise_repeat(arr: &[WorteSchema]) -> Result<(i32, Vec<(i32, u8)>)> {
-    let mut worte_correct: Vec<WorteSchema> = Vec::from(arr);
+pub fn make_worte_exercise_repeat(
+    conn: &Connection,
+    ids_worte: Vec<i32>,
+    offset: usize,
+) -> Result<(i32, Vec<(i32, u8)>)> {
+    let mut ids_worte = ids_worte;
 
-    let mut vec_out: Vec<(i32, u8)> = Vec::with_capacity(arr.len());
+    let mut vec_out: Vec<(i32, u8)> = vec![];
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
+
+    let take = ids_worte.len().min(offset);
+    let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
+
+    // Obtenemos toda la info del bloque de palabras que vamos a usar
+    let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
 
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
@@ -259,6 +274,7 @@ pub fn make_worte_exercise_repeat(arr: &[WorteSchema]) -> Result<(i32, Vec<(i32,
         //         .join("\n")
         // );
         // println!("w: {:#?}", w);
+        // println!("worte_correct: {:#?}", worte_correct);
         println!(
             "{}",
             TEXT_WORTE_ONCE.replace("{wort}", &w.worte_es).replace(
@@ -300,6 +316,14 @@ pub fn make_worte_exercise_repeat(arr: &[WorteSchema]) -> Result<(i32, Vec<(i32,
                     let easy = if rep.once_mistake { 1 } else { 2 };
                     vec_out.push((w.id, easy));
                     worte_correct.remove(0);
+
+                    // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                    let id_new = ids_worte.remove(0);
+                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
+                    worte_correct.push(wort_new[0].clone());
+
+                    // limpiamos el hashmap de la palabra que ya no se va a repetir
+                    already_studied.remove(&w.id);
                 }
             } else {
                 already_studied.insert(w.id, ManageRepetitions::new());

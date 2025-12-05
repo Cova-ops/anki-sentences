@@ -18,67 +18,59 @@ pub fn menu_4_1_neue_worte(conn: &mut Connection) -> Result<()> {
     let offset: usize = 10;
 
     // 1) Obtenemos ids de las palabras nuevas
-    let mut ids_setze: Vec<i32> = WorteRepo::fetch_id_neue_worte(conn)?;
+    let mut ids_worte: Vec<i32> = WorteRepo::fetch_id_neue_worte(conn)?;
 
     // Les hacemos un sort
     let mut seed_rand = rand::rng();
-    ids_setze.shuffle(&mut seed_rand);
+    ids_worte.shuffle(&mut seed_rand);
 
-    while !ids_setze.is_empty() {
-        let take = ids_setze.len().min(offset);
-        let aux_ids: Vec<i32> = ids_setze.drain(..take).collect();
+    // le hacemos el ejercicio al usuario
+    let r = helpers::console::make_worte_exercise_repeat(conn, ids_worte, offset)?;
 
-        // Obtenemos toda la info del bloque de palabras que vamos a usar
-        let setze = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    // Obtenemos el id de las palabras que respondio
+    let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
 
-        // le hacemos el ejercicio al usuario
-        let r = helpers::console::make_worte_exercise_repeat(&setze)?;
+    // Obtenemos si estas palabras ya tenian informacion hsitorica de revisiones anteriores
+    let vec_worte_review = WorteReviewRepo::fetch_by_wort_id(conn, &wort_ids)?;
 
-        // Obtenemos el id de las palabras que respondio
-        let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
+    let mut hash_worte_review: HashMap<i32, WorteReviewSchema> = HashMap::new();
+    for wr in vec_worte_review {
+        hash_worte_review.insert(wr.wort_id, wr);
+    }
 
-        // Obtenemos si estas palabras ya tenian informacion hsitorica de revisiones anteriores
-        let vec_worte_review = WorteReviewRepo::fetch_by_wort_id(conn, &wort_ids)?;
+    let mut vec_new_worte_review: Vec<NewWorteReviewSchema> = vec![];
+    let now = Utc::now();
 
-        let mut hash_worte_review: HashMap<i32, WorteReviewSchema> = HashMap::new();
-        for wr in vec_worte_review {
-            hash_worte_review.insert(wr.wort_id, wr);
-        }
+    // Recorremos el arreglo de palabras que respondio el usuario
+    for wort in r.1 {
+        let wort_id = wort.0;
+        let quality = wort.1;
 
-        let mut vec_new_worte_review: Vec<NewWorteReviewSchema> = vec![];
-        let now = Utc::now();
+        // Si tiene historico de revisiones usamos esa info, si no creamos un nuevo struct
+        let review_state = if let Some(val) = hash_worte_review.get(&wort_id) {
+            ReviewState::from(val.interval, val.ease_factor, val.repetitions)
+        } else {
+            ReviewState::new()
+        };
 
-        // Recorremos el arreglo de palabras que respondio el usuario
-        for wort in r.1 {
-            let wort_id = wort.0;
-            let quality = wort.1;
+        // generamos el arreglo para guardar las revisiones para un futuro
+        let review_state = review_state.review(quality);
+        let next = review_state.next_review_date_from(now);
+        vec_new_worte_review.push(NewWorteReviewSchema {
+            wort_id,
+            interval: review_state.interval,
+            ease_factor: review_state.ease_factor,
+            repetitions: review_state.repetitions,
+            last_review: time::datetime_2_string(now),
+            next_review: time::datetime_2_string(next),
+        })
+    }
 
-            // Si tiene historico de revisiones usamos esa info, si no creamos un nuevo struct
-            let review_state = if let Some(val) = hash_worte_review.get(&wort_id) {
-                ReviewState::from(val.interval, val.ease_factor, val.repetitions)
-            } else {
-                ReviewState::new()
-            };
+    // guardamos en db la info de las revisiones
+    WorteReviewRepo::bulk_insert(conn, &vec_new_worte_review)?;
 
-            // generamos el arreglo para guardar las revisiones para un futuro
-            let review_state = review_state.review(quality);
-            let next = review_state.next_review_date_from(now);
-            vec_new_worte_review.push(NewWorteReviewSchema {
-                wort_id,
-                interval: review_state.interval,
-                ease_factor: review_state.ease_factor,
-                repetitions: review_state.repetitions,
-                last_review: time::datetime_2_string(now),
-                next_review: time::datetime_2_string(next),
-            })
-        }
-
-        // guardamos en db la info de las revisiones
-        WorteReviewRepo::bulk_insert(conn, &vec_new_worte_review)?;
-
-        if r.0 == 1 {
-            return Ok(());
-        }
+    if r.0 == 1 {
+        return Ok(());
     }
 
     println!();

@@ -2,7 +2,7 @@
 
 1. Sección para estudiar verbos y sus conjugaciones
 2. Sección para estudiar el genero de las palabras
-3. Audio en las oraciones o palabras 
+3. Audio en las oraciones o palabras -- Ya hay que meterlo
 
 
 
