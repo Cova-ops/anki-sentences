@@ -74,7 +74,6 @@ pub fn menu_4_2_worte_review(conn: &mut Connection) -> Result<()> {
             })
         }
 
-        println!("vec_new_worte_review: {:#?}", vec_new_worte_review);
         // guardamos en db la info de las revisiones
         WorteReviewRepo::bulk_insert(conn, &vec_new_worte_review)?;
 
