@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use color_eyre::eyre::Result;
 
@@ -9,6 +9,32 @@ use crate::{
     helpers::ui,
     utils,
 };
+
+#[derive(Debug)]
+struct ManageRepetitions {
+    once_mistake: bool,
+    repetition: u8,
+}
+
+impl ManageRepetitions {
+    fn new_error() -> Self {
+        Self {
+            once_mistake: true,
+            repetition: 0,
+        }
+    }
+
+    fn new() -> Self {
+        Self {
+            once_mistake: false,
+            repetition: 1,
+        }
+    }
+
+    fn add_repetition(&mut self) {
+        self.repetition += 1;
+    }
+}
 
 const TEXT_SETZE_ONCE: &str = r##"
 Para salir pon la palara "exit".
@@ -218,12 +244,21 @@ pub fn make_worte_exercise_repeat(arr: &[WorteSchema]) -> Result<(i32, Vec<(i32,
 
     let mut vec_out: Vec<(i32, u8)> = Vec::with_capacity(arr.len());
     let mut val_out = 0;
-    let mut already_studied: HashSet<i32> = HashSet::new();
+    let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
 
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
 
         utils::clean_screen();
+        // println!(
+        //     "hash: {:#?}",
+        //     already_studied
+        //         .iter()
+        //         .map(|a| format!("{} {:#?}", a.0, a.1))
+        //         .collect::<Vec<_>>()
+        //         .join("\n")
+        // );
+        // println!("w: {:#?}", w);
         println!(
             "{}",
             TEXT_WORTE_ONCE.replace("{wort}", &w.worte_es).replace(
@@ -254,21 +289,31 @@ pub fn make_worte_exercise_repeat(arr: &[WorteSchema]) -> Result<(i32, Vec<(i32,
         if input == correct_answer {
             println!("Palabra perfecta.");
 
-            // Si no lo contiene significa que es la primera vez que pasa la palabra, por lo tanto
-            // lo tuvo correcto a la primero se pone un -> 2.
-            // Si lo contiene entonces la palabra ya habia pasado antes para estudiar y se habia
-            // equivocado, entonces se pone un -> 1
-            let easy = if already_studied.contains(&w.id) {
-                1
+            if let Some(rep) = already_studied.get_mut(&w.id) {
+                if rep.repetition < 1 {
+                    // Primera vez que la acierta: subimos contador pero aún no la graduamos
+                    rep.add_repetition();
+                    worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
+                } else {
+                    // Si la bandera de once_mistake esta en true, quiere decir que se equivoco con la
+                    // palabra por lo menos una vez
+                    let easy = if rep.once_mistake { 1 } else { 2 };
+                    vec_out.push((w.id, easy));
+                    worte_correct.remove(0);
+                }
             } else {
-                2
-            };
-            vec_out.push((w.id, easy));
-            worte_correct.remove(0);
+                already_studied.insert(w.id, ManageRepetitions::new());
+                worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
+            }
+
             continue;
         }
 
-        already_studied.insert(w.id);
+        already_studied
+            .entry(w.id)
+            .and_modify(|r| *r = ManageRepetitions::new_error())
+            .or_insert(ManageRepetitions::new_error());
+
         println!();
         println!("Oración incorrecta");
         println!("La palabra correcta es: {}", correct_answer);

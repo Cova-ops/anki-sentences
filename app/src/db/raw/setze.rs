@@ -21,7 +21,7 @@ impl FromRaw<Raw> for Schema {
         Ok(Schema {
             id: r.id,
             setze_spanisch: r.setze_spanisch,
-            setze_deutsch: r.setze_deutsch,
+           setze_deutsch: r.setze_deutsch,
             thema: r.thema,
             schwirigkeit_id,
             created_at,

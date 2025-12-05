@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
 
 #[inline]
 pub fn string_2_datetime<T: AsRef<str>>(s: Option<T>) -> Option<DateTime<Utc>> {
@@ -37,4 +37,20 @@ pub fn fixed_date(y: i32, m: u32, d: u32, h: u32, min: u32, s: u32) -> DateTime<
 #[inline]
 pub fn datetime_2_string(dt: DateTime<Utc>) -> String {
     dt.naive_utc().format("%Y-%m-%d %H:%M:%S").to_string()
+}
+
+#[inline]
+pub fn today_local_string(offset: i64) -> String {
+    let today_local = Local::now().date_naive();
+    let today_local_naive: NaiveDateTime = (today_local + Duration::days(offset))
+        .and_hms_opt(0, 0, 0)
+        .unwrap();
+
+    let target_local = Local
+        .from_local_datetime(&today_local_naive)
+        .single()
+        .expect("fecha local ambigua / imposible");
+
+    let target_utc = target_local.with_timezone(&Utc);
+    target_utc.format("%Y-%m-%d %H:%M:%S").to_string()
 }

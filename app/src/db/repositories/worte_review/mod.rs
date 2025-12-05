@@ -1,5 +1,5 @@
 use color_eyre::eyre::{Context, Result};
-use rusqlite::{Connection, Transaction, params_from_iter};
+use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::worte_review::{
@@ -77,5 +77,23 @@ impl WorteReviewRepo {
 
         let vec_out = Schema::from_vec_raw(raw)?;
         Ok(vec_out)
+    }
+
+    pub fn fetch_review_wort_id_by_day(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
+        let sql = r#"
+            SELECT wort_id
+            FROM worte_review
+            WHERE next_review < ?1
+                AND deleted_at IS NULL
+            ORDER BY next_review ASC;
+        "#;
+
+        let mut stmt = conn.prepare(sql)?;
+        let vec_ids = stmt
+            .query(params![date_review])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(vec_ids)
     }
 }

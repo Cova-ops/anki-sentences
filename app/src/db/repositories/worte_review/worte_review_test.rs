@@ -47,6 +47,8 @@ mod test_worte_review_repo {
 
         use color_eyre::eyre::Result;
         use rusqlite::Connection;
+        use std::thread;
+        use std::time::Duration;
 
         use crate::{
             db::{schemas::worte::NewWorteSchema, seeders::init_data, worte::WorteRepo},
@@ -110,6 +112,8 @@ mod test_worte_review_repo {
 
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
+
+            thread::sleep(Duration::from_millis(100));
 
             let res_2 = c2(&mut conn).expect("La inserción no debe fallar");
 
@@ -183,6 +187,109 @@ mod test_worte_review_repo {
                     Ok(out)
                 },
             );
+        }
+    }
+
+    mod fetch {
+
+        use color_eyre::eyre::Result;
+        use rusqlite::Connection;
+
+        use crate::{
+            db::{schemas::worte::NewWorteSchema, seeders::init_data, worte::WorteRepo},
+            helpers::time::fixed_date,
+        };
+
+        use super::*;
+
+        fn init_data_local(conn: &mut Connection) -> Result<()> {
+            init_data(conn)?;
+            let data = vec![
+                NewWorteSchema {
+                    gram_type: vec![1],
+                    gender_id: Some(1),
+                    worte_de: "Hund".into(),
+                    worte_es: "Perro".into(),
+                    plural: Some("Hunde".into()),
+                    niveau_id: 1,
+                    example_de: "Beispiel".into(),
+                    example_es: "Ejemplo".into(),
+                    verb_aux: None,
+                    trennbar: None,
+                    reflexiv: None,
+                },
+                NewWorteSchema {
+                    gram_type: vec![2, 3],
+                    gender_id: None,
+                    worte_de: "laufen".into(),
+                    worte_es: "correr".into(),
+                    plural: None,
+                    niveau_id: 2,
+                    example_de: "Beispiel".into(),
+                    example_es: "Ejemplo".into(),
+                    verb_aux: Some("sein".into()),
+                    trennbar: Some(false),
+                    reflexiv: Some(false),
+                },
+            ];
+            WorteRepo::bulk_insert(conn, &data)?;
+            let data = vec![
+                New {
+                    wort_id: 1,
+                    interval: 1,
+                    ease_factor: 2.5,
+                    repetitions: 999,
+                    last_review: "2025-01-10 12:00:00".into(),
+                    next_review: "2025-01-20 12:00:00".into(),
+                },
+                New {
+                    wort_id: 2,
+                    interval: 10,
+                    ease_factor: 1.3,
+                    repetitions: 1,
+                    last_review: "2025-12-10 12:00:00".into(),
+                    next_review: "2025-12-20 12:00:00".into(),
+                },
+            ];
+            WorteReviewRepo::bulk_insert(conn, &data)?;
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_by_wort_id() {
+            let mut conn = setup_test_db().unwrap();
+            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+
+            let res =
+                WorteReviewRepo::fetch_by_wort_id(&conn, &[]).expect("La consulta no debe fallar");
+
+            assert_eq!(res.len(), 0);
+
+            let res = placeholder_dates(res);
+            insta::assert_debug_snapshot!(res);
+
+            let data = [1, 2, 3];
+            let res = WorteReviewRepo::fetch_by_wort_id(&conn, &data)
+                .expect("La consulta no debe fallar");
+
+            assert_eq!(res.len(), 2);
+
+            assert_eq!(res[0].wort_id, 1);
+            assert_eq!(res[0].interval, 1);
+            assert_eq!(res[0].ease_factor, 2.5);
+            assert_eq!(res[0].repetitions, 999);
+            assert_eq!(res[0].last_review, fixed_date(2025, 1, 10, 12, 00, 00));
+            assert_eq!(res[0].next_review, fixed_date(2025, 1, 20, 12, 00, 00));
+
+            assert_eq!(res[1].wort_id, 2);
+            assert_eq!(res[1].interval, 10);
+            assert_eq!(res[1].ease_factor, 1.3);
+            assert_eq!(res[1].repetitions, 1);
+            assert_eq!(res[1].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
+            assert_eq!(res[1].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
+
+            let res = placeholder_dates(res);
+            insta::assert_debug_snapshot!(res);
         }
     }
 }
