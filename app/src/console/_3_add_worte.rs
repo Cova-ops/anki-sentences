@@ -2,8 +2,11 @@ use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
 use crate::{
-    db::worte::WorteRepo,
-    helpers::{csv, ui},
+    db::{
+        schemas::worte_audio::NewWorteAudioSchema, worte::WorteRepo, worte_audio::WorteAudioRepo,
+    },
+    helpers::{audios::ManageAudios, csv, ui},
+    services::tts,
     utils::path_file_oder_dir,
 };
 
@@ -149,12 +152,50 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
 
         let new_data = csv::extract_worte_csv(&csv_path)?;
         // println!("new_data: {:#?}", new_data);
-        let res = WorteRepo::bulk_insert(conn, &new_data);
 
-        if res.is_err() {
-            println!("Ups ha ocurrido un error: {:#?}", res);
-            println!("Favor de corregirlo e intentar de nuevo");
-            continue;
+        println!();
+        println!("Procesando {} nuevas palabras.", new_data.len());
+
+        let res = match WorteRepo::bulk_insert(conn, &new_data) {
+            Ok(v) => v,
+            Err(err) => {
+                println!("Ups ha ocurrido un error: {:#?}", err);
+                println!("Favor de corregirlo e intentar de nuevo");
+                continue;
+            }
+        };
+
+        println!("Base de datos ejecutado, realizando descarga de audios");
+
+        for (i, wort) in res.iter().enumerate() {
+            let audio_bytes: Vec<u8> = match tts::eleven_labs::generate_tts(&wort.worte_es) {
+                Ok(v) => v,
+                Err(err) => {
+                    println!("Error al generar el TTS de la palabra: {}", wort.worte_de);
+                    println!("{:#?}", err);
+                    continue;
+                }
+            };
+
+            let audio_path = match ManageAudios::save_audio_worte(audio_bytes, wort.id) {
+                Ok(v) => v,
+                Err(err) => {
+                    println!("Error al guardar el archivo: {}", wort.worte_de);
+                    println!("{:#?}", err);
+                    continue;
+                }
+            };
+
+            WorteAudioRepo::bulk_insert(
+                conn,
+                &[NewWorteAudioSchema {
+                    wort_id: wort.id,
+                    voice_id: "masc_eleven_labs".into(),
+                    file_path: audio_path,
+                }],
+            )?;
+
+            println!("Audio procesado {}/{}.", i, new_data.len());
         }
 
         break;

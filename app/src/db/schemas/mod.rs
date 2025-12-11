@@ -8,6 +8,7 @@ pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
 pub mod worte;
+pub mod worte_audio;
 pub mod worte_gram_type;
 pub mod worte_review;
 
@@ -50,6 +51,9 @@ pub fn init_schemas(conn: &mut Connection) -> Result<()> {
 
     conn.execute(worte_review::CREATE_STR_TABLE_WORTE_REVIEW, [])?;
     conn.execute_batch(worte_review::CREATE_STR_INDEX_WORTE_REVIEW)?;
+
+    conn.execute(worte_audio::CREATE_STR_TABLE_WORTE_AUDIO, [])?;
+    conn.execute_batch(worte_audio::CREATE_STR_INDEX_WORTE_AUDIO)?;
 
     Ok(())
 }

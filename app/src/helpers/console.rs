@@ -11,7 +11,10 @@ use crate::{
         },
         worte::WorteRepo,
     },
-    helpers::ui,
+    helpers::{
+        audios::{ManageAudios, audio_player::AudioPlayer},
+        ui,
+    },
     utils,
 };
 
@@ -220,7 +223,7 @@ pub fn make_setze_exercise_repeat(
 }
 
 const TEXT_WORTE_ONCE: &str = r##"
-Para salir pon la palara "exit".
+Para salir pon la palara "exit".                 Faltantes: {remainding}
 Algunas letras que te pueden ayudar. :)
           - ß ẞ ä ö ü Ä Ö Ü 
 
@@ -247,6 +250,7 @@ Por favor traducela...
 pub fn make_worte_exercise_repeat(
     conn: &Connection,
     ids_worte: Vec<i32>,
+    hash_audios: HashSet<i32>,
     offset: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
@@ -260,6 +264,8 @@ pub fn make_worte_exercise_repeat(
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
     let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+
+    let player = AudioPlayer::new();
 
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
@@ -275,17 +281,29 @@ pub fn make_worte_exercise_repeat(
         // );
         // println!("w: {:#?}", w);
         // println!("worte_correct: {:#?}", worte_correct);
+        //
+        let worte_remaining = worte_correct.len() + ids_worte.len();
         println!(
             "{}",
-            TEXT_WORTE_ONCE.replace("{wort}", &w.worte_es).replace(
-                "{gram_type}",
-                &w.gram_type_id
-                    .into_iter()
-                    .map(|r| format!("{} ", r.name))
-                    .collect::<Vec<_>>()
-                    .join(",")
-            )
+            TEXT_WORTE_ONCE
+                .replace("{wort}", &w.worte_es)
+                .replace("{remainding}", &worte_remaining.to_string())
+                .replace(
+                    "{gram_type}",
+                    &w.gram_type_id
+                        .into_iter()
+                        .map(|r| format!("{} ", r.name))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
         );
+
+        #[allow(clippy::collapsible_if)]
+        if let Some(audio) = hash_audios.get(&w.id) {
+            if let Ok(Some(path)) = ManageAudios::get_audio_worte(*audio) {
+                player.play(path)?;
+            }
+        };
 
         let Some(input) = ui::prompt_nonempty("> ")? else {
             continue;
@@ -303,8 +321,6 @@ pub fn make_worte_exercise_repeat(
 
         let input = input.trim();
         if input == correct_answer {
-            println!("Palabra perfecta.");
-
             if let Some(rep) = already_studied.get_mut(&w.id) {
                 if rep.repetition < 1 {
                     // Primera vez que la acierta: subimos contador pero aún no la graduamos
@@ -317,10 +333,12 @@ pub fn make_worte_exercise_repeat(
                     vec_out.push((w.id, easy));
                     worte_correct.remove(0);
 
-                    // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
-                    let id_new = ids_worte.remove(0);
-                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
-                    worte_correct.push(wort_new[0].clone());
+                    if !ids_worte.is_empty() {
+                        // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                        let id_new = ids_worte.remove(0);
+                        let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
+                        worte_correct.push(wort_new[0].clone());
+                    }
 
                     // limpiamos el hashmap de la palabra que ya no se va a repetir
                     already_studied.remove(&w.id);
@@ -339,7 +357,7 @@ pub fn make_worte_exercise_repeat(
             .or_insert(ManageRepetitions::new_error());
 
         println!();
-        println!("Oración incorrecta");
+        println!("Palabra incorrecta");
         println!("La palabra correcta es: {}", correct_answer);
 
         println!();

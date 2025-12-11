@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use chrono::Utc;
 use color_eyre::eyre::Result;
@@ -7,10 +7,15 @@ use rusqlite::Connection;
 
 use crate::{
     db::{
-        schemas::worte_review::{NewWorteReviewSchema, WorteReviewSchema},
+        schemas::{
+            worte_audio::WorteAudioSchema,
+            worte_review::{NewWorteReviewSchema, WorteReviewSchema},
+        },
+        worte_audio::WorteAudioRepo,
         worte_review::WorteReviewRepo,
     },
     helpers::{self, review_state::ReviewState, time},
+    utils,
 };
 
 pub fn menu_4_2_worte_review(conn: &mut Connection) -> Result<()> {
@@ -20,12 +25,19 @@ pub fn menu_4_2_worte_review(conn: &mut Connection) -> Result<()> {
     let date_review = time::today_local_string(1);
     let mut ids_worte: Vec<i32> = WorteReviewRepo::fetch_review_wort_id_by_day(conn, date_review)?;
 
+    let ids_audios: Vec<WorteAudioSchema> = WorteAudioRepo::fetch_by_id(conn, &ids_worte)?;
+    let mut hash_audios: HashSet<i32> = HashSet::new();
+
+    for id in ids_audios {
+        hash_audios.insert(id.wort_id);
+    }
+
     // Les hacemos un shuffle
     let mut seed_rand = rand::rng();
     ids_worte.shuffle(&mut seed_rand);
 
     // le hacemos el ejercicio al usuario
-    let r = helpers::console::make_worte_exercise_repeat(conn, ids_worte, offset)?;
+    let r = helpers::console::make_worte_exercise_repeat(conn, ids_worte, hash_audios, offset)?;
 
     // Obtenemos el id de las palabras que respondio
     let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
@@ -73,8 +85,8 @@ pub fn menu_4_2_worte_review(conn: &mut Connection) -> Result<()> {
         return Ok(());
     }
 
-    println!();
-    println!("No hay mas palabras nuevas por estudiar. :)");
+    utils::clean_screen();
+    println!("No hay mas palabras por estudiar. :)");
     println!();
 
     Ok(())

@@ -5,5 +5,6 @@ pub mod niveau_worte;
 pub mod schwirigkeit_liste;
 pub mod setze;
 pub mod worte;
+pub mod worte_audio;
 pub mod worte_gram_type;
 pub mod worte_review;
