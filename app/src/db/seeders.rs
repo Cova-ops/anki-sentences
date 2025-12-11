@@ -3,22 +3,22 @@ use once_cell::sync::Lazy;
 use rusqlite::Connection;
 
 use crate::db::{
-    gender_worte::GenderWorteRepo,
     gram_type::GramTypeRepo,
     niveau_liste::NiveauListeRepo,
     schemas::{
-        gender_worte::{GenderWorteSchema, NewGenderWorteSchema},
         gram_type::{GramTypeSchema, NewGramTypeSchema},
         niveau_liste::{NewNiveauListeSchema, NiveauListeSchema},
+        worte_gender::{NewWorteGenderSchema, WorteGenderSchema},
     },
+    worte_gender::WorteGenderRepo,
 };
 
-pub static SEED_GENDER_WORTE_LISTE: Lazy<Vec<NewGenderWorteSchema>> = Lazy::new(|| {
+pub static SEED_WORTE_GENDER_LISTE: Lazy<Vec<NewWorteGenderSchema>> = Lazy::new(|| {
     Vec::from([
-        NewGenderWorteSchema::new(0, "Maskuline", "der"),
-        NewGenderWorteSchema::new(1, "Femenin", "die"),
-        NewGenderWorteSchema::new(2, "Neutrum", "das"),
-        NewGenderWorteSchema::new(3, "Plural", "die"),
+        NewWorteGenderSchema::new(0, "Maskuline", "der"),
+        NewWorteGenderSchema::new(1, "Femenin", "die"),
+        NewWorteGenderSchema::new(2, "Neutrum", "das"),
+        NewWorteGenderSchema::new(3, "Plural", "die"),
     ])
 });
 
@@ -83,8 +83,8 @@ pub fn init_data(conn: &mut Connection) -> Result<()> {
     let tx = conn.transaction()?;
 
     // GenderWorte
-    let data = GenderWorteRepo::bulk_insert_tx(&tx, &SEED_GENDER_WORTE_LISTE)?;
-    GenderWorteSchema::init_data(&data)?;
+    let data = WorteGenderRepo::bulk_insert_tx(&tx, &SEED_WORTE_GENDER_LISTE)?;
+    WorteGenderSchema::init_data(&data)?;
 
     // NiveauWorte
     let data = NiveauListeRepo::bulk_insert_tx(&tx, &SEED_NIVEAU_LISTE)?;

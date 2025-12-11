@@ -33,6 +33,7 @@ mod test_gram_type_repo {
     }
 
     mod bulk_insert {
+        use std::{thread, time::Duration};
 
         use super::*;
         use color_eyre::eyre::Result;
@@ -59,6 +60,8 @@ mod test_gram_type_repo {
 
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
+
+            thread::sleep(Duration::from_millis(100));
 
             let res_2 = c2(&mut conn).expect("La inserción no deberia fallar");
 

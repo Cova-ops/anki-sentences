@@ -1,11 +1,11 @@
 use crate::db::setup_test_db;
 
 #[cfg(test)]
-mod test_gender_worte_repo {
+mod test_worte_gender_repo {
 
     use crate::db::{
-        gender_worte::GenderWorteRepo,
-        schemas::gender_worte::{GenderWorteSchema as Schema, NewGenderWorteSchema as New},
+        schemas::worte_gender::{NewWorteGenderSchema as New, WorteGenderSchema as Schema},
+        worte_gender::WorteGenderRepo,
     };
 
     use super::*;
@@ -33,6 +33,8 @@ mod test_gender_worte_repo {
     }
 
     mod bulk_insert {
+        use std::{thread, time::Duration};
+
         use color_eyre::eyre::Result;
         use rusqlite::Connection;
 
@@ -54,6 +56,8 @@ mod test_gender_worte_repo {
 
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
+
+            thread::sleep(Duration::from_millis(100));
 
             let res_2 = c2(&mut conn).expect("La inserción no debe fallar");
 
@@ -103,8 +107,8 @@ mod test_gender_worte_repo {
                 },
             ];
             run_bulk_insert_update_scenario(
-                |conn| GenderWorteRepo::bulk_insert(conn, &data_1),
-                |conn| GenderWorteRepo::bulk_insert(conn, &data_2),
+                |conn| WorteGenderRepo::bulk_insert(conn, &data_1),
+                |conn| WorteGenderRepo::bulk_insert(conn, &data_2),
             );
         }
 
@@ -147,13 +151,13 @@ mod test_gender_worte_repo {
             run_bulk_insert_update_scenario(
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = GenderWorteRepo::bulk_insert_tx(&tx, &data_1)?;
+                    let out = WorteGenderRepo::bulk_insert_tx(&tx, &data_1)?;
                     tx.commit()?;
                     Ok(out)
                 },
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = GenderWorteRepo::bulk_insert_tx(&tx, &data_2)?;
+                    let out = WorteGenderRepo::bulk_insert_tx(&tx, &data_2)?;
                     tx.commit()?;
                     Ok(out)
                 },

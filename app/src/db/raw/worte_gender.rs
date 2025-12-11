@@ -4,7 +4,7 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
-use crate::db::schemas::gender_worte::{GenderWorteSchema as Schema, NewGenderWorteSchema as New};
+use crate::db::schemas::worte_gender::{NewWorteGenderSchema as New, WorteGenderSchema as Schema};
 
 static HASH_VALUES: LazyLock<Mutex<HashMap<i32, Schema>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));

@@ -1,13 +1,13 @@
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
-pub mod gender_worte;
 pub mod geschichtlich_setze;
 pub mod gram_type;
 pub mod niveau_liste;
 pub mod setze;
 pub mod worte;
 pub mod worte_audio;
+pub mod worte_gender;
 pub mod worte_gram_type;
 pub mod worte_review;
 
@@ -16,8 +16,8 @@ pub fn init_schemas(conn: &mut Connection) -> Result<()> {
     conn.execute("PRAGMA foreign_keys = ON", [])?;
 
     // Gender Worte
-    conn.execute(gender_worte::CREATE_STR_TABLE_GENDER_WORTE, [])?;
-    conn.execute_batch(gender_worte::CREATE_STR_INDEX_GENDER_WORTE)?;
+    conn.execute(worte_gender::CREATE_STR_TABLE_WORTE_GENDER, [])?;
+    conn.execute_batch(worte_gender::CREATE_STR_INDEX_WORTE_GENDER)?;
 
     // Niveau Liste
     conn.execute(niveau_liste::CREATE_STR_TABLE_NIVEAU_LISTE, [])?;

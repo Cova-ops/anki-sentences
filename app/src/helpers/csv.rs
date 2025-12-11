@@ -4,8 +4,8 @@ use std::fs::File;
 
 use crate::{
     db::schemas::{
-        gender_worte::GenderWorteSchema, gram_type::GramTypeSchema,
-        niveau_liste::NiveauListeSchema, setze::NewSetzeSchema, worte::NewWorteSchema,
+        gram_type::GramTypeSchema, niveau_liste::NiveauListeSchema, setze::NewSetzeSchema,
+        worte::NewWorteSchema, worte_gender::WorteGenderSchema,
     },
     traits::string::StringConvertion,
 };
@@ -144,7 +144,7 @@ pub fn extract_worte_csv(path: &str) -> Result<Vec<NewWorteSchema>> {
 
         let gender_id = match value.get(1) {
             Some(v) if v.trim().is_empty() => None,
-            Some(v) => Some(GenderWorteSchema::from_gender(v)?.id),
+            Some(v) => Some(WorteGenderSchema::from_gender(v)?.id),
             None => None,
         };
         let worte_de = match value.get(2) {

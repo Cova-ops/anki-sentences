@@ -3,9 +3,9 @@ use sql_model::FromRaw;
 
 use crate::{
     db::schemas::{
-        gender_worte::GenderWorteSchema,
         niveau_liste::NiveauListeSchema,
         worte::{RawWorteSchema as Raw, WorteSchema as Schema},
+        worte_gender::WorteGenderSchema,
     },
     helpers::time::string_2_datetime,
 };
@@ -13,7 +13,7 @@ use crate::{
 impl FromRaw<Raw> for Schema {
     fn from_raw(r: Raw) -> Result<Self> {
         let gender_id = match r.gender_id {
-            Some(v) => Some(GenderWorteSchema::from_id(v)?),
+            Some(v) => Some(WorteGenderSchema::from_id(v)?),
             None => None,
         };
         let niveau_id = NiveauListeSchema::from_id(r.niveau_id)?;

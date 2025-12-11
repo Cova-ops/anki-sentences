@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
-pub const CREATE_STR_TABLE_GENDER_WORTE: &str = "
-    CREATE TABLE IF NOT EXISTS gender_worte (
+pub const CREATE_STR_TABLE_WORTE_GENDER: &str = "
+    CREATE TABLE IF NOT EXISTS worte_gender (
         id                  INTEGER PRIMARY KEY AUTOINCREMENT,
         gender              TEXT NOT NULL,                         
         artikel             TEXT NOT NULL,
@@ -13,8 +13,8 @@ pub const CREATE_STR_TABLE_GENDER_WORTE: &str = "
     )
 ";
 
-pub const CREATE_STR_INDEX_GENDER_WORTE: &str = "
-    CREATE INDEX IF NOT EXISTS idx_gender_worte_created_at ON gender_worte(created_at);
+pub const CREATE_STR_INDEX_WORTE_GENDER: &str = "
+    CREATE INDEX IF NOT EXISTS idx_worte_gender_created_at ON worte_gender(created_at);
 ";
 
 // 0 - Maskuline - der
@@ -22,9 +22,9 @@ pub const CREATE_STR_INDEX_GENDER_WORTE: &str = "
 // 2 - Neutrum - das
 // 3 - Plural - die
 #[derive(Debug, Clone, SqlModel, PartialEq, Eq)]
-#[sql(raw_type = "RawGenderWorteSchema")]
+#[sql(raw_type = "RawWorteGenderSchema")]
 #[sql(raw(id, gender, artikel, created_at, deleted_at))]
-pub struct GenderWorteSchema {
+pub struct WorteGenderSchema {
     pub id: i32,
     pub gender: String,
     pub artikel: String,
@@ -36,7 +36,7 @@ pub struct GenderWorteSchema {
 
 #[derive(Debug, Clone, SqlModel)]
 #[sql(insert(id, gender, artikel))]
-pub struct NewGenderWorteSchema {
+pub struct NewWorteGenderSchema {
     pub id: i32,
     pub gender: String,
     pub artikel: String,
@@ -44,7 +44,7 @@ pub struct NewGenderWorteSchema {
 
 #[derive(Debug, SqlModel)]
 #[sql(raw(id, gender, artikel, created_at, deleted_at))]
-pub struct RawGenderWorteSchema {
+pub struct RawWorteGenderSchema {
     pub id: i32,
     pub gender: String,
     pub artikel: String,

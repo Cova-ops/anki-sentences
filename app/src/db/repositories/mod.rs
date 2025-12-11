@@ -1,4 +1,4 @@
-pub mod gender_worte;
+pub mod worte_gender;
 pub mod geschichtlich_setze;
 pub mod gram_type;
 pub mod niveau_liste;

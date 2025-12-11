@@ -2,13 +2,13 @@ use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
 use crate::db::schemas::{
-    gender_worte::GenderWorteSchema, gram_type::GramTypeSchema, niveau_liste::NiveauListeSchema,
+    gram_type::GramTypeSchema, niveau_liste::NiveauListeSchema, worte_gender::WorteGenderSchema,
 };
 
 pub const CREATE_STR_TABLE_WORTE: &str = "
 CREATE TABLE IF NOT EXISTS worte(
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    gender_id           INTEGER,                            -- table gender_worte
+    gender_id           INTEGER,                            -- table worte_gender
     wort_de             TEXT NOT NULL,                   
     wort_es             TEXT NOT NULL,                   
     plural              TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS worte(
     created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
     deleted_at          TEXT,
 
-    FOREIGN KEY(gender_id) REFERENCES gender_worte(id)
+    FOREIGN KEY(gender_id) REFERENCES worte_gender(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,    
 
@@ -44,7 +44,7 @@ pub const CREATE_STR_INDEX_WORTE: &str = "
 pub struct WorteSchema {
     pub id: i32,
     pub gram_type_id: Vec<GramTypeSchema>,
-    pub gender_id: Option<GenderWorteSchema>,
+    pub gender_id: Option<WorteGenderSchema>,
     pub worte_de: String,
     pub worte_es: String,
     pub plural: Option<String>,
