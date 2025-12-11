@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
 use crate::db::schemas::{
-    gender_worte::GenderWorteSchema, gram_type::GramTypeSchema, niveau_worte::NiveauWorteSchema,
+    gender_worte::GenderWorteSchema, gram_type::GramTypeSchema, niveau_liste::NiveauListeSchema,
 };
 
 pub const CREATE_STR_TABLE_WORTE: &str = "
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS worte(
     wort_de             TEXT NOT NULL,                   
     wort_es             TEXT NOT NULL,                   
     plural              TEXT,
-    niveau_id           INTEGER NOT NULL,                   -- table niveau_worte
+    niveau_id           INTEGER NOT NULL,                   -- table niveau_liste
     example_de          TEXT,                   
     example_es          TEXT,                   
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS worte(
         ON DELETE CASCADE
         ON UPDATE CASCADE,    
 
-    FOREIGN KEY(niveau_id) REFERENCES niveau_worte(id)
+    FOREIGN KEY(niveau_id) REFERENCES niveau_liste(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 )";
@@ -48,7 +48,7 @@ pub struct WorteSchema {
     pub worte_de: String,
     pub worte_es: String,
     pub plural: Option<String>,
-    pub niveau_id: NiveauWorteSchema,
+    pub niveau_id: NiveauListeSchema,
     pub example_de: String,
     pub example_es: String,
 

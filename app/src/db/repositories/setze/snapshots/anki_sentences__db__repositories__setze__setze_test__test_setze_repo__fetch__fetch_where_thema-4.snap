@@ -7,9 +7,9 @@ expression: res
         id: 1,
         setze_spanisch: "Hola",
         setze_deutsch: "Hallo",
-        schwirigkeit_id: SchwirigkeitListeSnapshot {
+        niveau_id: NiveauSnapshot {
             id: 1,
-            schwirigkeit: "Normal",
+            niveau: "A2",
             created_at: "<created_at>",
             deleted_at: "<deleted_at>",
         },

@@ -1,13 +1,11 @@
 use crate::db::setup_test_db;
 
 #[cfg(test)]
-mod test_schwirigkeit_liste_repo {
+mod test_niveau_liste_repo {
 
     use crate::db::{
-        schemas::schwirigkeit_liste::{
-            NewSchwirigkeitListeSchema as New, SchwirigkeitListeSchema as Schema,
-        },
-        schwirigkeit_liste::SchwirigkeitListeRepo,
+        niveau_liste::NiveauListeRepo,
+        schemas::niveau_liste::{NewNiveauListeSchema as New, NiveauListeSchema as Schema},
     };
 
     use super::*;
@@ -16,7 +14,7 @@ mod test_schwirigkeit_liste_repo {
     #[allow(dead_code)]
     struct Snapshot {
         id: i32,
-        schwirigkeit: String,
+        niveau: String,
         created_at: String,
         deleted_at: String,
     }
@@ -25,7 +23,7 @@ mod test_schwirigkeit_liste_repo {
         data.into_iter()
             .map(|d| Snapshot {
                 id: d.id,
-                schwirigkeit: d.schwirigkeit,
+                niveau: d.niveau,
                 created_at: "<created_at>".into(),
                 deleted_at: "<deleted_at>".into(),
             })
@@ -49,7 +47,7 @@ mod test_schwirigkeit_liste_repo {
 
             assert_eq!(res_1.len(), 2);
             assert_eq!(res_1[0].id, 1);
-            assert_eq!(res_1[0].schwirigkeit, "einfag");
+            assert_eq!(res_1[0].niveau, "A1");
 
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
@@ -58,7 +56,7 @@ mod test_schwirigkeit_liste_repo {
 
             assert_eq!(res_2.len(), 2);
             assert_eq!(res_2[1].id, 2);
-            assert_eq!(res_2[1].schwirigkeit, "schwirig");
+            assert_eq!(res_2[1].niveau, "C2");
 
             let res_2 = placeholder_dates(res_2);
             insta::assert_debug_snapshot!(res_2);
@@ -69,26 +67,26 @@ mod test_schwirigkeit_liste_repo {
             let data_1 = vec![
                 New {
                     id: 1,
-                    schwirigkeit: "einfag".into(),
+                    niveau: "A1".into(),
                 },
                 New {
                     id: 2,
-                    schwirigkeit: "normal".into(),
+                    niveau: "A2".into(),
                 },
             ];
             let data_2 = vec![
                 New {
                     id: 1,
-                    schwirigkeit: "einfag".into(),
+                    niveau: "C1".into(),
                 },
                 New {
                     id: 2,
-                    schwirigkeit: "schwirig".into(),
+                    niveau: "C2".into(),
                 },
             ];
             run_bulk_insert_update_scenario(
-                |conn| SchwirigkeitListeRepo::bulk_insert(conn, &data_1),
-                |conn| SchwirigkeitListeRepo::bulk_insert(conn, &data_2),
+                |conn| NiveauListeRepo::bulk_insert(conn, &data_1),
+                |conn| NiveauListeRepo::bulk_insert(conn, &data_2),
             );
         }
 
@@ -97,33 +95,33 @@ mod test_schwirigkeit_liste_repo {
             let data_1 = vec![
                 New {
                     id: 1,
-                    schwirigkeit: "einfag".into(),
+                    niveau: "A1".into(),
                 },
                 New {
                     id: 2,
-                    schwirigkeit: "normal".into(),
+                    niveau: "A2".into(),
                 },
             ];
             let data_2 = vec![
                 New {
                     id: 1,
-                    schwirigkeit: "einfag".into(),
+                    niveau: "C1".into(),
                 },
                 New {
                     id: 2,
-                    schwirigkeit: "schwirig".into(),
+                    niveau: "C2".into(),
                 },
             ];
             run_bulk_insert_update_scenario(
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = SchwirigkeitListeRepo::bulk_insert_tx(&tx, &data_1)?;
+                    let out = NiveauListeRepo::bulk_insert_tx(&tx, &data_1)?;
                     tx.commit()?;
                     Ok(out)
                 },
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = SchwirigkeitListeRepo::bulk_insert_tx(&tx, &data_2)?;
+                    let out = NiveauListeRepo::bulk_insert_tx(&tx, &data_2)?;
                     tx.commit()?;
                     Ok(out)
                 },

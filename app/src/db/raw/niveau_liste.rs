@@ -4,7 +4,7 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
-use crate::db::schemas::niveau_worte::{NewNiveauWorteSchema as New, NiveauWorteSchema as Schema};
+use crate::db::schemas::niveau_liste::{NewNiveauListeSchema as New, NiveauListeSchema as Schema};
 
 static HASH_VALUES: LazyLock<Mutex<HashMap<i32, Schema>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));

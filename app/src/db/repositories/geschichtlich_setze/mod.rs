@@ -30,7 +30,7 @@ impl GeschichtlichSetzeRepo {
         let sql = r#"
             INSERT INTO geschichtlich_setze (setze_id, result)
                 VALUES (?1,?2)
-            RETURNING id,setze_id, result, created_at,deleted_at;
+            RETURNING id, setze_id, result, created_at, deleted_at;
         "#;
 
         let mut vec_out = Vec::with_capacity(data.len());

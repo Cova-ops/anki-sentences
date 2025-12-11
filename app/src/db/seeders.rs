@@ -5,23 +5,13 @@ use rusqlite::Connection;
 use crate::db::{
     gender_worte::GenderWorteRepo,
     gram_type::GramTypeRepo,
-    niveau_worte::NiveauWorteRepo,
+    niveau_liste::NiveauListeRepo,
     schemas::{
         gender_worte::{GenderWorteSchema, NewGenderWorteSchema},
         gram_type::{GramTypeSchema, NewGramTypeSchema},
-        niveau_worte::{NewNiveauWorteSchema, NiveauWorteSchema},
-        schwirigkeit_liste::{NewSchwirigkeitListeSchema, SchwirigkeitListeSchema},
+        niveau_liste::{NewNiveauListeSchema, NiveauListeSchema},
     },
-    schwirigkeit_liste::SchwirigkeitListeRepo,
 };
-
-pub static SEED_SCHWIRIGKEIT_LISTE: Lazy<Vec<NewSchwirigkeitListeSchema>> = Lazy::new(|| {
-    Vec::from([
-        NewSchwirigkeitListeSchema::new(0, "Einfag"),
-        NewSchwirigkeitListeSchema::new(1, "Normal"),
-        NewSchwirigkeitListeSchema::new(2, "Schwirig"),
-    ])
-});
 
 pub static SEED_GENDER_WORTE_LISTE: Lazy<Vec<NewGenderWorteSchema>> = Lazy::new(|| {
     Vec::from([
@@ -32,14 +22,14 @@ pub static SEED_GENDER_WORTE_LISTE: Lazy<Vec<NewGenderWorteSchema>> = Lazy::new(
     ])
 });
 
-pub static SEED_NIVEAU_LISTE: Lazy<Vec<NewNiveauWorteSchema>> = Lazy::new(|| {
+pub static SEED_NIVEAU_LISTE: Lazy<Vec<NewNiveauListeSchema>> = Lazy::new(|| {
     Vec::from([
-        NewNiveauWorteSchema::new(0, "A1"),
-        NewNiveauWorteSchema::new(1, "A2"),
-        NewNiveauWorteSchema::new(2, "B1"),
-        NewNiveauWorteSchema::new(3, "B2"),
-        NewNiveauWorteSchema::new(4, "C1"),
-        NewNiveauWorteSchema::new(5, "C2"),
+        NewNiveauListeSchema::new(0, "A1"),
+        NewNiveauListeSchema::new(1, "A2"),
+        NewNiveauListeSchema::new(2, "B1"),
+        NewNiveauListeSchema::new(3, "B2"),
+        NewNiveauListeSchema::new(4, "C1"),
+        NewNiveauListeSchema::new(5, "C2"),
     ])
 });
 
@@ -91,17 +81,14 @@ pub static SEED_GRAM_TYPE_LISTE: Lazy<Vec<NewGramTypeSchema>> = Lazy::new(|| {
 
 pub fn init_data(conn: &mut Connection) -> Result<()> {
     let tx = conn.transaction()?;
-    // SchwirigkeitListe
-    let data = SchwirigkeitListeRepo::bulk_insert_tx(&tx, &SEED_SCHWIRIGKEIT_LISTE)?;
-    SchwirigkeitListeSchema::init_data(&data)?;
 
     // GenderWorte
     let data = GenderWorteRepo::bulk_insert_tx(&tx, &SEED_GENDER_WORTE_LISTE)?;
     GenderWorteSchema::init_data(&data)?;
 
     // NiveauWorte
-    let data = NiveauWorteRepo::bulk_insert_tx(&tx, &SEED_NIVEAU_LISTE)?;
-    NiveauWorteSchema::init_data(&data)?;
+    let data = NiveauListeRepo::bulk_insert_tx(&tx, &SEED_NIVEAU_LISTE)?;
+    NiveauListeSchema::init_data(&data)?;
 
     // GramType
     let data = GramTypeRepo::bulk_insert_tx(&tx, &SEED_GRAM_TYPE_LISTE)?;

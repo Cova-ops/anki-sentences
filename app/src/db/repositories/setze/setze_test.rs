@@ -16,7 +16,7 @@ mod test_setze_repo {
         id: i32,
         setze_spanisch: String,
         setze_deutsch: String,
-        schwirigkeit_id: SchwirigkeitListeSnapshot,
+        niveau_id: NiveauSnapshot,
         thema: String,
 
         created_at: String,
@@ -25,9 +25,9 @@ mod test_setze_repo {
 
     #[derive(Debug)]
     #[allow(dead_code)]
-    struct SchwirigkeitListeSnapshot {
+    struct NiveauSnapshot {
         id: i32,
-        schwirigkeit: String,
+        niveau: String,
         created_at: String,
         deleted_at: String,
     }
@@ -38,9 +38,9 @@ mod test_setze_repo {
                 id: d.id,
                 setze_spanisch: d.setze_spanisch,
                 setze_deutsch: d.setze_deutsch,
-                schwirigkeit_id: SchwirigkeitListeSnapshot {
-                    id: d.schwirigkeit_id.id,
-                    schwirigkeit: d.schwirigkeit_id.schwirigkeit,
+                niveau_id: NiveauSnapshot {
+                    id: d.niveau_id.id,
+                    niveau: d.niveau_id.niveau,
                     created_at: "<created_at>".into(),
                     deleted_at: "<deleted_at>".into(),
                 },
@@ -79,13 +79,13 @@ mod test_setze_repo {
             assert_eq!(res_1[0].id, 1);
             assert_eq!(res_1[0].setze_spanisch, "Hola");
             assert_eq!(res_1[0].setze_deutsch, "Hallo");
-            assert_eq!(res_1[0].schwirigkeit_id.id, 1);
+            assert_eq!(res_1[0].niveau_id.id, 1);
             assert_eq!(res_1[0].thema, "Thema 1");
 
             assert_eq!(res_1[1].id, 2);
             assert_eq!(res_1[1].setze_spanisch, "Adios");
             assert_eq!(res_1[1].setze_deutsch, "Tschüss");
-            assert_eq!(res_1[1].schwirigkeit_id.id, 2);
+            assert_eq!(res_1[1].niveau_id.id, 2);
             assert_eq!(res_1[1].thema, "Thema 2");
 
             let res_1 = placeholder_dates(res_1);
@@ -98,13 +98,13 @@ mod test_setze_repo {
                 New {
                     setze_spanisch: "Hola".into(),
                     setze_deutsch: "Hallo".into(),
-                    schwirigkeit_id: 1,
+                    niveau_id: 1,
                     thema: "Thema 1".into(),
                 },
                 New {
                     setze_spanisch: "Adios".into(),
                     setze_deutsch: "Tschüss".into(),
-                    schwirigkeit_id: 2,
+                    niveau_id: 2,
                     thema: "Thema 2".into(),
                 },
             ];
@@ -117,13 +117,13 @@ mod test_setze_repo {
                 New {
                     setze_spanisch: "Hola".into(),
                     setze_deutsch: "Hallo".into(),
-                    schwirigkeit_id: 1,
+                    niveau_id: 1,
                     thema: "Thema 1".into(),
                 },
                 New {
                     setze_spanisch: "Adios".into(),
                     setze_deutsch: "Tschüss".into(),
-                    schwirigkeit_id: 2,
+                    niveau_id: 2,
                     thema: "Thema 2".into(),
                 },
             ];
@@ -153,13 +153,13 @@ mod test_setze_repo {
                 New {
                     setze_spanisch: "Hola".into(),
                     setze_deutsch: "Hallo".into(),
-                    schwirigkeit_id: 1,
+                    niveau_id: 1,
                     thema: "Thema 1".into(),
                 },
                 New {
                     setze_spanisch: "Adios".into(),
                     setze_deutsch: "Tschüss".into(),
-                    schwirigkeit_id: 2,
+                    niveau_id: 3,
                     thema: "Thema 2".into(),
                 },
             ];
@@ -182,13 +182,13 @@ mod test_setze_repo {
             assert_eq!(res[0].id, 1);
             assert_eq!(res[0].setze_spanisch, "Hola");
             assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].schwirigkeit_id.id, 1);
+            assert_eq!(res[0].niveau_id.id, 1);
             assert_eq!(res[0].thema, "Thema 1");
 
             assert_eq!(res[1].id, 2);
             assert_eq!(res[1].setze_spanisch, "Adios");
             assert_eq!(res[1].setze_deutsch, "Tschüss");
-            assert_eq!(res[1].schwirigkeit_id.id, 2);
+            assert_eq!(res[1].niveau_id.id, 3);
             assert_eq!(res[1].thema, "Thema 2");
 
             let res = placeholder_dates(res);
@@ -217,13 +217,13 @@ mod test_setze_repo {
             assert_eq!(res[0].id, 1);
             assert_eq!(res[0].setze_spanisch, "Hola");
             assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].schwirigkeit_id.id, 1);
+            assert_eq!(res[0].niveau_id.id, 1);
             assert_eq!(res[0].thema, "Thema 1");
 
             assert_eq!(res[1].id, 2);
             assert_eq!(res[1].setze_spanisch, "Adios");
             assert_eq!(res[1].setze_deutsch, "Tschüss");
-            assert_eq!(res[1].schwirigkeit_id.id, 2);
+            assert_eq!(res[1].niveau_id.id, 3);
             assert_eq!(res[1].thema, "Thema 2");
 
             let res = placeholder_dates(res);
@@ -242,7 +242,7 @@ mod test_setze_repo {
             assert_eq!(res[0].id, 1);
             assert_eq!(res[0].setze_spanisch, "Hola");
             assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].schwirigkeit_id.id, 1);
+            assert_eq!(res[0].niveau_id.id, 1);
             assert_eq!(res[0].thema, "Thema 1");
 
             let res = placeholder_dates(res);
@@ -256,7 +256,7 @@ mod test_setze_repo {
             assert_eq!(res[0].id, 2);
             assert_eq!(res[0].setze_spanisch, "Adios");
             assert_eq!(res[0].setze_deutsch, "Tschüss");
-            assert_eq!(res[0].schwirigkeit_id.id, 2);
+            assert_eq!(res[0].niveau_id.id, 3);
             assert_eq!(res[0].thema, "Thema 2");
 
             let res = placeholder_dates(res);

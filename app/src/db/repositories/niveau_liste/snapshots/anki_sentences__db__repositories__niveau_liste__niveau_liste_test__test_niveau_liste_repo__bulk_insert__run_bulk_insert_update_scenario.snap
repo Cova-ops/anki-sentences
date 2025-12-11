@@ -1,0 +1,18 @@
+---
+source: app/src/db/repositories/niveau_liste/niveau_liste_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id: 1,
+        niveau: "A1",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        niveau: "A2",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

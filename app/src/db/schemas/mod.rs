@@ -4,8 +4,7 @@ use rusqlite::Connection;
 pub mod gender_worte;
 pub mod geschichtlich_setze;
 pub mod gram_type;
-pub mod niveau_worte;
-pub mod schwirigkeit_liste;
+pub mod niveau_liste;
 pub mod setze;
 pub mod worte;
 pub mod worte_audio;
@@ -16,16 +15,13 @@ pub fn init_schemas(conn: &mut Connection) -> Result<()> {
     // Activar las llaves foráneas
     conn.execute("PRAGMA foreign_keys = ON", [])?;
 
-    // Dificultad
-    conn.execute(schwirigkeit_liste::CREATE_STR_TABLE_SCHWIRIGKEIT_LISTE, [])?;
-
     // Gender Worte
     conn.execute(gender_worte::CREATE_STR_TABLE_GENDER_WORTE, [])?;
     conn.execute_batch(gender_worte::CREATE_STR_INDEX_GENDER_WORTE)?;
 
-    // Niveau worte
-    conn.execute(niveau_worte::CREATE_STR_TABLE_GENDER_WORTE, [])?;
-    conn.execute_batch(niveau_worte::CREATE_STR_INDEX_NIVEAU_WORTE)?;
+    // Niveau Liste
+    conn.execute(niveau_liste::CREATE_STR_TABLE_NIVEAU_LISTE, [])?;
+    conn.execute_batch(niveau_liste::CREATE_STR_INDEX_NIVEAU_LISTE)?;
 
     // Gram Type
     conn.execute(gram_type::CREATE_STR_TABLE_GRAM_TYPE, [])?;

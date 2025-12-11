@@ -49,13 +49,13 @@ mod test_geschichtlich_setze_repo {
                     NewSetzeSchema {
                         setze_spanisch: "123".into(),
                         setze_deutsch: "456".into(),
-                        schwirigkeit_id: 1,
+                        niveau_id: 1,
                         thema: "789".into(),
                     },
                     NewSetzeSchema {
                         setze_spanisch: "123".into(),
                         setze_deutsch: "456".into(),
-                        schwirigkeit_id: 1,
+                        niveau_id: 1,
                         thema: "789".into(),
                     },
                 ],

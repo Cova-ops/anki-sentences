@@ -5,8 +5,7 @@ use std::fs::File;
 use crate::{
     db::schemas::{
         gender_worte::GenderWorteSchema, gram_type::GramTypeSchema,
-        niveau_worte::NiveauWorteSchema, schwirigkeit_liste::SchwirigkeitListeSchema,
-        setze::NewSetzeSchema, worte::NewWorteSchema,
+        niveau_liste::NiveauListeSchema, setze::NewSetzeSchema, worte::NewWorteSchema,
     },
     traits::string::StringConvertion,
 };
@@ -94,9 +93,9 @@ pub fn extract_sentences_csv(path: &str) -> Result<Vec<NewSetzeSchema>> {
 
         let col3_value = value.get(3).unwrap_or("1").to_string();
         let schwirig_id = if let Ok(col3) = col3_value.parse::<i32>() {
-            SchwirigkeitListeSchema::from_id(col3)
+            NiveauListeSchema::from_id(col3)
         } else {
-            SchwirigkeitListeSchema::from_name(&col3_value)
+            NiveauListeSchema::from_niveau(&col3_value)
         };
 
         let span = value.get(0).unwrap_or("").to_string();
@@ -158,7 +157,7 @@ pub fn extract_worte_csv(path: &str) -> Result<Vec<NewWorteSchema>> {
         };
         let plural = value.get(4).map(|s| s.to_string());
         let niveau_id = match value.get(5) {
-            Some(v) => NiveauWorteSchema::from_niveau(v)?.id,
+            Some(v) => NiveauListeSchema::from_niveau(v)?.id,
             None => bail!("niveau no puede ser vacio. Línea del CSV: {}", i),
         };
         let example_de = match value.get(6) {

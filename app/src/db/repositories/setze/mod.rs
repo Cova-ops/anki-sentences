@@ -3,7 +3,6 @@ use rusqlite::{Connection, Transaction, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::{
-    ctx,
     db::schemas::setze::{NewSetzeSchema, RawSetzeSchema, SetzeSchema},
     with_ctx,
 };
@@ -68,7 +67,7 @@ impl SetzeRepo {
                 "SELECT
                     id
                 FROM setze
-                WHERE thema in ({placeholders}) AND schwirigkeit_id = 2 AND deleted_at IS NULL
+                WHERE thema in ({placeholders}) AND niveau_id >= 3 AND deleted_at IS NULL
                 ORDER BY id"
             );
 
@@ -80,7 +79,7 @@ impl SetzeRepo {
             let sql = "SELECT
                     id
                 FROM setze
-                WHERE schwirigkeit_id = 2 AND deleted_at IS NULL
+                WHERE niveau_id >= 3 AND deleted_at IS NULL
                 ORDER BY id"
                 .to_string();
 
@@ -136,9 +135,9 @@ impl SetzeRepo {
         }
 
         let sql = r#"
-            INSERT INTO setze (setze_spanisch, setze_deutsch, schwirigkeit_id, thema)
+            INSERT INTO setze (setze_spanisch, setze_deutsch, niveau_id, thema)
                 VALUES (?1,?2,?3,?4)
-            RETURNING id, setze_spanisch, setze_deutsch, schwirigkeit_id, thema, created_at, deleted_at;
+            RETURNING id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at;
         "#;
 
         let mut out: Vec<SetzeSchema> = Vec::with_capacity(data.len());
@@ -169,7 +168,7 @@ impl SetzeRepo {
                 id,
                 setze_spanisch,
                 setze_deutsch,
-                schwirigkeit_id,
+                niveau_id,
                 thema,
                 created_at,
                 deleted_at
@@ -208,7 +207,7 @@ impl SetzeRepo {
                 id,
                 setze_spanisch,
                 setze_deutsch,
-                schwirigkeit_id,
+                niveau_id,
                 thema,
                 created_at,
                 deleted_at

@@ -1,10 +1,9 @@
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::Result;
 use sql_model::FromRaw;
 
 use crate::{
-    ctx,
     db::schemas::{
-        schwirigkeit_liste::SchwirigkeitListeSchema,
+        niveau_liste::NiveauListeSchema,
         setze::{NewSetzeSchema as New, RawSetzeSchema as Raw, SetzeSchema as Schema},
     },
     helpers::time::string_2_datetime,
@@ -15,15 +14,14 @@ impl FromRaw<Raw> for Schema {
         let created_at = string_2_datetime(Some(r.created_at)).unwrap();
         let deleted_at = string_2_datetime(r.deleted_at);
 
-        let schwirigkeit_id =
-            SchwirigkeitListeSchema::from_id(r.schwirigkeit_id).context(ctx!())?;
+        let niveau_id = NiveauListeSchema::from_id(r.niveau_id)?;
 
         Ok(Schema {
             id: r.id,
             setze_spanisch: r.setze_spanisch,
-           setze_deutsch: r.setze_deutsch,
+            setze_deutsch: r.setze_deutsch,
             thema: r.thema,
-            schwirigkeit_id,
+            niveau_id,
             created_at,
             deleted_at,
         })
@@ -39,13 +37,13 @@ impl New {
         setze_spanisch: String,
         setze_deutsch: String,
         thema: String,
-        schwirigkeit_id: i32,
+        niveau_id: i32,
     ) -> Self {
         Self {
             setze_spanisch,
             setze_deutsch,
             thema,
-            schwirigkeit_id,
+            niveau_id,
         }
     }
 }

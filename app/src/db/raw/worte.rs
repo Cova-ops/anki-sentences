@@ -4,7 +4,7 @@ use sql_model::FromRaw;
 use crate::{
     db::schemas::{
         gender_worte::GenderWorteSchema,
-        niveau_worte::NiveauWorteSchema,
+        niveau_liste::NiveauListeSchema,
         worte::{RawWorteSchema as Raw, WorteSchema as Schema},
     },
     helpers::time::string_2_datetime,
@@ -16,7 +16,7 @@ impl FromRaw<Raw> for Schema {
             Some(v) => Some(GenderWorteSchema::from_id(v)?),
             None => None,
         };
-        let niveau_id = NiveauWorteSchema::from_id(r.niveau_id)?;
+        let niveau_id = NiveauListeSchema::from_id(r.niveau_id)?;
 
         let created_at = string_2_datetime(Some(r.created_at)).unwrap();
         let deleted_at = string_2_datetime(r.deleted_at);
