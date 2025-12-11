@@ -1,0 +1,78 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+noun_common,Femenin,Lösung,solución,Lösungen,B1,"Ich habe endlich eine gute Lösung für das Problem gefunden.","Por fin encontré una buena solución para el problema.",,,
+noun_common,Femenin,Schwäche,debilidad,Schwächen,B1,"Jeder Mensch hat eine Schwäche.","Toda persona tiene una debilidad.",,,
+noun_common,Neutrum,Raubtier,depredador,Raubtiere,B2,"Das Raubtier lauert im hohen Gras.","El depredador acecha en la hierba alta.",,,
+noun_common,Femenin,Rolle,rol,Rollen,A2,"In dem Film spielt sie die Hauptrolle.","En la película ella interpreta el papel principal.",,,
+noun_common,Femenin,Ansage,anuncio,Ansagen,B2,"Die letzte Ansage im Zug habe ich nicht verstanden.","No entendí el último anuncio en el tren.",,,
+noun_common,Femenin,Biene,abeja,Bienen,A2,"Die Biene fliegt von Blume zu Blume.","La abeja vuela de flor en flor.",,,
+noun_common,Femenin,Art,tipo,Arten,A2,"Diese Art von Musik mag ich sehr.","Este tipo de música me gusta mucho.",,,
+noun_common,Maskuline,Rat,consejo,,B1,"Danke für deinen Rat, er hat mir wirklich geholfen.","Gracias por tu consejo, realmente me ayudó.",,,
+noun_common,Maskuline,Daumen,pulgar,Daumen,A2,"Drück mir die Daumen für die Prüfung!","¡Cruza los dedos por mí para el examen!",,,
+noun_common,Maskuline,Dealer,narcotraficante,Dealer,B1,"Der Dealer wurde gestern von der Polizei festgenommen.","El narco fue detenido ayer por la policía.",,,
+noun_common,Maskuline,Knast,cárcel,Knäste,B1,"Er sitzt seit zwei Jahren im Knast.","Lleva dos años en la cárcel.",,,
+noun_common,Femenin,Kälte,frío,,A2,"Die Kälte im Winter macht mir zu schaffen.","El frío en invierno me afecta mucho.",,,
+noun_common,Neutrum,Versehen,error,Versehen,B2,"Entschuldigung, das war ein Versehen.","Perdón, eso fue un error.",,,
+noun_common,Femenin,Kindheitserinnerung,recuerdo de infancia,Kindheitserinnerungen,B2,"Dieses Lied weckt schöne Kindheitserinnerungen.","Esta canción despierta bonitos recuerdos de infancia.",,,
+noun_common,Neutrum,Rentier,reno,Rentiere,A2,"Zu Weihnachten sieht man überall Bilder von Rentieren.","En Navidad se ven renos por todas partes.",,,
+noun_common,Femenin,Sammlung,colección,Sammlungen,B1,"Er hat eine große Sammlung von Comics.","Tiene una gran colección de cómics.",,,
+noun_common,Neutrum,Wunder,milagro,Wunder,B1,"Es ist ein kleines Wunder, dass alles geklappt hat.","Es es un pequeño milagro que todo haya salido bien.",,,
+noun_common,Maskuline,Milchreis,arroz con leche,,A2,"Zum Nachtisch gibt es heute warmen Milchreis.","De postre hoy hay arroz con leche caliente.",,,
+noun_common,Femenin,Menschenwürde,dignidad humana,,B2,"Die Menschenwürde ist im Grundgesetz verankert.","La dignidad humana está consagrada en la constitución.",,,
+noun_common,Neutrum,Wohl,bienestar,,B2,"Die Regierung muss für das Wohl der Bürger sorgen.","El gobierno debe velar por el bienestar de los ciudadanos.",,,
+noun_common,Maskuline,Schutz,protección,,B1,"Wir brauchen besseren Schutz der persönlichen Daten.","Necesitamos mejor protección de los datos personales.",,,
+noun_common,Neutrum,Pflegekind,niño de acogida,Pflegekinder,B2,"Das Pflegekind lebt seit einem Jahr bei seiner neuen Familie.","El niño de acogida vive desde hace un año con su nueva familia.",,,
+noun_common,Neutrum,Halteverbot,prohibido detenerse,Halteverbote,B2,"Hier gilt absolutes Halteverbot.","Aquí está totalmente prohibido detenerse.",,,
+noun_common,Maskuline,Bulle,policía,Bullen,B2,"Die Bullen standen plötzlich vor der Tür.","Los polis estaban de repente en la puerta.",,,
+noun_common,Neutrum,Vertrauen,confianza,,B1,"Zwischen uns gibt es viel Vertrauen.","Entre nosotros hay mucha confianza.",,,
+noun_common,Maskuline,Ersatz,reemplazo,Ersätze,B1,"Wir brauchen dringend Ersatz für das kaputte Gerät.","Necesitamos urgentemente un reemplazo para el aparato roto.",,,
+noun_common,Maskuline,Bock,ganas,Böcke,B2,"Ich habe heute keinen Bock auf Schule.","Hoy no tengo ganas de ir a la escuela.",,,
+noun_common,Maskuline,Hinweis,pista,Hinweise,B1,"Die Polizei hat einen wichtigen Hinweis bekommen.","La policía recibió una pista importante.",,,
+noun_common,Femenin,Schlägerei,pelea,Schlägereien,B1,"Vor dem Club gab es gestern eine Schlägerei.","Ayer hubo una pelea delante del antro.",,,
+verb_main,,stören,molestar,,A2,"Kannst du bitte leiser sein? Du störst mich beim Lernen.","¿Puedes hablar más bajo? Me molestas mientras estudio.","haben","No","No"
+verb_main,,wiederholen,repetir,,A2,"Kannst du die Frage bitte noch einmal wiederholen?","¿Puedes repetir la pregunta otra vez, por favor?","haben","No","No"
+verb_separable,,angreifen,atacar,,B1,"Der Hund wollte den Mann nicht angreifen.","El perro no quiso atacar al hombre.","haben","Si","No"
+verb_main,,stalken,acosar,,B2,"Er hat sie monatelang online gestalkt.","Él la estuvo acosando en línea durante meses.","haben","No","No"
+verb_separable,,vormachen,engañar,,B2,"Mach dir selbst nichts vor, das war eine schlechte Idee.","No te engañes, fue una mala idea.","haben","Si","No"
+verb_separable,,hinnehmen,aceptar,,B2,"Das kannst du doch nicht einfach so hinnehmen.","No puedes simplemente aceptar eso así.","haben","Si","No"
+verb_main,,entscheiden,decidir,,B1,"Ich kann mich heute nicht entscheiden, was ich essen will.","Hoy no puedo decidir qué quiero comer.","haben","No","No"
+verb_separable,,"sich wohlfühlen",sentirse bien,,B1,"In dieser Gruppe fühle ich mich sehr wohl.","En este grupo me siento muy bien.","haben","Si","Si"
+verb_main,,versorgen,abastecer,,B2,"Die Familie muss die Großmutter zu Hause versorgen.","La familia tiene que cuidar a la abuela en casa.","haben","No","No"
+verb_separable,,weiterhelfen,ayudar más,,B2,"Kannst du mir bei dieser Aufgabe weiterhelfen?","¿Puedes seguir ayudándome con esta tarea?","haben","Si","No"
+verb_main,,sichern,asegurar,,B2,"Du solltest deine Daten regelmäßig sichern.","Deberías respaldar tus datos con regularidad.","haben","No","No"
+verb_separable,,angucken,mirar,,A2,"Lass uns den Film heute Abend angucken.","Vamos a ver la película esta noche.","haben","Si","No"
+verb_main,,knacken,crujir,,B2,"Im alten Haus knacken ständig die Dielen.","En la casa vieja las tablas del piso crujen todo el tiempo.","haben","No","No"
+verb_separable,,herausfinden,averiguar,,B1,"Ich will unbedingt herausfinden, wer das getan hat.","Quiero averiguar quién hizo eso.","haben","Si","No"
+verb_main,,wecken,despertar,,A2,"Bitte weck mich morgen um sieben.","Por favor despiértame mañana a las siete.","haben","No","No"
+verb_main,,verkraften,sobrellevar,,B2,"Den Verlust des Jobs konnte er nur schwer verkraften.","Le costó mucho sobrellevar la pérdida del trabajo.","haben","No","No"
+verb_reflexive,,"sich verabreden",quedar con alguien,,A2,"Wir haben uns für morgen im Café verabredet.","Quedamos para mañana en la cafetería.","haben","No","Si"
+verb_separable,,hochladen,subir,,B1,"Ich lade das Video gleich auf die Plattform hoch.","Enseguida subo el video a la plataforma.","haben","Si","No"
+verb_main,,erwarten,esperar,,B1,"Was erwartest du von diesem Projekt?","¿Qué esperas de este proyecto?","haben","No","No"
+verb_separable,,hinschleppen,arrastrar,,C1,"Ich musste den schweren Karton allein nach oben hinschleppen.","Tuve que arrastrar sola la caja pesada hasta arriba.","haben","Si","No"
+verb_reflexive,,"sich herumtreiben",vagabundear,,C1,"Er treibt sich nachts oft in dubiosen Gegenden herum.","Por las noches suele vagabundear por zonas dudosas.","haben","No","Si"
+verb_main,,ersetzen,sustituir,,B1,"Man kann echte Freundschaft durch nichts ersetzen.","La verdadera amistad no se puede sustituir por nada.","haben","No","No"
+verb_main,,verraten,traicionar,,B1,"Er hat seine Freunde für Geld verraten.","Traicionó a sus amigos por dinero.","haben","No","No"
+verb_main,,rascheln,crujir,,B2,"Die Blätter rascheln im Wind.","Las hojas crujen con el viento.","haben","No","No"
+verb_main,,verletzen,hacerse daño,,B1,"Pass auf, sonst könntest du dich verletzen.","Ten cuidado, si no te podrías hacer daño.","haben","No","No"
+verb_separable,,auftauen,descongelar,,B1,"Ich lasse den Kuchen über Nacht auftauen.","Dejo que el pastel se descongele durante la noche.","haben","Si","No"
+verb_main,,verticken,traficar,,C1,"Er hat in der Schule Drogen vertickt.","Estuvo traficando drogas en la escuela.","haben","No","No"
+verb_separable,,wegschmeißen,tirar,,B2,"Warum hast du meine Sachen einfach weggeschmissen?","¿Por qué tiraste mis cosas así nada más?","haben","Si","No"
+verb_main,,demütigen,humillar,,B2,"Vor allen Leuten demütigte der Chef seinen Mitarbeiter.","El jefe humilló a su empleado delante de todos.","haben","No","No"
+adjective,,schwach,débil,,B1,"Nach der Krankheit fühlt sie sich noch sehr schwach.","Después de la enfermedad todavía se siente muy débil.",,,
+adjective,,schlau,astuto,,A2,"Er ist zu schlau, um auf diesen Trick hereinzufallen.","Es demasiado astuto para caer en ese truco.",,,
+adjective,,gebrochen,roto,,B1,"Nach der Trennung war er innerlich völlig gebrochen.","Después de la ruptura estaba completamente destrozado por dentro.",,,
+adjective,,dick,grueso,,A2,"Das Buch ist ziemlich dick, aber sehr spannend.","El libro es bastante grueso, pero muy interesante.",,,
+adjective,,stolz,orgulloso,,B1,"Seine Eltern sind sehr stolz auf ihn.","Sus padres están muy orgullosos de él.",,,
+adjective,,sprechend,parlante,,B2,"Im Film gibt es sprechende Tiere.","En la película hay animales parlantes.",,,
+adjective,,unangenehm,desagradable,,B1,"Die Situation war allen Beteiligten sehr unangenehm.","La situación fue muy desagradable para todos los involucrados.",,,
+adjective,,"zufällig",casual,,B1,"Wir haben uns ganz zufällig im Supermarkt getroffen.","Nos encontramos por pura casualidad en el supermercado.",,,
+adjective,,schlimm,malo,,A2,"So schlimm ist es auch wieder nicht.","Tampoco es tan malo.",,,
+adjective,,ständig,constante,,B1,"Mein Handy klingelt ständig.","Mi celular suena constantemente.",,,
+adjective,,regelmäßig,regular,,B1,"Du solltest regelmäßig Pausen machen.","Deberías hacer pausas regularmente.",,,
+adjective,,demütig,humilde,,B2,"Trotz seines Erfolgs ist er sehr demütig geblieben.","A pesar de su éxito ha seguido siendo muy humilde.",,,
+adjective,,doof,tonto,,A2,"Ich finde diese Idee total doof.","Esa idea me parece muy tonta.",,,
+adjective,,verhaftet,arrestado,,B2,"Der Verdächtige wurde gestern Abend verhaftet.","El sospechoso fue arrestado anoche.",,,
+adjective,,aggro,agresivo,,C1,"Warum bist du heute so aggro drauf?","¿Por qué estás tan agresivo hoy?",,,
+adverb_sentence_connector,,tatsächlich,en realidad,,B1,"Er hat tatsächlich die ganze Serie an einem Tag geschaut.","De hecho vio toda la serie en un solo día.",,,
+interjection,,ernsthaft,en serio,,B1,"Ernsthaft? Das glaub ich dir nicht.","¿En serio? No te lo creo.",,,
+fixed_phrase,,Beiträge zahlen,pagar cuotas,,B2,"Wer Mitglied im Verein ist, muss Beiträge zahlen.","Quien es miembro del club tiene que pagar cuotas.",,,
+fixed_phrase,,"ich schau mal",déjame ver,,B1,"Warte kurz, ich schau mal nach.","Espera un momento, voy a revisar.",,,
