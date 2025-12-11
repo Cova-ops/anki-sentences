@@ -10,7 +10,7 @@ const TEXT_MENU: &str = r##"¿Cuál entrenamiento quieres realizar?
   1. Palabras nuevas.
   2. Repetición de palabras.
 
-Para regresar al menúprincipal favor de escribir "exit".
+Para regresar al menú principal favor de escribir "exit".
 "##;
 
 pub fn menu_4_practice_worte(conn: &mut Connection) -> Result<()> {

@@ -4,6 +4,7 @@ use crate::{
     console::{
         _1_add_sentences::menu_1_add_sentences, _2_practice_sentences::menu_2_practice_sentences,
         _3_add_worte::menu_3_add_worte, _4_practice_worte::menu_4_practice_worte,
+        _5_manage_audios::menu_5_manage_audios,
     },
     db::get_conn,
     helpers::ui,
@@ -16,7 +17,7 @@ Herzliche Willkommen zu meinem Programm.
     2.- Üben Sätze.
     3.- Hinzufügen neue Worte.
     4.- Üben Worte.
-    5.- Üben Artikel Geschlecht.
+    5.- Manage Audios.
 
 Para salir favor de escribir "exit"
 "#;
@@ -37,10 +38,10 @@ pub fn menu_main() -> Result<()> {
             "2" => menu_2_practice_sentences(&mut conn)?,
             "3" => menu_3_add_worte(&mut conn)?,
             "4" => menu_4_practice_worte(&mut conn)?,
-            "5" => todo!(),
+            "5" => menu_5_manage_audios(&mut conn)?,
             "exit" => return Ok(()),
             _ => println!("Comando no reconocido"),
-        }
+        };
     }
 
     println!("Muchas de nadas, vuelva pronto! 🙌");

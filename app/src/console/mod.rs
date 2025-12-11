@@ -8,5 +8,7 @@ mod _3_add_worte;
 mod _4_1_neue_worte;
 mod _4_2_worte_review;
 mod _4_practice_worte;
+mod _5_2_audios_on_worte;
+mod _5_manage_audios;
 
 pub mod menu_main;

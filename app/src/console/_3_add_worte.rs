@@ -171,7 +171,7 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
             let audio_bytes: Vec<u8> = match tts::eleven_labs::generate_tts(&wort.worte_es) {
                 Ok(v) => v,
                 Err(err) => {
-                    println!("Error al generar el TTS de la palabra: {}", wort.worte_de);
+                    println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
                     println!("{:#?}", err);
                     continue;
                 }
@@ -180,7 +180,7 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
             let audio_path = match ManageAudios::save_audio_worte(audio_bytes, wort.id) {
                 Ok(v) => v,
                 Err(err) => {
-                    println!("Error al guardar el archivo: {}", wort.worte_de);
+                    println!("Error al guardar el archivo: {}", wort.worte_es);
                     println!("{:#?}", err);
                     continue;
                 }
@@ -195,7 +195,7 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
                 }],
             )?;
 
-            println!("Audio procesado {}/{}.", i, new_data.len());
+            println!("Audio procesado {}/{}.", i + 1, new_data.len());
         }
 
         break;
