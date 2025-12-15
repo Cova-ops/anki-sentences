@@ -2,9 +2,7 @@ use color_eyre::eyre::Result;
 use sql_model::FromRaw;
 
 use crate::{
-    db::schemas::worte_review::{
-         RawWorteReviewSchema as Raw, WorteReviewSchema as Schema,
-    },
+    db::schemas::setze_review::{RawWorteReviewSchema as Raw, SetzeReviewSchema as Schema},
     helpers::time::string_2_datetime,
 };
 
@@ -19,7 +17,7 @@ impl FromRaw<Raw> for Schema {
         Ok(Schema {
             id: r.id,
 
-            wort_id: r.wort_id,
+            satz_id: r.satz_id,
             interval: r.interval,
             ease_factor: r.ease_factor,
             repetitions: r.repetitions,

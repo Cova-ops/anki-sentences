@@ -32,7 +32,7 @@ pub fn menu_4_1_neue_worte(conn: &mut Connection) -> Result<()> {
         hash_audios.insert(id.wort_id);
     }
 
-    // Les hacemos un sort
+    // Les hacemos un shuffle
     let mut seed_rand = rand::rng();
     ids_worte.shuffle(&mut seed_rand);
 

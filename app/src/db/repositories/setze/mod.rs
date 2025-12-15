@@ -3,7 +3,7 @@ use rusqlite::{Connection, Transaction, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::{
-    db::schemas::setze::{NewSetzeSchema, RawSetzeSchema, SetzeSchema},
+    db::schemas::setze::{NewSetzeSchema as New, RawSetzeSchema as Raw, SetzeSchema as Schema},
     with_ctx,
 };
 
@@ -122,14 +122,14 @@ impl SetzeRepo {
         Ok(ids)
     }
 
-    pub fn bulk_insert(conn: &mut Connection, data: &[NewSetzeSchema]) -> Result<Vec<SetzeSchema>> {
+    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let result = Self::bulk_insert_tx(&tx, data)?;
         tx.commit()?;
         Ok(result)
     }
 
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[NewSetzeSchema]) -> Result<Vec<SetzeSchema>> {
+    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
         }
@@ -140,42 +140,29 @@ impl SetzeRepo {
             RETURNING id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at;
         "#;
 
-        let mut out: Vec<SetzeSchema> = Vec::with_capacity(data.len());
+        let mut out: Vec<Schema> = Vec::with_capacity(data.len());
         let mut stmt = tx.prepare_cached(sql)?;
 
         for d in data {
             let raw = stmt
-                .query_one(d.to_params(), RawSetzeSchema::from_sql)
+                .query_one(d.to_params(), Raw::from_sql)
                 .with_context(|| format!("sql: {}, params: {:#?}", sql, d))?;
-            out.push(SetzeSchema::from_raw(raw)?);
+            out.push(Schema::from_raw(raw)?);
         }
 
         Ok(out)
     }
 
-    pub fn fetch_where_thema(
-        conn: &Connection,
-        titles: &[String],
-        limit: u32,
-        offset: u32,
-    ) -> Result<Vec<SetzeSchema>> {
+    pub fn fetch_id_where_thema(conn: &Connection, titles: &[String]) -> Result<Vec<i32>> {
         let placeholders = std::iter::repeat_n("?", titles.len())
             .collect::<Vec<_>>()
             .join(",");
 
         let sql = format!(
-            "SELECT
-                id,
-                setze_spanisch,
-                setze_deutsch,
-                niveau_id,
-                thema,
-                created_at,
-                deleted_at
+            "SELECT id
             FROM setze
             WHERE thema in ({placeholders})
-            ORDER BY setze_deutsch
-            LIMIT {limit} OFFSET {offset}"
+            ORDER BY setze_deutsch"
         );
 
         let mut stmt = conn.prepare_cached(&sql)?;
@@ -183,17 +170,16 @@ impl SetzeRepo {
         let params: Vec<&dyn rusqlite::ToSql> =
             titles.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
 
-        let rows = stmt
+        let vec_ids = stmt
             .query(params_from_iter(params))
             .context(with_ctx!(format!("Sql - {}", sql)))?
-            .mapped(RawSetzeSchema::from_sql)
-            .collect::<Result<Vec<RawSetzeSchema>, _>>()?;
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
 
-        let result = SetzeSchema::from_vec_raw(rows)?;
-        Ok(result)
+        Ok(vec_ids)
     }
 
-    pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<SetzeSchema>> {
+    pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);
         }
@@ -223,10 +209,39 @@ impl SetzeRepo {
         let rows = stmt
             .query(params_from_iter(params))
             .context(format!("sql: {}, params: {:#?}", sql, ids))?
-            .mapped(RawSetzeSchema::from_sql)
-            .collect::<Result<Vec<RawSetzeSchema>, _>>()?;
+            .mapped(Raw::from_sql)
+            .collect::<Result<Vec<Raw>, _>>()?;
 
-        let result = SetzeSchema::from_vec_raw(rows)?;
+        let result = Schema::from_vec_raw(rows)?;
         Ok(result)
+    }
+
+    pub fn fetch_setze_without_audio(conn: &Connection) -> Result<Vec<Schema>> {
+        let sql = "
+            SELECT
+                s.id,
+                s.setze_spanisch,
+                s.setze_deutsch,
+                s.niveau_id,
+                s.thema,
+                s.created_at,
+                s.deleted_at
+            FROM setze s
+            LEFT JOIN setze_audio sa ON s.id = sa.wort_id 
+            WHERE s.deleted_at IS NULL AND sa.satz_id is NULL
+            ORDER BY s.id ASC;
+        "
+        .to_string();
+
+        let mut stmt = conn.prepare_cached(&sql)?;
+
+        let raws = stmt
+            .query([])
+            .context(format!("Sql - {}", sql))?
+            .mapped(Raw::from_sql)
+            .collect::<Result<Vec<Raw>, _>>()?;
+
+        let vec_out = Schema::from_vec_raw(raws)?;
+        Ok(vec_out)
     }
 }

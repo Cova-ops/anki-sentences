@@ -5,6 +5,8 @@ pub mod geschichtlich_setze;
 pub mod gram_type;
 pub mod niveau_liste;
 pub mod setze;
+pub mod setze_audio;
+pub mod setze_review;
 pub mod worte;
 pub mod worte_audio;
 pub mod worte_gender;
@@ -30,6 +32,9 @@ pub fn init_schemas(conn: &mut Connection) -> Result<()> {
     // Oraciones
     conn.execute(setze::CREATE_STR_TABLE_SETZE, [])?;
     conn.execute_batch(setze::CREATE_STR_INDEX_SETZE)?;
+
+    conn.execute(setze_audio::CREATE_STR_TABLE_SETZE_AUDIO, [])?;
+    conn.execute_batch(setze_audio::CREATE_STR_INDEX_SETZE_AUDIO)?;
 
     // Historico de oraciones
     conn.execute(

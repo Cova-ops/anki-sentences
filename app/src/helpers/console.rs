@@ -9,6 +9,7 @@ use crate::{
             geschichtlich_setze::NewGeschichtlichSetzeSchema, setze::SetzeSchema,
             worte::WorteSchema,
         },
+        setze::SetzeRepo,
         worte::WorteRepo,
     },
     helpers::{
@@ -45,7 +46,7 @@ impl ManageRepetitions {
 }
 
 const TEXT_SETZE_ONCE: &str = r##"
-Para salir pon la palara "exit".
+Para salir pon la palara "exit".                 Faltantes: {remainding}
 Algunas letras que te pueden ayudar. :)
           - ß ẞ ä ö ü Ä Ö Ü 
 
@@ -58,165 +59,121 @@ Por favor traducela...
 /// return:
 /// - 0 Finishing sentences
 /// - 1 User typed "exit"
-pub fn make_setze_exercise(arr: &[SetzeSchema]) -> Result<(u8, Vec<NewGeschichtlichSetzeSchema>)> {
-    let mut vec_out = Vec::with_capacity(arr.len());
-    let mut val_out = 0;
-
-    for s in arr {
-        utils::clean_screen();
-        let mut s_done = false;
-
-        let db_s = utils::string::clean_sentences(&s.setze_deutsch);
-        for i in 0..2 {
-            println!(
-                "{}",
-                TEXT_SETZE_ONCE
-                    .replace("{satz}", &s.setze_spanisch)
-                    .replace("{thema}", &s.thema)
-            );
-
-            let Some(input) = ui::prompt_nonempty("> ")? else {
-                continue;
-            };
-
-            if input == "exit" {
-                val_out = 1;
-                break;
-            }
-
-            let input = utils::string::clean_sentences(&input);
-            if input == db_s {
-                println!("Oración perfecta.");
-                s_done = true;
-
-                // Si "i" vale 0, quiere decir que respondio al oración a la primera,
-                // se pasa un true
-                let new_data = NewGeschichtlichSetzeSchema {
-                    setze_id: s.id,
-                    result: i == 0,
-                };
-                vec_out.push(new_data);
-
-                break;
-            } else {
-                println!();
-                println!("Oración incorrecta");
-            }
-        }
-
-        if !s_done && val_out != 1 {
-            println!("La oración correcta es: {}", s.setze_deutsch);
-            println!("Schreib es gut, bitte.");
-
-            loop {
-                let Some(input) = ui::prompt_nonempty("> ")? else {
-                    break;
-                };
-                if input == "exit" {
-                    val_out = 1;
-                    break;
-                }
-
-                let input = utils::string::clean_sentences(&input);
-                if input == db_s {
-                    let new_data = NewGeschichtlichSetzeSchema {
-                        setze_id: s.id,
-                        result: false,
-                    };
-                    vec_out.push(new_data);
-                    break;
-                }
-            }
-        }
-    }
-
-    Ok((val_out, vec_out))
-}
-
-/// return:
-/// - 0 Finishing sentences
-/// - 1 User typed "exit"
 pub fn make_setze_exercise_repeat(
-    arr: &[SetzeSchema],
-) -> Result<(u8, Vec<NewGeschichtlichSetzeSchema>)> {
-    let mut setze_correct: Vec<SetzeSchema> = Vec::from(arr);
-    let mut i = 0;
+    conn: &Connection,
+    ids_setze: Vec<i32>,
+    hash_audios: HashSet<i32>,
+    offset: usize,
+) -> Result<(i32, Vec<(i32, u8)>)> {
+    let mut ids_setze = ids_setze;
 
-    let mut vec_out = Vec::with_capacity(arr.len());
+    let mut vec_out: Vec<(i32, u8)> = vec![];
     let mut val_out = 0;
+    let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
+
+    let take = ids_setze.len().min(offset);
+    let aux_ids: Vec<i32> = ids_setze.drain(..take).collect();
+
+    // Obtenemos toda la info del bloque de palabras que vamos a usar
+    let mut setze_correct = SetzeRepo::fetch_by_id(conn, &aux_ids)?;
+
+    let player = AudioPlayer::new();
     while !setze_correct.is_empty() {
-        let s = setze_correct[i].clone();
+        let s = setze_correct[0].clone();
 
         utils::clean_screen();
-        let mut s_done = false;
-        let db_s = utils::string::clean_sentences(&s.setze_deutsch);
-        for i in 0..2 {
-            println!(
-                "{}",
-                TEXT_SETZE_ONCE
-                    .replace("{satz}", &s.setze_spanisch)
-                    .replace("{thema}", &s.thema)
-            );
+        let setze_remaining = setze_correct.len() + ids_setze.len();
+        println!(
+            "{}",
+            TEXT_SETZE_ONCE
+                .replace("{satz}", &s.setze_spanisch)
+                .replace("{thema}", &s.thema)
+                .replace("{remainding}", &setze_remaining.to_string())
+        );
 
+        #[allow(clippy::collapsible_if)]
+        if let Some(audio) = hash_audios.get(&s.id) {
+            if let Ok(Some(path)) = ManageAudios::get_audio_setze(*audio) {
+                player.play(path)?;
+            }
+        };
+
+        let Some(input) = ui::prompt_nonempty("> ")? else {
+            continue;
+        };
+
+        if input == "exit" {
+            val_out = 1;
+            break;
+        }
+
+        let correct_answer = utils::string::clean_sentences(&s.setze_deutsch);
+        let input = utils::string::clean_sentences(&input);
+        if input == correct_answer {
+            if let Some(rep) = already_studied.get_mut(&s.id) {
+                if rep.repetition < 1 {
+                    // Primera vez que la acierta: subimos contador pero aún no la graduamos
+                    rep.add_repetition();
+                    setze_correct.rotate_left(1); // mueve el primer elemento al final del vector
+                } else {
+                    // Si la bandera de once_mistake esta en true, quiere decir que se equivoco con la
+                    // palabra por lo menos una vez
+                    let easy = if rep.once_mistake { 1 } else { 2 };
+                    vec_out.push((s.id, easy));
+                    setze_correct.remove(0);
+
+                    if !ids_setze.is_empty() {
+                        // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                        let id_new = ids_setze.remove(0);
+                        let satz_new = SetzeRepo::fetch_by_id(conn, &[id_new])?;
+                        setze_correct.push(satz_new[0].clone());
+                    }
+
+                    // limpiamos el hashmap de la palabra que ya no se va a repetir
+                    already_studied.remove(&s.id);
+                }
+            } else {
+                // La tuvo correcta a la primera
+                let easy = 2;
+                vec_out.push((s.id, easy));
+                setze_correct.remove(0);
+
+                if !ids_setze.is_empty() {
+                    // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                    let id_new = ids_setze.remove(0);
+                    let satz_new = SetzeRepo::fetch_by_id(conn, &[id_new])?;
+                    setze_correct.push(satz_new[0].clone());
+                }
+            }
+
+            continue;
+        }
+
+        already_studied
+            .entry(s.id)
+            .and_modify(|r| *r = ManageRepetitions::new_error())
+            .or_insert(ManageRepetitions::new_error());
+
+        println!();
+        println!("Palabra incorrecta");
+        println!("La palabra correcta es: {}", correct_answer);
+        println!();
+
+        loop {
             let Some(input) = ui::prompt_nonempty("> ")? else {
-                continue;
+                break;
             };
-
             if input == "exit" {
                 val_out = 1;
                 break;
             }
 
-            let input = utils::string::clean_sentences(&input);
-            if input == db_s {
-                println!("Oración perfecta.");
-                s_done = true;
-
-                // Si "i" vale 0, quiere decir que respondio al oración a la primera,
-                // se pasa un true
-                if i == 0 {
-                    let new_data = NewGeschichtlichSetzeSchema {
-                        setze_id: s.id,
-                        result: true,
-                    };
-                    vec_out.push(new_data);
-                    setze_correct.remove(i);
-                }
-
+            let input = input.trim();
+            if input == correct_answer {
+                setze_correct.rotate_left(1); // mueve el primer elemento al final del vector
                 break;
-            } else {
-                println!();
-                println!("Oración incorrecta");
             }
         }
-
-        if !s_done && val_out != 1 {
-            println!("La oración correcta es: {}", s.setze_deutsch);
-            println!("Schreib es gut, bitte.");
-
-            loop {
-                let Some(input) = ui::prompt_nonempty("> ")? else {
-                    break;
-                };
-                if input == "exit" {
-                    val_out = 1;
-                    break;
-                }
-
-                let input = utils::string::clean_sentences(&input);
-                if input == db_s {
-                    let new_data = NewGeschichtlichSetzeSchema {
-                        setze_id: s.id,
-                        result: false,
-                    };
-                    vec_out.push(new_data);
-                    break;
-                }
-            }
-        }
-
-        i += 1;
-        i %= arr.len();
     }
 
     Ok((val_out, vec_out))
@@ -266,22 +223,10 @@ pub fn make_worte_exercise_repeat(
     let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
 
     let player = AudioPlayer::new();
-
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
 
         utils::clean_screen();
-        // println!(
-        //     "hash: {:#?}",
-        //     already_studied
-        //         .iter()
-        //         .map(|a| format!("{} {:#?}", a.0, a.1))
-        //         .collect::<Vec<_>>()
-        //         .join("\n")
-        // );
-        // println!("w: {:#?}", w);
-        // println!("worte_correct: {:#?}", worte_correct);
-        //
         let worte_remaining = worte_correct.len() + ids_worte.len();
         println!(
             "{}",
@@ -344,8 +289,17 @@ pub fn make_worte_exercise_repeat(
                     already_studied.remove(&w.id);
                 }
             } else {
-                already_studied.insert(w.id, ManageRepetitions::new());
-                worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
+                // La tuvo correcta a la primera
+                let easy = 2;
+                vec_out.push((w.id, easy));
+                worte_correct.remove(0);
+
+                if !ids_worte.is_empty() {
+                    // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                    let id_new = ids_worte.remove(0);
+                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
+                    worte_correct.push(wort_new[0].clone());
+                }
             }
 
             continue;

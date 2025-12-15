@@ -152,18 +152,18 @@ impl WorteRepo {
         let sql = "
             SELECT
                 w.id,
-				w.gender_id,
-				w.wort_de,
-				w.wort_es,
-				w.plural,
-				w.niveau_id,
-				w.example_de,
+                w.gender_id,
+                w.wort_de,
+                w.wort_es,
+                w.plural,
+                w.niveau_id,
+                w.example_de,
                 w.example_es,
-				w.verb_aux,
-				w.trennbar,
-				w.reflexiv,
-				w.created_at,
-				w.deleted_at
+                w.verb_aux,
+                w.trennbar,
+                w.reflexiv,
+                w.created_at,
+                w.deleted_at
             FROM worte w
             LEFT JOIN worte_audio wa ON w.id = wa.wort_id 
             WHERE w.deleted_at IS NULL AND wa.wort_id is NULL

@@ -200,66 +200,26 @@ mod test_setze_repo {
         }
 
         #[test]
-        fn test_fetch_where_thema() {
+        fn test_fetch_id_where_thema() {
             let mut conn = setup_test_db().expect("Error al crear db test");
             init_data_local(&mut conn).expect("Error al iniciar data test");
 
-            let res =
-                SetzeRepo::fetch_where_thema(&conn, &[], 100, 0).expect("Error al hacer fetch");
+            let res = SetzeRepo::fetch_id_where_thema(&conn, &[]).expect("Error al hacer fetch");
             assert_eq!(res.len(), 0);
             insta::assert_debug_snapshot!(res);
 
-            let res =
-                SetzeRepo::fetch_where_thema(&conn, &["Thema 1".into(), "Thema 2".into()], 100, 0)
-                    .expect("Error al hacer fetch");
-            assert_eq!(res.len(), 2);
-
-            assert_eq!(res[0].id, 1);
-            assert_eq!(res[0].setze_spanisch, "Hola");
-            assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].niveau_id.id, 1);
-            assert_eq!(res[0].thema, "Thema 1");
-
-            assert_eq!(res[1].id, 2);
-            assert_eq!(res[1].setze_spanisch, "Adios");
-            assert_eq!(res[1].setze_deutsch, "Tschüss");
-            assert_eq!(res[1].niveau_id.id, 3);
-            assert_eq!(res[1].thema, "Thema 2");
-
-            let res = placeholder_dates(res);
-            insta::assert_debug_snapshot!(res);
-
-            let res = SetzeRepo::fetch_where_thema(&conn, &["Thema 99".into()], 100, 0)
+            let res = SetzeRepo::fetch_id_where_thema(&conn, &["Thema 1".into(), "Thema 2".into()])
                 .expect("Error al hacer fetch");
+
+            assert_eq!(res.len(), 2);
+            assert_eq!(res[0], 1);
+            assert_eq!(res[1], 2);
+            insta::assert_debug_snapshot!(res);
+
+            let res = SetzeRepo::fetch_id_where_thema(&conn, &["Thema 99".into()])
+                .expect("Error al hacer fetch");
+
             assert_eq!(res.len(), 0);
-            insta::assert_debug_snapshot!(res);
-
-            let res =
-                SetzeRepo::fetch_where_thema(&conn, &["Thema 1".into(), "Thema 2".into()], 1, 0)
-                    .expect("Error al hacer fetch");
-            assert_eq!(res.len(), 1);
-
-            assert_eq!(res[0].id, 1);
-            assert_eq!(res[0].setze_spanisch, "Hola");
-            assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].niveau_id.id, 1);
-            assert_eq!(res[0].thema, "Thema 1");
-
-            let res = placeholder_dates(res);
-            insta::assert_debug_snapshot!(res);
-
-            let res =
-                SetzeRepo::fetch_where_thema(&conn, &["Thema 1".into(), "Thema 2".into()], 1, 1)
-                    .expect("Error al hacer fetch");
-            assert_eq!(res.len(), 1);
-
-            assert_eq!(res[0].id, 2);
-            assert_eq!(res[0].setze_spanisch, "Adios");
-            assert_eq!(res[0].setze_deutsch, "Tschüss");
-            assert_eq!(res[0].niveau_id.id, 3);
-            assert_eq!(res[0].thema, "Thema 2");
-
-            let res = placeholder_dates(res);
             insta::assert_debug_snapshot!(res);
         }
 
