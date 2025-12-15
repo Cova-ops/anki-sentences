@@ -142,9 +142,8 @@ mod test_setze_repo {
 
         use super::*;
         use crate::db::{
-            geschichtlich_setze::GeschichtlichSetzeRepo,
-            schemas::geschichtlich_setze::NewGeschichtlichSetzeSchema, seeders::init_data,
-            setup_test_db, setze::SetzeRepo,
+            schemas::setze_review::NewSetzeReviewSchema, seeders::init_data, setup_test_db,
+            setze::SetzeRepo, setze_review::SetzeReviewRepo,
         };
 
         fn init_data_local(conn: &mut Connection) -> Result<()> {
@@ -292,11 +291,15 @@ mod test_setze_repo {
 
             insta::assert_debug_snapshot!(res);
 
-            GeschichtlichSetzeRepo::bulk_insert(
+            SetzeReviewRepo::bulk_insert(
                 &mut conn,
-                &[NewGeschichtlichSetzeSchema {
-                    result: true,
-                    setze_id: 1,
+                &[NewSetzeReviewSchema {
+                    satz_id: 1,
+                    repetitions: 1,
+                    ease_factor: 2.0,
+                    interval: 1,
+                    last_review: "2025-01-10 12:00:00".into(),
+                    next_review: "2025-01-10 12:00:00".into(),
                 }],
             )
             .expect("Error al guardar los resultados del historial");

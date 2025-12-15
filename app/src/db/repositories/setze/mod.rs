@@ -105,11 +105,13 @@ impl SetzeRepo {
             FROM setze s
             WHERE NOT EXISTS (
                 SELECT 1
-                FROM geschichtlich_setze g
-                WHERE g.setze_id = s.id
+                FROM setze_review sr
+                WHERE sr.satz_id = s.id
             )
-            AND s.deleted_at IS NULL;"
-            .to_string();
+            AND s.deleted_at IS NULL
+            ORDER BY s.id ASC;
+            "
+        .to_string();
 
         let mut stmt = conn.prepare_cached(&sql)?;
 

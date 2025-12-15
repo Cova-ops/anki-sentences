@@ -1,4 +1,3 @@
-pub mod geschichtlich_setze;
 pub mod gram_type;
 pub mod niveau_liste;
 pub mod setze;

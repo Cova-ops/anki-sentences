@@ -5,10 +5,7 @@ use rusqlite::Connection;
 
 use crate::{
     db::{
-        schemas::{
-            geschichtlich_setze::NewGeschichtlichSetzeSchema, setze::SetzeSchema,
-            worte::WorteSchema,
-        },
+        schemas::{setze::SetzeSchema, worte::WorteSchema},
         setze::SetzeRepo,
         worte::WorteRepo,
     },
@@ -57,8 +54,15 @@ Por favor traducela...
 "##;
 
 /// return:
-/// - 0 Finishing sentences
-/// - 1 User typed "exit"
+/// - Seguir o no seguir con el proceso:
+///   - 0 Finishing sentences
+///   - 1 User typed "exit"
+/// - Vec<(i32, u8)>:
+///   - 1° -> satz_id
+///   - 2° -> resultado usuario
+///     - 0 -> No se la sabe
+///     - 1 -> Se la sabe pero dificil
+///     - 2 -> Se la sabe facil
 pub fn make_setze_exercise_repeat(
     conn: &Connection,
     ids_setze: Vec<i32>,

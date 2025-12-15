@@ -1,7 +1,6 @@
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
-pub mod geschichtlich_setze;
 pub mod gram_type;
 pub mod niveau_liste;
 pub mod setze;
@@ -33,15 +32,11 @@ pub fn init_schemas(conn: &mut Connection) -> Result<()> {
     conn.execute(setze::CREATE_STR_TABLE_SETZE, [])?;
     conn.execute_batch(setze::CREATE_STR_INDEX_SETZE)?;
 
+    conn.execute(setze_review::CREATE_STR_TABLE_SETZE_REVIEW, [])?;
+    conn.execute_batch(setze_review::CREATE_STR_INDEX_SETZE_REVIEW)?;
+
     conn.execute(setze_audio::CREATE_STR_TABLE_SETZE_AUDIO, [])?;
     conn.execute_batch(setze_audio::CREATE_STR_INDEX_SETZE_AUDIO)?;
-
-    // Historico de oraciones
-    conn.execute(
-        geschichtlich_setze::CREATE_STR_TABLE_GESCHICHTLICH_SETZE,
-        [],
-    )?;
-    conn.execute_batch(geschichtlich_setze::CREATE_STR_INDEX_GESCHICHTLICH_SETZE)?;
 
     // Palabras
     conn.execute(worte::CREATE_STR_TABLE_WORTE, [])?;

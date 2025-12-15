@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sql_model::SqlModel;
 
-pub const CREATE_STR_TABLE_WORTE_REVIEW: &str = "
+pub const CREATE_STR_TABLE_SETZE_REVIEW: &str = "
 CREATE TABLE IF NOT EXISTS setze_review (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     satz_id         INTEGER NOT NULL UNIQUE,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS setze_review (
 );
 ";
 
-pub const CREATE_STR_INDEX_WORTE_REVIEW: &str = "
+pub const CREATE_STR_INDEX_SETZE_REVIEW: &str = "
     CREATE UNIQUE INDEX IF NOT EXISTS idx_setze_review_satz_id ON setze_review(satz_id);
     CREATE INDEX IF NOT EXISTS idx_setze_review_next_review ON setze_review(next_review);
 ";
@@ -77,4 +77,3 @@ pub struct RawWorteReviewSchema {
     pub created_at: String,
     pub deleted_at: Option<String>,
 }
-
