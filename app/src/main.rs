@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 
-use crate::{console::menu_main::menu_main, db::init_db, helpers::audios::ManageAudios};
+use crate::helpers::audios::ManageAudios;
 
 mod console;
 mod db;
@@ -15,8 +15,8 @@ fn main() -> Result<()> {
 }
 
 fn run() -> Result<()> {
-    init_db()?;
+    db::init_db()?;
     ManageAudios::init_dir()?;
-    menu_main()?;
+    console::menu_main()?;
     Ok(())
 }
