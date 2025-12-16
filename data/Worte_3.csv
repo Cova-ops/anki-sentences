@@ -1,0 +1,39 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+noun_common,Maskuline,Schirm,paraguas,Schirme,A1,"Ich nehme meinen Schirm mit, weil es regnet.","Llevo mi paraguas porque está lloviendo.",,,
+verb_main,,nass werden,mojarse,,A1,"Wir werden nass, wenn wir ohne Schirm rausgehen.","Nos mojamos cuando salimos sin paraguas.","sein","No","No"
+verb_main,,trainieren,entrenar,,A2,"Ich trainiere jeden Tag Basketball.","Entreno baloncesto todos los días.","haben","No","No"
+verb_main,,vorbereiten,preparar,,A2,"Ich bereite das Essen für heute Abend vor.","Preparo la comida para esta noche.","haben","Si","No"
+verb_main,,überprüfen,revisar,,B1,"Bitte überprüfe die Daten noch einmal.","Por favor revisa los datos otra vez.","haben","No","No"
+noun_common,Maskuline,Fehler,error,Fehler,A2,"Ich habe einen Fehler im Text gefunden.","Encontré un error en el texto.",,,
+noun_common,Femenin,Kundin,clienta,Kundinnen,A1,"Die Kundin wartet draußen.","La clienta espera afuera.",,,
+noun_common,Maskuline,Kunde,cliente,Kunden,A1,"Der Kunde hat eine Frage.","El cliente tiene una pregunta.",,,
+adverb_time,,immer noch,todavía,,A2,"Ich warte immer noch auf deine Antwort.","Todavía espero tu respuesta.",,,
+fixed_phrase,,seit Monaten,desde hace meses,,B1,"Ich lerne seit Monaten Deutsch.","Estudio alemán desde hace meses.",,,
+noun_common,Plural,Schwierigkeiten,dificultades,Schwierigkeiten,B1,"Er hat Schwierigkeiten in der Schule.","Él tiene dificultades en la escuela.",,,
+verb_reflexive,,sich verbessern,mejorarse,,B1,"Ich möchte mich in Deutsch verbessern.","Quiero mejorar en alemán.","haben","No","Si"
+pronoun_indefinite,,einige,algunos,,A2,"Einige Leute sind schon angekommen.","Algunas personas ya llegaron.",,,
+pronoun_indefinite,,irgendwelche,cualquier,,B1,"Hast du irgendwelche Fragen?","¿Tienes alguna pregunta?",,,
+noun_common,Maskuline,Lärm,ruido,der Lärm,A2,"Der Lärm vom Verkehr stört mich.","El ruido del tráfico me molesta.",,,
+verb_main,,weitergehen,seguir,,A2,"Wir gehen weiter, bis wir zu Hause sind.","Seguimos hasta llegar a casa.","sein","Si","No"
+verb_main,,müde werden,ponerse cansado,,A2,"Ich werde nach der Arbeit immer müde.","Siempre me pongo cansado después del trabajo.","sein","No","No"
+noun_common,Femenin,Frist,plazo,Fristen,B1,"Die Frist endet morgen.","El plazo termina mañana.",,,
+verb_main,,rausgehen,salir,,A2,"Ich gehe kurz raus.","Salgo un momento.","sein","Si","No"
+pronoun_indefinite,,mehrere,varios,,A2,"Ich habe mehrere Möglichkeiten.","Tengo varias opciones.",,,
+adjective,,wildfremd,totalmente desconocido,,B1,"Ein wildfremder Mann hat mir geholfen.","Un hombre totalmente desconocido me ayudó.",,,
+verb_main,,bellen,ladrar,,A1,"Der Hund bellt laut.","El perro ladra fuerte.","haben","No","No"
+fixed_phrase,,komm heile zurück,regresa sano y salvo,,B1,"Fahr vorsichtig und komm heile zurück.","Conduce con cuidado y regresa sano y salvo.",,,
+noun_common,Femenin,Möglichkeit,oportunidad,Möglichkeiten,A2,"Das ist eine gute Möglichkeit.","Esa es una buena oportunidad.",,,
+noun_common,Maskuline,Schiss,pánico,,B1,"Ich habe keinen Schiss davor.","No tengo pánico de eso.",,,
+verb_main,,sparen,ahorrar,,A2,"Ich spare Geld für meinen Urlaub.","Ahorro dinero para mis vacaciones.","haben","No","No"
+verb_main,,Geld ausgeben,gastar dinero,,B1,"Ich gebe zu viel Geld aus.","Gasto demasiado dinero.","haben","No","No"
+noun_common,Neutrum,Gehalt,sueldo,Gehälter,B2,"Mein Gehalt wurde erhöht.","Aumentaron mi sueldo.",,,
+verb_main,,einen Wecker stellen,poner una alarma,,A2,"Ich stelle jeden Morgen einen Wecker.","Pongo una alarma cada mañana.","haben","No","No"
+verb_main,,ausschalten,apagar,,A2,"Bitte schalte den Computer aus.","Por favor apaga la computadora.","haben","Si","No"
+noun_common,Femenin,Aussprache,pronunciación,Aussprache,B1,"Die deutsche Aussprache ist schwierig.","La pronunciación alemana es difícil.",,,
+verb_main,,Geld abheben,sacar dinero,,B1,"Ich muss Geld am Automaten abheben.","Necesito sacar dinero en el cajero.","haben","No","No"
+noun_common,Maskuline,Automat,cajero automático,Automaten,A1,"Der Automat funktioniert heute nicht.","El cajero automático no funciona hoy.",,,
+noun_common,Femenin,Liste,lista,Listen,A1,"Ich schreibe eine Liste für den Einkauf.","Hago una lista para las compras.",,,
+verb_reflexive,,sich konzentrieren,concentrarse,,A2,"Ich muss mich besser konzentrieren.","Debo concentrarme mejor.","haben","No","Si"
+noun_common,Femenin,Luft,aire,,A2,"Die Luft hier ist sehr frisch.","El aire aquí es muy fresco.",,,
+noun_common,Maskuline,Wortschatz,vocabulario,Wortschätze,B1,"Ich möchte meinen Wortschatz erweitern.","Quiero ampliar mi vocabulario.",,,
+verb_reflexive,,sich erinnern,recordar,,A2,"Ich erinnere mich nicht mehr daran.","Ya no lo recuerdo.","haben","No","Si"

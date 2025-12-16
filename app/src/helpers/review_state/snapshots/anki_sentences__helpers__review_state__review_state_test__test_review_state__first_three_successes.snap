@@ -1,0 +1,21 @@
+---
+source: app/src/helpers/review_state/review_state_test.rs
+expression: log
+---
+[
+    ReviewState {
+        interval: 1,
+        ease_factor: 2.6,
+        repetitions: 1,
+    },
+    ReviewState {
+        interval: 2,
+        ease_factor: 2.7,
+        repetitions: 2,
+    },
+    ReviewState {
+        interval: 4,
+        ease_factor: 2.8,
+        repetitions: 3,
+    },
+]

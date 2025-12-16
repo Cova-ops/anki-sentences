@@ -1,0 +1,7 @@
+---
+source: app/src/db/repositories/worte/worte_test.rs
+expression: res_2
+---
+[
+    2,
+]

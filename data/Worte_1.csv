@@ -1,0 +1,86 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,eigen,propio,,B1,"Das ist meine eigene Wohnung.","Este es mi propio departamento.",,,
+noun_common,Maskuline,Haufen,montón,Haufen,B1,"Vor der Tür liegt ein Haufen Schuhe.","Hay un montón de zapatos frente a la puerta.",,,
+noun_common,Femenin,Kohle,dinero,Kohlen,B1,"Ich habe gerade keine Kohle für den Urlaub.","Ahora no tengo dinero para las vacaciones.",,,
+verb_main,,entscheiden,decidir,,B1,"Wir müssen heute über das Projekt entscheiden.","Tenemos que decidir sobre el proyecto hoy.","haben","No","No"
+noun_common,Maskuline,Angestellter,empleado,Angestellte,B1,"Der Angestellte hilft dem Kunden sehr freundlich.","El empleado ayuda al cliente muy amablemente.",,,
+noun_common,Femenin,Angestellte,empleada,Angestellte,B1,"Die Angestellte beantwortet alle Fragen geduldig.","La empleada responde a todas las preguntas con paciencia.",,,
+verb_main,,versuchen,intentar,,A2,"Ich werde es noch einmal versuchen.","Lo voy a intentar una vez más.","haben","No","No"
+noun_common,Femenin,Arbeitszeit,tiempo de trabajo,Arbeitszeiten,B1,"Die Arbeitszeit in dieser Firma ist flexibel.","El tiempo de trabajo en esta empresa es flexible.",,,
+adjective,,hässlich,feo,,A2,"Ich finde das Bild ziemlich hässlich.","Encuentro el cuadro bastante feo.",,,
+adjective,,behindert,discapacitado,,B1,"Sie arbeitet in einem Projekt für behinderte Menschen.","Ella trabaja en un proyecto para personas con discapacidad.",,,
+verb_main,,schlagen,golpear,,B1,"Er hat wütend auf den Tisch geschlagen.","Él golpeó la mesa enfadado.","haben","No","No"
+noun_common,Plural,Schulden,deudas,Schulden,B1,"Ich habe noch Schulden bei der Bank.","Todavía tengo deudas con el banco.",,,
+noun_common,Maskuline,Scheiß,mierda,Scheiß,B2,"Was für ein Scheißtag heute!","¡Qué día de mierda hoy!",,,
+adverb_sentence_connector,,eigentlich,en realidad,,B1,"Eigentlich wollte ich heute zu Hause bleiben.","En realidad quería quedarme en casa hoy.",,,
+verb_main,,kriegen,conseguir,,B1,"Wo kann ich hier ein Taxi kriegen?","¿Dónde puedo conseguir un taxi aquí?","haben","No","No"
+fixed_phrase,,Habt ihr komplett den Arsch offen?,¿Están completamente locos?,,C1,"Habt ihr komplett den Arsch offen, oder was?","¿Están completamente locos o qué?",,,
+noun_common,Maskuline,Schwanz,cola,Schwänze,B1,"Der Hund wedelt fröhlich mit dem Schwanz.","El perro mueve la cola alegremente.",,,
+noun_common,Femenin,Entscheidung,decisión,Entscheidungen,B1,"Das ist eine wichtige Entscheidung für unsere Zukunft.","Esa es una decisión importante para nuestro futuro.",,,
+adjective,,zuverlässig,confiable,,B1,"Wir brauchen einen zuverlässigen Partner.","Necesitamos un socio confiable.",,,
+noun_common,Maskuline,Zulieferer,proveedor,Zulieferer,B2,"Der Zulieferer liefert die Teile immer pünktlich.","El proveedor entrega siempre las piezas puntualmente.",,,
+noun_common,Maskuline,Lieferengpass,cuello de botella en el suministro,Lieferengpässe,B2,"Wegen der Lieferengpässe verzögert sich die Produktion.","Debido a los cuellos de botella en el suministro la producción se retrasa.",,,
+verb_main,,ausschließen,excluir,,B2,"Wir können diese Möglichkeit nicht völlig ausschließen.","No podemos excluir completamente esta posibilidad.","haben","No","No"
+noun_common,Femenin,Unternehmensbeteiligung,participación en la empresa,Unternehmensbeteiligungen,C1,"Er hat eine Unternehmensbeteiligung an der Firma bekommen.","Él obtuvo una participación en la empresa.",,,
+noun_common,Femenin,Schenkung,donación,Schenkungen,B2,"Die Schenkung muss notariell beurkundet werden.","La donación debe ser certificada por un notario.",,,
+fixed_phrase,,businessmäßig weitermachen,seguir con el negocio,,C1,"Trotz der Krise wollen wir businessmäßig weitermachen.","A pesar de la crisis queremos seguir con el negocio.",,,
+verb_separable,,anstoßen,brindar,,B1,"Lass uns auf den Erfolg anstoßen.","Brindemos por el éxito.","haben","Si","No"
+noun_common,Neutrum,Gift,veneno,Gifte,B1,"Achtung, diese Substanz ist pures Gift.","Cuidado, esta sustancia es puro veneno.",,,
+verb_separable,,unterkriegen,hundir emocionalmente,,B2,"Lass dich von den Problemen nicht unterkriegen.","No dejes que los problemas te hundan.","haben","Si","No"
+verb_main,,verteidigen,defender,,B2,"Er musste seine Entscheidung vor dem Chef verteidigen.","Tuvo que defender su decisión ante el jefe.","haben","No","No"
+noun_common,Maskuline,Nachschub,suministro,Nachschübe,B2,"Wir brauchen dringend Nachschub an Material.","Necesitamos urgentemente suministro de material.",,,
+noun_common,Femenin,Knarre,pistola,Knarren,B2,"Er hatte früher immer eine Knarre im Auto.","Antes siempre llevaba una pistola en el coche.",,,
+fixed_phrase,,dann machen wir dicht,entonces cerramos,,B2,"Wenn es so weitergeht, dann machen wir dicht.","Si esto sigue así, entonces cerramos.",,,
+noun_common,Maskuline,Stern,estrella,Sterne,A2,"Heute Nacht sieht man viele Sterne am Himmel.","Esta noche se ven muchas estrellas en el cielo.",,,
+noun_common,Femenin,Waffe,arma,Waffen,B1,"Die Polizei hat die Waffe sichergestellt.","La policía aseguró el arma.",,,
+noun_common,Femenin,Bestellung,pedido,Bestellungen,A2,"Ihre Bestellung wird morgen geliefert.","Su pedido será entregado mañana.",,,
+noun_common,Maskuline,Wert,valor,Werte,B1,"Der Wert des Hauses ist gestiegen.","El valor de la casa ha subido.",,,
+adjective,,knapp,escaso,,B1,"Das Wasser ist in dieser Region sehr knapp.","El agua es muy escasa en esta región.",,,
+noun_common,Neutrum,Verbrechen,crimen,Verbrechen,B1,"Die Polizei untersucht das Verbrechen.","La policía investiga el crimen.",,,
+particle_focus,,eben,justamente,,B1,"Das ist eben nicht so einfach.","Eso justamente no es tan fácil.",,,
+noun_common,Maskuline,Ofen,horno,Öfen,A2,"Die Pizza ist im Ofen.","La pizza está en el horno.",,,
+verb_main,,scheinen,parecer,,B1,"Es scheint heute ein schöner Tag zu werden.","Parece que hoy será un buen día.","haben","No","No"
+noun_common,Maskuline,Briefkasten,buzón,Briefkästen,A2,"Der Brief liegt im Briefkasten.","La carta está en el buzón.",,,
+verb_main,,halten,sostener,,A2,"Kannst du die Tür kurz halten?","¿Puedes sostener la puerta un momento?","haben","No","No"
+noun_proper,Neutrum,Frühlingserwachen,Despertar de primavera,,C1,"Wir lesen im Unterricht das Stück 'Frühlingserwachen'.","En clase leemos la obra 'Despertar de primavera'.",,,
+adjective,,eintönig,monótono,,B2,"Die Arbeit im Büro ist manchmal sehr eintönig.","El trabajo en la oficina a veces es muy monótono.",,,
+noun_common,Neutrum,Leiden,sufrimiento,Leiden,B2,"Das Leiden der Patienten war deutlich zu sehen.","El sufrimiento de los pacientes era claramente visible.",,,
+verb_separable,,teilhaben,participar,,B2,"Jeder soll an der Entscheidung teilhaben können.","Todos deben poder participar en la decisión.","haben","Si","No"
+noun_common,Maskuline,Datenschutz,protección de datos,,B2,"Datenschutz ist in diesem Unternehmen sehr wichtig.","La protección de datos es muy importante en esta empresa.",,,
+noun_common,Neutrum,Referat,presentación escolar,Referate,B1,"Morgen halte ich ein Referat über Klimawandel.","Mañana hago una presentación escolar sobre el cambio climático.",,,
+noun_common,Maskuline,Gedanke,pensamiento,Gedanken,B1,"Der Gedanke daran macht mich nervös.","El pensamiento de eso me pone nervioso.",,,
+verb_main,,übernehmen,hacerse cargo,,B2,"Unsere Firma wird den Support übernehmen.","Nuestra empresa se hará cargo del soporte.","haben","No","No"
+verb_main,,schaffen,lograr,,B1,"Keine Sorge, du schaffst die Prüfung.","No te preocupes, vas a lograr pasar el examen.","haben","No","No"
+adverb_manner,,selber,uno mismo,,A2,"Das kann ich auch selber machen.","Eso también lo puedo hacer yo mismo.",,,
+adjective,,ungefährlich,inofensivo,,B1,"Der Hund sieht gefährlich aus, ist aber völlig ungefährlich.","El perro parece peligroso pero es completamente inofensivo.",,,
+verb_main,,verursachen,causar,,B2,"Der Fehler hat große Probleme verursacht.","El error causó grandes problemas.","haben","No","No"
+noun_common,Maskuline,Hitzeschub,golpe de calor,Hitzeschübe,B2,"Nach der Operation hatte sie immer wieder Hitzeschübe.","Después de la operación tenía una y otra vez golpes de calor.",,,
+noun_common,Femenin,Kotzerei,vómitera,Kotzereien,B2,"Von dem alten Essen habe ich eine totale Kotzerei bekommen.","Por la comida vieja me dio una vómitera total.",,,
+verb_separable,,rausfinden,averiguar,,B1,"Wir müssen rausfinden, was passiert ist.","Tenemos que averiguar qué ha pasado.","haben","Si","No"
+noun_common,Maskuline,Bescheid,aviso,Bescheide,B1,"Sag mir bitte rechtzeitig Bescheid.","Por favor avísame con tiempo.",,,
+noun_common,Femenin,Konferenz,conferencia,Konferenzen,B1,"Nächste Woche findet eine wichtige Konferenz statt.","La próxima semana tiene lugar una conferencia importante.",,,
+adjective,,krass,brutal,,B2,"Der Film war echt krass.","La película estuvo realmente brutal.",,,
+noun_common,Femenin,Kacke,caca,,B1,"Die Kacke stinkt im ganzen Zimmer.","La caca apesta en todo el cuarto.",,,
+adjective,,langfristig,a largo plazo,,B2,"Wir brauchen eine langfristige Lösung.","Necesitamos una solución a largo plazo.",,,
+adjective,,zufrieden,contento,,A2,"Ich bin mit dem Ergebnis sehr zufrieden.","Estoy muy contento con el resultado.",,,
+adverb_sentence_connector,,darum,por eso,,B1,"Ich habe viel zu tun, darum komme ich später.","Tengo mucho que hacer, por eso vengo más tarde.",,,
+adverb_sentence_connector,,weiterhin,además,,B2,"Wir werden dich weiterhin unterstützen.","Te seguiremos apoyando además.",,,
+adjective,,minderwertig,inferior,,B2,"Er fühlt sich seinen Kollegen gegenüber minderwertig.","Él se siente inferior a sus colegas.",,,
+noun_common,Femenin,Ware,mercancía,Waren,B1,"Die Ware wurde pünktlich geliefert.","La mercancía fue entregada puntualmente.",,,
+verb_main,,liefern,entregar,,A2,"Wir liefern die Ware bis vor die Haustür.","Entregamos la mercancía hasta la puerta de la casa.","haben","No","No"
+adjective,,durchwachsen,irregular,,B2,"Die Bewertungen des Produkts sind eher durchwachsen.","Las reseñas del producto son más bien irregulares.",,,
+noun_common,Femenin,Erfahrung,experiencia,Erfahrungen,B1,"Ich habe viel Erfahrung in diesem Bereich.","Tengo mucha experiencia en este ámbito.",,,
+adjective,,kostenlos,gratis,,A2,"Der Eintritt ist für Studenten kostenlos.","La entrada es gratis para estudiantes.",,,
+adjective,,einwandfrei,impecable,,B2,"Die Ware ist in einwandfreiem Zustand angekommen.","La mercancía llegó en estado impecable.",,,
+noun_common,Femenin,Ersatzlieferung,entrega de reemplazo,Ersatzlieferungen,B2,"Wir schicken Ihnen sofort eine Ersatzlieferung.","Le enviaremos de inmediato una entrega de reemplazo.",,,
+verb_main,,erhalten,recibir,,B2,"Ich habe die Unterlagen per E-Mail erhalten.","He recibido la documentación por correo electrónico.","haben","No","No"
+verb_main,,bocken,ponerse terco,,B2,"Das Kind bockt, weil es nicht ins Bett will.","El niño se pone terco porque no quiere ir a la cama.","haben","No","No"
+verb_main,,unterscheiden,distinguir,,B2,"Man muss klar zwischen Fakten und Meinungen unterscheiden.","Hay que distinguir claramente entre hechos y opiniones.","haben","No","No"
+adverb_manner,,miteinander,entre sí,,A2,"Wir müssen besser miteinander reden.","Tenemos que hablar mejor entre sí.",,,
+noun_common,Maskuline,Geheimagent,agente secreto,Geheimagenten,B1,"Der Film handelt von einem Geheimagenten.","La película trata de un agente secreto.",,,
+noun_common,Femenin,Mühe,esfuerzo,Mühen,B2,"Vielen Dank für deine Mühe.","Muchas gracias por tu esfuerzo.",,,
+verb_separable,,reingehen,entrar,,A2,"Es ist kalt, lass uns wieder reingehen.","Hace frío, entremos de nuevo.","sein","Si","No"
+particle_focus,,gar,en absoluto,,B2,"Das stimmt gar nicht, was er sagt.","Lo que él dice no es cierto en absoluto.",,,
+adjective,,verändert,cambiado,,B2,"Nach dem Unfall wirkte er sehr verändert.","Después del accidente se veía muy cambiado.",,,
+adjective,,gewissenlos,sin escrúpulos,,C1,"Der Händler hat die Kunden gewissenlos ausgenutzt.","El vendedor aprovechó a los clientes sin escrúpulos.",,,
+determiner_quantifier,,jede,cada,,A2,"Jede Woche haben wir ein Meeting.","Cada semana tenemos una reunión.",,,

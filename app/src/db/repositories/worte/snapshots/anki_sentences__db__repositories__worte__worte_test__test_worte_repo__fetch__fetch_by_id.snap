@@ -1,0 +1,62 @@
+---
+source: app/src/db/repositories/worte/worte_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id: 1,
+        gender_id: Some(
+            GenderWorteSnapshot {
+                id: 1,
+                gender: "Femenin",
+                artikel: "die",
+                created_at: "<created_at>",
+                deleted_at: "<deleted_at>",
+            },
+        ),
+        worte_de: "Hund",
+        worte_es: "Perro",
+        plural: Some(
+            "Hunde",
+        ),
+        niveau_id: NiveauSnapshot {
+            id: 1,
+            niveau: "A2",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        example_de: "Beispiel",
+        example_es: "Ejemplo",
+        verb_aux: None,
+        trennbar: None,
+        reflexiv: None,
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        gender_id: None,
+        worte_de: "laufen",
+        worte_es: "correr",
+        plural: None,
+        niveau_id: NiveauSnapshot {
+            id: 2,
+            niveau: "B1",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        example_de: "Beispiel",
+        example_es: "Ejemplo",
+        verb_aux: Some(
+            "sein",
+        ),
+        trennbar: Some(
+            false,
+        ),
+        reflexiv: Some(
+            false,
+        ),
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

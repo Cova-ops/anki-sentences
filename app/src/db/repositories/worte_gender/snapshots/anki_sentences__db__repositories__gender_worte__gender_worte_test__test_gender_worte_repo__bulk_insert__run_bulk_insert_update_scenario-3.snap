@@ -1,0 +1,27 @@
+---
+source: app/src/db/repositories/gender_worte/gender_worte_test.rs
+expression: res_2
+---
+[
+    Snapshot {
+        id: 1,
+        gender: "Neutrum",
+        artikel: "das",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        gender: "Femenin",
+        artikel: "die",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 3,
+        gender: "Maskulin",
+        artikel: "der",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

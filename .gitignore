@@ -32,3 +32,8 @@ target
 # already existing elements were commented out
 
 #/target
+anki_satze.sql
+
+# Envs
+.env
+.env.*

@@ -1,0 +1,34 @@
+---
+source: app/src/db/repositories/setze/setze_test.rs
+expression: res_1
+---
+[
+    Snapshot {
+        id: 1,
+        setze_spanisch: "Hola",
+        setze_deutsch: "Hallo",
+        niveau_id: NiveauSnapshot {
+            id: 1,
+            niveau: "A2",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        thema: "Thema 1",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
+        id: 2,
+        setze_spanisch: "Adios",
+        setze_deutsch: "Tschüss",
+        niveau_id: NiveauSnapshot {
+            id: 2,
+            niveau: "B1",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        thema: "Thema 2",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]
