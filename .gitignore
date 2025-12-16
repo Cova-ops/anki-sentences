@@ -33,3 +33,7 @@ target
 
 #/target
 anki_satze.sql
+
+# Envs
+.env
+.env.*

@@ -6,7 +6,7 @@ use crate::{
         schemas::worte_audio::NewWorteAudioSchema, worte::WorteRepo, worte_audio::WorteAudioRepo,
     },
     helpers::{audios::ManageAudios, csv, ui},
-    services::tts,
+    services::tts::{self, eleven_labs::LanguageVoice},
     utils::path_file_oder_dir,
 };
 
@@ -168,14 +168,15 @@ pub fn menu_3_add_worte(conn: &mut Connection) -> Result<()> {
         println!("Base de datos ejecutado, realizando descarga de audios");
 
         for (i, wort) in res.iter().enumerate() {
-            let audio_bytes: Vec<u8> = match tts::eleven_labs::generate_tts(&wort.worte_es) {
-                Ok(v) => v,
-                Err(err) => {
-                    println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
-                    println!("{:#?}", err);
-                    continue;
-                }
-            };
+            let audio_bytes: Vec<u8> =
+                match tts::eleven_labs::generate_tts(&wort.worte_es, LanguageVoice::Spanisch) {
+                    Ok(v) => v,
+                    Err(err) => {
+                        println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
+                        println!("{:#?}", err);
+                        continue;
+                    }
+                };
 
             let audio_path = match ManageAudios::save_audio_worte(audio_bytes, wort.id) {
                 Ok(v) => v,

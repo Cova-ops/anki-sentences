@@ -2,31 +2,57 @@ use color_eyre::eyre::Result;
 use reqwest::blocking::Client;
 use serde::Serialize;
 
-static API_KEY: &str = "sk_b67a171c654c0a189cf1d5ff5efc5cd953395363658ab244";
-static VOICE_ID_DE_MASC: &str = "TX3LPaxmHKxFdv7VOQHJ";
+static VOICE_ID_DE_MASC: &str = "g1jpii0iyvtRs8fqXsd1";
+static VOICE_ID_ES_FEME: &str = "zl1Ut8dvwcVSuQSB9XkG";
 
 #[derive(Serialize)]
 struct ElevenRequest<'a> {
     text: &'a str,
     model_id: &'a str,
+    voice_settings: VoiceSettings,
 }
 
-pub fn generate_tts(text: &str) -> Result<Vec<u8>> {
+#[derive(Serialize)]
+struct VoiceSettings {
+    stability: f32,
+    similarity_boost: f32,
+    style: f32,
+    use_speaker_boost: bool,
+}
+
+#[derive(Debug)]
+pub enum LanguageVoice {
+    Deutsch,
+    Spanisch,
+}
+
+pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> {
+    let voice = match voice_choice {
+        LanguageVoice::Deutsch => VOICE_ID_DE_MASC,
+        LanguageVoice::Spanisch => VOICE_ID_ES_FEME,
+    };
+
     let url = format!(
         "https://api.elevenlabs.io/v1/text-to-speech/{}?output_format=mp3_22050_32",
-        VOICE_ID_DE_MASC
+        voice
     );
 
     let client = Client::new();
 
     let body = ElevenRequest {
         text,
-        model_id: "eleven_multilingual_v2",
+        model_id: "eleven_flash_v2_5",
+        voice_settings: VoiceSettings {
+            stability: 0.6,
+            similarity_boost: 0.8,
+            style: 0.4,
+            use_speaker_boost: true,
+        },
     };
 
     let res = client
         .post(&url)
-        .header("xi-api-key", API_KEY)
+        .header("xi-api-key", std::env::var("ELEVENLABS_API_KEY")?)
         .header("Content-Type", "application/json")
         .json(&body)
         .send()?

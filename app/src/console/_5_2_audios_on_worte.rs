@@ -6,7 +6,7 @@ use crate::{
         schemas::worte_audio::NewWorteAudioSchema, worte::WorteRepo, worte_audio::WorteAudioRepo,
     },
     helpers::audios::ManageAudios,
-    services::tts,
+    services::tts::{self, eleven_labs::LanguageVoice},
 };
 
 pub fn menu_5_2_audios_on_worte(conn: &mut Connection) -> Result<()> {
@@ -14,14 +14,15 @@ pub fn menu_5_2_audios_on_worte(conn: &mut Connection) -> Result<()> {
     let len_vec = worte_without_audio.len();
 
     for (i, wort) in worte_without_audio.iter().enumerate() {
-        let audio_bytes: Vec<u8> = match tts::eleven_labs::generate_tts(&wort.worte_es) {
-            Ok(v) => v,
-            Err(err) => {
-                println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
-                println!("{:#?}", err);
-                continue;
-            }
-        };
+        let audio_bytes: Vec<u8> =
+            match tts::eleven_labs::generate_tts(&wort.worte_es, LanguageVoice::Spanisch) {
+                Ok(v) => v,
+                Err(err) => {
+                    println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
+                    println!("{:#?}", err);
+                    continue;
+                }
+            };
 
         let audio_path = match ManageAudios::save_audio_worte(audio_bytes, wort.id) {
             Ok(v) => v,
