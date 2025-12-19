@@ -1,4 +1,8 @@
-use std::{fs::canonicalize, path::Path};
+use std::{
+    env,
+    fs::canonicalize,
+    path::{Path, PathBuf},
+};
 
 use color_eyre::eyre::{Result, eyre};
 
@@ -46,5 +50,17 @@ pub fn _path_relativ_2_absolute(path: &str) -> Result<String> {
             "[path_relativ_2_absolute] - ❌ No se pudo resolver: {}",
             e
         )),
+    }
+}
+
+pub fn home_dir() -> PathBuf {
+    if cfg!(windows) {
+        env::var("USERPROFILE")
+            .map(PathBuf::from)
+            .expect("No se pudo obtener USERPROFILE")
+    } else {
+        env::var("HOME")
+            .map(PathBuf::from)
+            .expect("No se pudo obtener HOME")
     }
 }

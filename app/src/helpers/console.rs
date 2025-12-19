@@ -4,11 +4,7 @@ use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
 use crate::{
-    db::{
-        schemas::{setze::SetzeSchema, worte::WorteSchema},
-        setze::SetzeRepo,
-        worte::WorteRepo,
-    },
+    db::{setze::SetzeRepo, worte::WorteRepo},
     helpers::{
         audios::{ManageAudios, audio_player::AudioPlayer},
         ui,
@@ -67,7 +63,7 @@ pub fn make_setze_exercise_repeat(
     conn: &Connection,
     ids_setze: Vec<i32>,
     hash_audios: HashSet<i32>,
-    offset: usize,
+    batch: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_setze = ids_setze;
 
@@ -75,7 +71,7 @@ pub fn make_setze_exercise_repeat(
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
 
-    let take = ids_setze.len().min(offset);
+    let take = ids_setze.len().min(batch);
     let aux_ids: Vec<i32> = ids_setze.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
@@ -212,7 +208,7 @@ pub fn make_worte_exercise_repeat(
     conn: &Connection,
     ids_worte: Vec<i32>,
     hash_audios: HashSet<i32>,
-    offset: usize,
+    batch: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
 
@@ -220,7 +216,7 @@ pub fn make_worte_exercise_repeat(
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
 
-    let take = ids_worte.len().min(offset);
+    let take = ids_worte.len().min(batch);
     let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar

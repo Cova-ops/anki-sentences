@@ -1,19 +1,22 @@
-use std::sync::{Mutex, MutexGuard};
+use std::path::Path;
 
-#[cfg(test)]
 use color_eyre::eyre::Result;
-use once_cell::sync::Lazy;
 use rusqlite::Connection;
 
-const DB_NAME: &str = "anki_satze.sql";
+pub fn get_conn(path: &Path) -> Result<Connection> {
+    let conn = Connection::open(path)?;
 
-pub static DB_CONN: Lazy<Mutex<Connection>> = Lazy::new(|| {
-    let conn = Connection::open(DB_NAME).expect("No se puede abrir/crear la base de datos SQLite");
-    Mutex::new(conn)
-});
+    // Buenas prácticas SQLite
+    conn.execute_batch(
+        r#"
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous = NORMAL;
+        PRAGMA foreign_keys = ON;
+        PRAGMA busy_timeout = 5000;
+        "#,
+    )?;
 
-pub fn get_conn() -> MutexGuard<'static, Connection> {
-    DB_CONN.lock().expect("Mutex envenenado en DB_CONN")
+    Ok(conn)
 }
 
 #[cfg(test)]

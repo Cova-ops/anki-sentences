@@ -7,9 +7,9 @@ use color_eyre::eyre::Result;
 
 pub mod audio_player;
 
-pub const PATH_FOLDER: &str = "assets/audios";
-pub const PATH_AUDIOS_WORTE: &str = "assets/audios/worte";
-pub const PATH_AUDIOS_SETZE: &str = "assets/audios/setze";
+const PATH_FOLDER: &str = "assets/audios";
+const PATH_AUDIOS_WORTE: &str = "assets/audios/worte";
+const PATH_AUDIOS_SETZE: &str = "assets/audios/setze";
 
 enum TypeFile {
     AudioWort,

@@ -1,7 +1,8 @@
 use color_eyre::eyre::Result;
 
-use crate::helpers::audios::ManageAudios;
+use crate::helpers::{audios::ManageAudios, toml::AppConfig};
 
+mod commands;
 mod console;
 mod db;
 mod helpers;
@@ -15,8 +16,11 @@ fn main() -> Result<()> {
 }
 
 fn run() -> Result<()> {
-    db::init_db()?;
+    let mut config = AppConfig::load_config()?;
+    let name_db = config.get_database_path()?;
+
+    db::init_db(name_db)?;
     ManageAudios::init_dir()?;
-    console::menu_main()?;
+    console::menu_main(&mut config)?;
     Ok(())
 }

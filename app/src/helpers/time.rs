@@ -18,7 +18,7 @@ pub fn string_2_datetime<T: AsRef<str>>(s: Option<T>) -> Option<DateTime<Utc>> {
             if let Ok(dt) = DateTime::parse_from_rfc3339(d.as_ref()) {
                 return Some(dt.with_timezone(&Utc));
             }
-            panic!("Formato de fecha no soportado: {}", d.as_ref());
+            panic!("Format date not supported {}", d.as_ref());
         }
         None => None,
     }
@@ -49,7 +49,7 @@ pub fn today_local_string(offset: i64) -> String {
     let target_local = Local
         .from_local_datetime(&today_local_naive)
         .single()
-        .expect("fecha local ambigua / imposible");
+        .expect("local date not defined / impossible");
 
     let target_utc = target_local.with_timezone(&Utc);
     target_utc.format("%Y-%m-%d %H:%M:%S").to_string()
