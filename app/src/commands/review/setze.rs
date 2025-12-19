@@ -42,7 +42,17 @@ pub fn run(
         ids_setze.shuffle(&mut rng);
     }
 
-    let r = helpers::console::make_setze_exercise_repeat(&conn, ids_setze, hash_audios, batch)?;
+    let manage_audio = helpers::audios::ManageAudios::new(
+        config.get_path_audios_worte()?,
+        config.get_path_audios_setze()?,
+    );
+    let r = helpers::console::make_setze_exercise_repeat(
+        &conn,
+        ids_setze,
+        hash_audios,
+        &manage_audio,
+        batch,
+    )?;
 
     // Obtenemos el id de las oraciones que respondio
     let setze_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();

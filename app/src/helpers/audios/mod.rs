@@ -1,55 +1,45 @@
 use std::{
     fs::{self, File},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use color_eyre::eyre::Result;
 
 pub mod audio_player;
 
-const PATH_FOLDER: &str = "assets/audios";
-const PATH_AUDIOS_WORTE: &str = "assets/audios/worte";
-const PATH_AUDIOS_SETZE: &str = "assets/audios/setze";
-
 enum TypeFile {
     AudioWort,
     AudioSatz,
 }
 
-pub struct ManageAudios {}
+pub struct ManageAudios {
+    path_audios_worte: PathBuf,
+    path_audios_setze: PathBuf,
+}
 
 impl ManageAudios {
-    pub fn init_dir() -> Result<()> {
-        let folder_path = Path::new(PATH_FOLDER);
-        if !folder_path.exists() {
-            fs::create_dir_all(folder_path)?;
+    pub fn new<S>(path_audios_worte: S, path_audios_setze: S) -> Self
+    where
+        S: Into<PathBuf>,
+    {
+        Self {
+            path_audios_setze: path_audios_setze.into(),
+            path_audios_worte: path_audios_worte.into(),
         }
-
-        let worte_path = Path::new(PATH_AUDIOS_WORTE);
-        if !worte_path.exists() {
-            fs::create_dir_all(worte_path)?;
-        }
-
-        let setze_path = Path::new(PATH_AUDIOS_SETZE);
-        if !setze_path.exists() {
-            fs::create_dir_all(setze_path)?;
-        }
-
-        Ok(())
     }
 
-    pub fn save_audio_setze(bytes: Vec<u8>, id: i32) -> Result<String> {
-        Self::save_file(bytes, id, TypeFile::AudioSatz)
+    pub fn save_audio_setze(&self, bytes: Vec<u8>, id: i32) -> Result<PathBuf> {
+        self.save_file(bytes, id, TypeFile::AudioSatz)
     }
 
-    pub fn save_audio_worte(bytes: Vec<u8>, id: i32) -> Result<String> {
-        Self::save_file(bytes, id, TypeFile::AudioWort)
+    pub fn save_audio_worte(&self, bytes: Vec<u8>, id: i32) -> Result<PathBuf> {
+        self.save_file(bytes, id, TypeFile::AudioWort)
     }
 
-    fn save_file(bytes: Vec<u8>, id: i32, type_file: TypeFile) -> Result<String> {
+    fn save_file(&self, bytes: Vec<u8>, id: i32, type_file: TypeFile) -> Result<PathBuf> {
         let path_final = match type_file {
-            TypeFile::AudioWort => format!("{}/wort_{:06}.mp3", PATH_AUDIOS_WORTE, id),
-            TypeFile::AudioSatz => format!("{}/satz_{:06}.mp3", PATH_AUDIOS_SETZE, id),
+            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.sql", id)),
+            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.sql", id)),
         };
 
         fs::write(&path_final, bytes)?;
@@ -57,17 +47,17 @@ impl ManageAudios {
         Ok(path_final)
     }
 
-    pub fn get_audio_setze(id: i32) -> Result<Option<File>> {
-        Self::get_file(id, TypeFile::AudioSatz)
+    pub fn get_audio_setze(&self, id: i32) -> Result<Option<File>> {
+        self.get_file(id, TypeFile::AudioSatz)
     }
-    pub fn get_audio_worte(id: i32) -> Result<Option<File>> {
-        Self::get_file(id, TypeFile::AudioWort)
+    pub fn get_audio_worte(&self, id: i32) -> Result<Option<File>> {
+        self.get_file(id, TypeFile::AudioWort)
     }
 
-    fn get_file(id: i32, type_file: TypeFile) -> Result<Option<File>> {
+    fn get_file(&self, id: i32, type_file: TypeFile) -> Result<Option<File>> {
         let path = match type_file {
-            TypeFile::AudioWort => format!("{}/wort_{:06}.mp3", PATH_AUDIOS_WORTE, id),
-            TypeFile::AudioSatz => format!("{}/wort_{:06}.mp3", PATH_AUDIOS_SETZE, id),
+            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.sql", id)),
+            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.sql", id)),
         };
 
         let file = File::open(path);

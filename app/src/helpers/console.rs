@@ -63,6 +63,7 @@ pub fn make_setze_exercise_repeat(
     conn: &Connection,
     ids_setze: Vec<i32>,
     hash_audios: HashSet<i32>,
+    manage_audio: &ManageAudios,
     batch: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_setze = ids_setze;
@@ -93,7 +94,7 @@ pub fn make_setze_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&s.id) {
-            if let Ok(Some(path)) = ManageAudios::get_audio_setze(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_setze(*audio) {
                 player.play(path)?;
             }
         };
@@ -208,6 +209,7 @@ pub fn make_worte_exercise_repeat(
     conn: &Connection,
     ids_worte: Vec<i32>,
     hash_audios: HashSet<i32>,
+    manage_audio: &ManageAudios,
     batch: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
@@ -245,7 +247,7 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = ManageAudios::get_audio_worte(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio) {
                 player.play(path)?;
             }
         };
@@ -338,3 +340,5 @@ pub fn make_worte_exercise_repeat(
 
     Ok((val_out, vec_out))
 }
+
+// TODO: Change storage of audio to home dir

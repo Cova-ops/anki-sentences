@@ -44,7 +44,17 @@ pub fn run(
         ids_worte.shuffle(&mut rng);
     }
 
-    let r = helpers::console::make_worte_exercise_repeat(&conn, ids_worte, hash_audios, batch)?;
+    let manage_audio = helpers::audios::ManageAudios::new(
+        config.get_path_audios_worte()?,
+        config.get_path_audios_setze()?,
+    );
+    let r = helpers::console::make_worte_exercise_repeat(
+        &conn,
+        ids_worte,
+        hash_audios,
+        &manage_audio,
+        batch,
+    )?;
 
     // Obtenemos el id de las palabras que respondio
     let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
