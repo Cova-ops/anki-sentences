@@ -5,6 +5,7 @@ use crate::{
     db::{
         get_conn,
         schemas::worte_review::{NewWorteReviewSchema, WorteReviewSchema},
+        worte::WorteRepo,
         worte_audio::WorteAudioRepo,
         worte_review::WorteReviewRepo,
     },
@@ -29,6 +30,8 @@ pub fn run(
             let date_review = time::today_local_string(1);
             WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review)?
         }
+        ReviewWorteSection::OnlyNew => WorteRepo::fetch_id_neue_worte(&conn)?,
+
         _ => todo!("Aguantame papito"),
     };
 
