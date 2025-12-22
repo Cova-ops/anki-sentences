@@ -12,6 +12,7 @@ enum TypeFile {
     AudioSatz,
 }
 
+#[derive(Debug)]
 pub struct ManageAudios {
     path_audios_worte: PathBuf,
     path_audios_setze: PathBuf,
@@ -38,8 +39,8 @@ impl ManageAudios {
 
     fn save_file(&self, bytes: Vec<u8>, id: i32, type_file: TypeFile) -> Result<PathBuf> {
         let path_final = match type_file {
-            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.sql", id)),
-            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.sql", id)),
+            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.mp3", id)),
+            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.mp3", id)),
         };
 
         fs::write(&path_final, bytes)?;
@@ -56,8 +57,8 @@ impl ManageAudios {
 
     fn get_file(&self, id: i32, type_file: TypeFile) -> Result<Option<File>> {
         let path = match type_file {
-            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.sql", id)),
-            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.sql", id)),
+            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.mp3", id)),
+            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.mp3", id)),
         };
 
         let file = File::open(path);
