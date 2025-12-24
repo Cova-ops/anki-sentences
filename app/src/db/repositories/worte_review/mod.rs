@@ -79,6 +79,31 @@ impl WorteReviewRepo {
         Ok(vec_out)
     }
 
+    pub fn fetch_new_wort_id_4_review(conn: &Connection) -> Result<Vec<i32>> {
+        let sql = format!(
+            "
+                SELECT
+                    w.id
+                FROM worte w
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM worte_review wr
+                    WHERE wr.wort_id = w.id
+                )
+                AND w.deleted_at IS NULL
+                ORDER BY w.id ASC;
+            "
+        );
+
+        let mut stmt = conn.prepare(&sql)?;
+        let vec_ids = stmt
+            .query([])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(vec_ids)
+    }
+
     pub fn fetch_review_wort_id_by_day(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
         let sql = r#"
             SELECT wort_id

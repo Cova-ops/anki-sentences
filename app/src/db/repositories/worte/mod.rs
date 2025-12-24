@@ -69,32 +69,6 @@ impl WorteRepo {
         Ok(vec_out)
     }
 
-    pub fn fetch_id_neue_worte(conn: &Connection) -> Result<Vec<i32>> {
-        let sql = "
-            SELECT
-                w.id
-            FROM worte w
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM worte_review wr
-                WHERE wr.wort_id = w.id
-            )
-            AND w.deleted_at IS NULL
-            ORDER BY w.id ASC;
-        "
-        .to_string();
-
-        let mut stmt = conn.prepare_cached(&sql)?;
-
-        let ids = stmt
-            .query([])
-            .context(format!("Sql - {}", sql))?
-            .mapped(|r| r.get(0))
-            .collect::<Result<Vec<i32>, _>>()?;
-
-        Ok(ids)
-    }
-
     pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);

@@ -82,7 +82,7 @@ pub fn make_setze_exercise_repeat(
     while !setze_correct.is_empty() {
         let s = setze_correct[0].clone();
 
-        utils::clean_screen();
+        utils::console::clean_screen();
         let setze_remaining = setze_correct.len() + ids_setze.len();
         println!(
             "{}",
@@ -228,7 +228,7 @@ pub fn make_worte_exercise_repeat(
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
 
-        utils::clean_screen();
+        utils::console::clean_screen();
         let worte_remaining = worte_correct.len() + ids_worte.len();
         println!(
             "{}",

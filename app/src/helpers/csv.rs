@@ -1,6 +1,6 @@
 use color_eyre::eyre::{Context, Result, bail, eyre};
 use csv::ReaderBuilder;
-use std::fs::File;
+use std::{fs::File, path::Path};
 
 use crate::{
     db::schemas::{
@@ -37,9 +37,13 @@ static HEADER_WORTE_CSV: [&str; 11] = [
 ///
 /// return:
 /// Regresa un Result ó Report segun el caso
-pub fn is_csv_valid(path: &str, type_file: CsvType) -> Result<()> {
-    let file = File::open(path)
-        .with_context(|| format!("[is_csv_valid] - No se puede abrir el archivo: {}", path))?;
+pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<()> {
+    let file = File::open(path).with_context(|| {
+        format!(
+            "[is_csv_valid] - No se puede abrir el archivo: {:?}",
+            path.display()
+        )
+    })?;
 
     let header_csv: &'static [&'static str] = match type_file {
         CsvType::Setze => &HEADER_SETZE_CSV,
@@ -77,11 +81,11 @@ pub fn is_csv_valid(path: &str, type_file: CsvType) -> Result<()> {
     Ok(())
 }
 
-pub fn extract_sentences_csv(path: &str) -> Result<Vec<NewSetzeSchema>> {
+pub fn extract_sentences_csv(path: &Path) -> Result<Vec<NewSetzeSchema>> {
     let file = File::open(path).with_context(|| {
         format!(
             "[extract_sentences_from] - No se puede abrir el archivo: {}",
-            path
+            path.display()
         )
     })?;
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
@@ -108,13 +112,13 @@ pub fn extract_sentences_csv(path: &str) -> Result<Vec<NewSetzeSchema>> {
     Ok(r)
 }
 
-pub fn extract_worte_csv(path: &str) -> Result<Vec<NewWorteSchema>> {
+pub fn extract_worte_csv(path: &Path) -> Result<Vec<NewWorteSchema>> {
     let file = File::open(path)?;
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
 
     let mut vec_result: Vec<NewWorteSchema> = Vec::new();
     for (i, result) in reader.records().enumerate() {
-        let value = result.with_context(|| format!("Error en la línea del CSV: {}", i + 1))?;
+        let value = result.with_context(|| format!("Error on line: {}", i + 1))?;
 
         if value.is_empty() {
             continue;
@@ -122,20 +126,14 @@ pub fn extract_worte_csv(path: &str) -> Result<Vec<NewWorteSchema>> {
 
         let gram_type_list = match value.get(0) {
             Some(v) => v.to_string(),
-            None => bail!(
-                "El valor gram_type no puede estar vacio. Linea del CSV: {}",
-                i
-            ),
+            None => bail!("gram_type should not be empty, line: {}", i),
         };
 
         let split_gram_type: Vec<&str> = gram_type_list.split(',').collect();
         let mut vec_gram_type: Vec<i32> = Vec::with_capacity(split_gram_type.len());
         for gt in split_gram_type {
             if gt.is_empty() {
-                bail!(
-                    "El valor de gram_type no puede estar vacio. Linea del CSV: {}",
-                    i
-                )
+                bail!("gram_type should not be empty, line: {}", i)
             }
 
             let gram_type = GramTypeSchema::from_code(gt)?;
@@ -149,24 +147,24 @@ pub fn extract_worte_csv(path: &str) -> Result<Vec<NewWorteSchema>> {
         };
         let worte_de = match value.get(2) {
             Some(v) => v.to_string(),
-            None => bail!("worte_de no puede ser vacio. Línea del CSV: {}", i),
+            None => bail!("worte_de should not be empty, line: {}", i),
         };
         let worte_es = match value.get(3) {
             Some(v) => v.to_string(),
-            None => bail!("worte_es no puede ser vacio. Línea del CSV: {}", i),
+            None => bail!("worte_es should not be empty, line: {}", i),
         };
         let plural = value.get(4).map(|s| s.to_string());
         let niveau_id = match value.get(5) {
             Some(v) => NiveauListeSchema::from_niveau(v)?.id,
-            None => bail!("niveau no puede ser vacio. Línea del CSV: {}", i),
+            None => bail!("niveau should not be empty, line: {}", i),
         };
         let example_de = match value.get(6) {
             Some(v) => v.to_string(),
-            None => bail!("example_de no puede ser vacio. Línea del CSV: {}", i),
+            None => bail!("example_de should not be empty, line: {}", i),
         };
         let example_es = match value.get(7) {
             Some(v) => v.to_string(),
-            None => bail!("example_es no puede ser vacio. Línea del CSV: {}", i),
+            None => bail!("example_es should not be empty, line: {}", i),
         };
 
         let verb_aux = value.get(8).map(|s| s.to_string());

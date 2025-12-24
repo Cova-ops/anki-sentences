@@ -100,7 +100,7 @@ pub fn run(
         return Ok(());
     }
 
-    utils::clean_screen();
+    utils::console::clean_screen();
     println!("No hay mas oraciones por repasar. :)");
     println!();
 

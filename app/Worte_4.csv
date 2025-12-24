@@ -1,0 +1,51 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,dringend,urgente,,B1,"Ich brauche dringend deine Hilfe.","Necesito urgentemente tu ayuda.",,,
+verb_separable,,ausleihen,pedir prestado,,B1,"Kann ich mir dein Buch ausleihen?","¿Puedo pedirte prestado tu libro?","haben","Si","No"
+adjective,,leise,callado/suave,,A2,"Bitte sei leise, das Baby schläft.","Por favor, sé silencioso, el bebé duerme.",,,
+noun_common,Neutrum,Wörterbuch,diccionario,Wörterbücher,A1,"Ich habe das Wort im Wörterbuch nachgeschlagen.","Busqué la palabra en el diccionario.",,,
+adjective,,fortgeschritten,avanzado,,B1,"Das ist ein fortgeschrittener Kurs.","Ese es un curso avanzado.",,,
+noun_common,Maskuline,Kurs,curso,Kurse,A1,"Der Kurs beginnt um acht Uhr.","El curso empieza a las ocho.",,,
+noun_common,Femenin,Firma,empresa,Firmen,A2,"Die Firma sucht neue Mitarbeiter.","La empresa busca nuevos empleados.",,,
+adjective,,überrascht,sorprendido,,A2,"Ich war überrascht über die Nachricht.","Me sorprendió la noticia.",,,
+adjective,,weltweit,mundial/en todo el mundo,,B1,"Die Serie ist weltweit bekannt.","La serie es conocida en todo el mundo.",,,
+noun_common,Neutrum,Geräusch,ruido,Geräusche,A2,"Ich habe ein seltsames Geräusch gehört.","Escuché un ruido extraño.",,,
+adjective,,seltsam,extraño/raro,,A2,"Das ist eine seltsame Situation.","Esa es una situación extraña.",,,
+noun_common,Maskuline,Grund,razón,many="Gründe",B1,"Was ist der Grund dafür?","¿Cuál es la razón de eso?",,,
+noun_common,Femenin,Veranstaltung,evento/actividad,Veranstaltungen,B1,"Die Veranstaltung findet am Freitag statt.","El evento se lleva a cabo el viernes.",,,
+verb_main,,absagen,cancelar,,A2,"Ich muss den Termin absagen.","Tengo que cancelar la cita.","haben","No","No"
+determiner_quantifier,,mehrere,varios/as,,A2,"Ich habe mehrere Fragen.","Tengo varias preguntas.",,,
+verb_main,,bankrottgehen,quebrar/ir a la quiebra,,B1,"Die Firma ist letztes Jahr bankrott gegangen.","La empresa quebró el año pasado.","sein","No","No"
+verb_main,,erfordern,requerir,,B2,"Der Job erfordert viel Geduld.","El trabajo requiere mucha paciencia.","haben","No","No"
+noun_common,Maskuline,Verkehr,tráfico,,A2,"Heute gibt es viel Verkehr in der Stadt.","Hoy hay mucho tráfico en la ciudad.",,,
+verb_main,,grüßen,saludar,,A1,"Ich grüße meine Nachbarn jeden Morgen.","Saludo a mis vecinos cada mañana.","haben","No","No"
+noun_common,Maskuline,Journalist,periodista,Journalisten,B1,"Der Journalist stellt viele Fragen.","El periodista hace muchas preguntas.",,,
+noun_common,Femenin,Journalistin,periodista,Journalistinnen,B1,"Die Journalistin schreibt einen Artikel.","La periodista escribe un artículo.",,,
+verb_main,,vertrauen,confiar,,B1,"Ich vertraue dir.","Confío en ti.","haben","No","No"
+noun_common,Maskuline,Elefant,elefante,Elefanten,A1,"Der Elefant ist sehr groß.","El elefante es muy grande.",,,
+noun_common,Femenin,Elefantin,elefanta,Elefantinnen,B1,"Die Elefantin schützt ihr Junges.","La elefanta protege a su cría.",,,
+noun_common,Maskuline,Ausländer,extranjero,Ausländer,B1,"Er ist Ausländer und lebt in Deutschland.","Él es extranjero y vive en Alemania.",,,
+noun_common,Femenin,Ausländerin,extranjera,Ausländerinnen,B1,"Sie ist Ausländerin und lernt Deutsch.","Ella es extranjera y aprende alemán.",,,
+particle_focus,,selber,mismo/por uno mismo,,A2,"Ich mache das lieber selber.","Prefiero hacerlo yo mismo.",,,
+verb_main,,warten auf,esperar a alguien,,A2,"Ich warte auf dich vor dem Kino.","Te espero frente al cine.","haben","No","No"
+adjective,,nahe,cerca,,A2,"Die Schule ist ganz nahe.","La escuela está muy cerca.",,,
+verb_reflexive,,sich erinnern an,recordar algo,,A2,"Ich erinnere mich an diesen Tag.","Recuerdo ese día.","haben","No","Si"
+noun_common,Neutrum,Licht,luz,Lichter,A1,"Mach bitte das Licht an.","Por favor, enciende la luz.",,,
+verb_main,,erklären,explicar,,A2,"Kannst du mir das bitte erklären?","¿Puedes explicármelo, por favor?","haben","No","No"
+verb_separable,,rausgehen,salir,,A2,"Ich gehe kurz raus.","Voy a salir un momento.","sein","Si","No"
+verb_separable,,aufmachen,abrir,,A2,"Mach bitte das Fenster auf.","Por favor, abre la ventana.","haben","Si","No"
+verb_separable,,anmachen,encender,,A2,"Ich mache den Fernseher an.","Enciendo la televisión.","haben","Si","No"
+verb_separable,,ausmachen,apagar (intencionalmente),,A2,"Ich mache das Licht aus.","Apago la luz.","haben","Si","No"
+verb_separable,,ausgehen,apagarse (por sí solo),,A2,"Das Licht geht plötzlich aus.","La luz se apaga de repente.","sein","Si","No"
+fixed_phrase,,aus dem Zimmer gehen,salir de la habitación,,A1,"Ich gehe aus dem Zimmer.","Salgo de la habitación.",,,
+conjunction_subordinating,,bevor,antes (Nebensatz),,A2,"Bevor ich gehe, rufe ich dich an.","Antes de irme, te llamo.",,,
+adjective,,detailliert,detallado,,B1,"Er hat den Plan sehr detailliert erklärt.","Él explicó el plan con mucho detalle.",,,
+verb_main,,abfahren,salir/partir (tren/bus),,A2,"Der Bus fährt um 8 Uhr ab.","El autobús sale a las 8.","sein","No","No"
+fixed_phrase,,Das ist total abgefahren!,¡Está loquísimo!/¡Está muy loco!,,B1,"Das ist total abgefahren!","¡Está loquísimo!",,,
+verb_main,,abheben,despegar,,A2,"Das Flugzeug hebt gleich ab.","El avión despega enseguida.","sein","No","No"
+verb_main,,ausbuchen,cancelar una reserva,,B1,"Wir mussten das Hotel ausbuchen.","Tuvimos que cancelar la reserva del hotel.","haben","No","No"
+verb_main,,umfahren,rodear/evitar pasando alrededor,,B2,"Wir umfahren die Baustelle.","Rodeamos la obra para evitarla.","haben","No","No"
+verb_separable,,umfahren,atropellar,,B2,"Der Fahrer hat fast einen Hund umgefahren.","El conductor casi atropella a un perro.","haben","Si","No"
+adjective,,geschlossen,cerrado,,A1,"Die Tür ist geschlossen.","La puerta está cerrada.",,,
+verb_separable,,anziehen,ponerse ropa,,A1,"Ich ziehe meine Jacke an.","Me pongo mi chamarra.","haben","Si","No"
+verb_separable,,ausziehen,quitarse ropa,,A1,"Zu Hause ziehe ich die Schuhe aus.","En casa me quito los zapatos.","haben","Si","No"
+noun_common,Maskuline,Plan,plan,Pläne,A2,"Der Plan ist gut.","El plan es bueno.",,,

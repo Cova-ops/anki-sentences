@@ -7,7 +7,7 @@ use std::{
 use color_eyre::eyre::{OptionExt, Result, eyre};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{self, home_dir};
+use crate::utils::{self, path::home_dir};
 
 static DIR_CONFIG: &str = ".config/anki-sentences";
 static DIR_PROFILES: &str = "profiles";
@@ -70,7 +70,7 @@ impl ProfileConfig {
     pub fn new(name_profile: &str) -> Self {
         let lower = name_profile.to_owned().to_lowercase();
 
-        let profile_path = utils::home_dir()
+        let profile_path = utils::path::home_dir()
             .join(DIR_CONFIG)
             .join(DIR_PROFILES)
             .join(&lower);
@@ -169,13 +169,6 @@ impl AppConfig {
         self.get_profile_mut(&self.actual_profile.clone())
     }
 
-    pub fn set_audio_enable(&mut self, new_value: bool) -> Result<()> {
-        self.get_actual_profile_mut()?.audio_enabled = new_value;
-        self.save_config()?;
-
-        Ok(())
-    }
-
     pub fn change_profile(&mut self, name_profile: &str) -> Result<()> {
         self.get_profile(name_profile)?; // valid if this exists
         self.actual_profile = name_profile.to_string();
@@ -205,6 +198,13 @@ impl AppConfig {
         Ok(self.get_actual_profile()?.audio_enabled)
     }
 
+    pub fn set_audio_enable(&mut self, new_value: bool) -> Result<()> {
+        self.get_actual_profile_mut()?.audio_enabled = new_value;
+        self.save_config()?;
+
+        Ok(())
+    }
+
     pub fn get_path_audios_worte(&self) -> Result<&Path> {
         Ok(&self.get_actual_profile()?.audios_worte_path)
     }
@@ -213,5 +213,3 @@ impl AppConfig {
         Ok(&self.get_actual_profile()?.audios_setze_path)
     }
 }
-
-// TODO: Arreglar el tema del path de db, que cabio de String a Pathbuf

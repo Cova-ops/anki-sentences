@@ -16,6 +16,16 @@ use crate::{
 use chrono::Utc;
 use color_eyre::Result;
 use rand::seq::SliceRandom;
+use rusqlite::Connection;
+
+fn get_review_new_ids(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
+    let mut vec_ids = WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review)?;
+    vec_ids.append(&mut WorteReviewRepo::fetch_new_wort_id_4_review(&conn)?);
+    vec_ids.sort_unstable();
+    vec_ids.dedup();
+
+    Ok(vec_ids)
+}
 
 pub fn run(
     config: &AppConfig,
@@ -26,11 +36,8 @@ pub fn run(
     let mut conn = get_conn(config.get_database_path()?)?;
 
     let mut ids_worte: Vec<i32> = match section {
-        ReviewWorteSection::NewAndReview => {
-            let date_review = time::today_local_string(1);
-            WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review)?
-        }
-        ReviewWorteSection::OnlyNew => WorteRepo::fetch_id_neue_worte(&conn)?,
+        ReviewWorteSection::NewAndReview => get_review_new_ids(&conn, time::today_local_string(1))?,
+        ReviewWorteSection::OnlyNew => WorteReviewRepo::fetch_new_wort_id_4_review(&conn)?,
 
         _ => todo!("Aguantame papito"),
     };
@@ -42,7 +49,7 @@ pub fn run(
     };
     let hash_audios: HashSet<i32> = ids_audios.iter().map(|ia| ia.wort_id).collect();
 
-    if !no_shuffle {
+    if no_shuffle {
         let mut rng = rand::rng();
         ids_worte.shuffle(&mut rng);
     }
@@ -105,7 +112,7 @@ pub fn run(
         return Ok(());
     }
 
-    utils::clean_screen();
+    utils::console::clean_screen();
     println!("No hay mas palabras por estudiar. :)");
     println!();
 

@@ -1,4 +1,5 @@
 use color_eyre::eyre::Result;
+use dotenvy;
 
 use crate::helpers::toml::AppConfig;
 
@@ -11,6 +12,7 @@ mod traits;
 mod utils;
 
 fn main() -> Result<()> {
+    dotenvy::dotenv()?;
     color_eyre::install().unwrap();
     run()
 }
@@ -21,5 +23,6 @@ fn run() -> Result<()> {
 
     db::init_db(name_db)?;
     console::menu_main(&mut config)?;
+
     Ok(())
 }
