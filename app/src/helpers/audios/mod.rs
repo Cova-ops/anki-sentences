@@ -5,6 +5,8 @@ use std::{
 
 use color_eyre::eyre::Result;
 
+use crate::services::tts::eleven_labs::LanguageVoice;
+
 pub mod audio_player;
 
 enum TypeFile {
@@ -29,18 +31,40 @@ impl ManageAudios {
         }
     }
 
-    pub fn save_audio_setze(&self, bytes: Vec<u8>, id: i32) -> Result<PathBuf> {
-        self.save_file(bytes, id, TypeFile::AudioSatz)
+    pub fn save_audio_setze(
+        &self,
+        bytes: Vec<u8>,
+        id: i32,
+        lang: LanguageVoice,
+    ) -> Result<PathBuf> {
+        self.save_file(bytes, id, TypeFile::AudioSatz, lang)
     }
 
-    pub fn save_audio_worte(&self, bytes: Vec<u8>, id: i32) -> Result<PathBuf> {
-        self.save_file(bytes, id, TypeFile::AudioWort)
+    pub fn save_audio_worte(
+        &self,
+        bytes: Vec<u8>,
+        id: i32,
+        lang: LanguageVoice,
+    ) -> Result<PathBuf> {
+        self.save_file(bytes, id, TypeFile::AudioWort, lang)
     }
 
-    fn save_file(&self, bytes: Vec<u8>, id: i32, type_file: TypeFile) -> Result<PathBuf> {
+    fn save_file(
+        &self,
+        bytes: Vec<u8>,
+        id: i32,
+        type_file: TypeFile,
+        lang: LanguageVoice,
+    ) -> Result<PathBuf> {
         let path_final = match type_file {
-            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.mp3", id)),
-            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.mp3", id)),
+            TypeFile::AudioWort => {
+                self.path_audios_worte
+                    .join(format!("wort_{:06}_{}.mp3", id, lang.get_posfix()))
+            }
+            TypeFile::AudioSatz => {
+                self.path_audios_setze
+                    .join(format!("satz_{:06}_{}.mp3", id, lang.get_posfix()))
+            }
         };
 
         fs::write(&path_final, bytes)?;
@@ -48,17 +72,23 @@ impl ManageAudios {
         Ok(path_final)
     }
 
-    pub fn get_audio_setze(&self, id: i32) -> Result<Option<File>> {
-        self.get_file(id, TypeFile::AudioSatz)
+    pub fn get_audio_setze(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>> {
+        self.get_file(id, TypeFile::AudioSatz, lang)
     }
-    pub fn get_audio_worte(&self, id: i32) -> Result<Option<File>> {
-        self.get_file(id, TypeFile::AudioWort)
+    pub fn get_audio_worte(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>> {
+        self.get_file(id, TypeFile::AudioWort, lang)
     }
 
-    fn get_file(&self, id: i32, type_file: TypeFile) -> Result<Option<File>> {
+    fn get_file(&self, id: i32, type_file: TypeFile, lang: LanguageVoice) -> Result<Option<File>> {
         let path = match type_file {
-            TypeFile::AudioWort => self.path_audios_worte.join(format!("wort_{:06}.mp3", id)),
-            TypeFile::AudioSatz => self.path_audios_setze.join(format!("satz_{:06}.mp3", id)),
+            TypeFile::AudioWort => {
+                self.path_audios_worte
+                    .join(format!("wort_{:06}_{}.mp3", id, lang.get_posfix()))
+            }
+            TypeFile::AudioSatz => {
+                self.path_audios_setze
+                    .join(format!("satz_{:06}_{}.mp3", id, lang.get_posfix()))
+            }
         };
 
         let file = File::open(path);

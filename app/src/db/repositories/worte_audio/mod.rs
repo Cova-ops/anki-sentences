@@ -27,10 +27,10 @@ impl WorteAudioRepo {
         }
 
         let sql = r#"
-            INSERT INTO worte_audio (wort_id, file_path, voice_id)
+            INSERT INTO worte_audio (wort_id, audio_name_es, audio_name_de)
                 VALUES (?1, ?2, ?3)
-            ON CONFLICT(wort_id) DO UPDATE SET file_path = ?2, voice_id = ?3
-            RETURNING wort_id, file_path, voice_id, created_at, deleted_at;
+            ON CONFLICT(wort_id) DO UPDATE SET audio_name_es = ?2, audio_name_de = ?3
+            RETURNING wort_id, audio_name_es, audio_name_de, created_at, deleted_at;
             "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
@@ -52,7 +52,7 @@ impl WorteAudioRepo {
         let placeholders = vec!["?"; ids.len()].join(",");
         let sql = format!(
             "
-            SELECT wort_id, file_path, voice_id, created_at, deleted_at
+            SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
             WHERE wort_id in ({placeholders})
                 AND deleted_at is NULL

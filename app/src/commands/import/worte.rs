@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use color_eyre::eyre::{self, Result};
+use color_eyre::eyre::{self, OptionExt, Result};
 
 use crate::{
     console::cli::TypeFile,
@@ -159,21 +159,28 @@ where
                 }
             };
 
-        let audio_path = match manage_audios.save_audio_worte(audio_bytes, wort.id) {
-            Ok(v) => v,
-            Err(err) => {
-                println!("Error al guardar el archivo: {}", wort.worte_es);
-                println!("{:#?}", err);
-                continue;
-            }
-        };
+        let audio_path =
+            match manage_audios.save_audio_worte(audio_bytes, wort.id, LanguageVoice::Spanisch) {
+                Ok(v) => v,
+                Err(err) => {
+                    println!("Error al guardar el archivo: {}", wort.worte_es);
+                    println!("{:#?}", err);
+                    continue;
+                }
+            };
+
+        let audio_name = audio_path
+            .file_name()
+            .and_then(|x| x.to_str())
+            .ok_or_eyre("Error converting OsStr to &str")?
+            .to_owned();
 
         WorteAudioRepo::bulk_insert(
             &mut conn,
             &[NewWorteAudioSchema {
                 wort_id: wort.id,
-                voice_id: "masc_eleven_labs".into(),
-                file_path: utils::path::path_to_string(&audio_path)?,
+                audio_name_es: Some(audio_name.replace(".mp3", "_es.mp3")),
+                audio_name_de: Some(audio_name.replace(".mp3", "_de.mp3")),
             }],
         )?;
 

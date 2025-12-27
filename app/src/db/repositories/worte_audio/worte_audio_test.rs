@@ -14,8 +14,8 @@ mod test_worte_audio_repo {
     #[allow(dead_code)]
     struct Snapshot {
         wort_id: i32,
-        file_path: String,
-        voice_id: String,
+        audio_name_es: Option<String>,
+        audio_name_de: Option<String>,
         created_at: String,
         deleted_at: String,
     }
@@ -24,8 +24,8 @@ mod test_worte_audio_repo {
         data.into_iter()
             .map(|d| Snapshot {
                 wort_id: d.wort_id,
-                file_path: d.file_path,
-                voice_id: d.voice_id,
+                audio_name_es: d.audio_name_es,
+                audio_name_de: d.audio_name_de,
                 created_at: "<created_at>".into(),
                 deleted_at: "<deleted_at>".into(),
             })
@@ -89,12 +89,12 @@ mod test_worte_audio_repo {
             assert_eq!(res_1.len(), 2);
 
             assert_eq!(res_1[0].wort_id, 1);
-            assert_eq!(res_1[0].file_path, "12345.mp3");
-            assert_eq!(res_1[0].voice_id, "voice_1");
+            assert_eq!(res_1[0].audio_name_es, Some("12345_es.mp3".into()));
+            assert_eq!(res_1[0].audio_name_de, Some("12345_de.mp3".into()));
 
             assert_eq!(res_1[1].wort_id, 2);
-            assert_eq!(res_1[1].file_path, "abcde.mp3");
-            assert_eq!(res_1[1].voice_id, "voice_2");
+            assert_eq!(res_1[1].audio_name_es, Some("abcde_es.mp3".into()));
+            assert_eq!(res_1[1].audio_name_de, Some("abcde_de.mp3".into()));
 
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
@@ -104,12 +104,12 @@ mod test_worte_audio_repo {
             let res_2 = c2(&mut conn).expect("La actualización no debe fallar");
 
             assert_eq!(res_2[0].wort_id, 1);
-            assert_eq!(res_2[0].file_path, "12345.mp4");
-            assert_eq!(res_2[0].voice_id, "voice_99");
+            assert_eq!(res_1[0].audio_name_es, Some("12345_es.mp4".into()));
+            assert_eq!(res_1[0].audio_name_de, Some("12345_de.mp4".into()));
 
             assert_eq!(res_2[1].wort_id, 2);
-            assert_eq!(res_2[1].file_path, "abcde.mp4");
-            assert_eq!(res_2[1].voice_id, "voice_100");
+            assert_eq!(res_1[1].audio_name_es, Some("abcde_es.mp4".into()));
+            assert_eq!(res_1[1].audio_name_de, Some("abcde_de.mp4".into()));
 
             let res_2 = placeholder_dates(res_2);
             insta::assert_debug_snapshot!(res_2);
@@ -120,25 +120,25 @@ mod test_worte_audio_repo {
             let data_1 = vec![
                 New {
                     wort_id: 1,
-                    file_path: "12345.mp3".into(),
-                    voice_id: "voice_1".into(),
+                    audio_name_es: Some("12345_es.mp3".into()),
+                    audio_name_de: Some("12345_de.mp3".into()),
                 },
                 New {
                     wort_id: 2,
-                    file_path: "abcde.mp3".into(),
-                    voice_id: "voice_2".into(),
+                    audio_name_es: Some("abcde_es.mp3".into()),
+                    audio_name_de: Some("abcde_de.mp3".into()),
                 },
             ];
             let data_2 = vec![
                 New {
                     wort_id: 1,
-                    file_path: "12345.mp4".into(),
-                    voice_id: "voice_99".into(),
+                    audio_name_es: Some("12345_es.mp4".into()),
+                    audio_name_de: Some("12345_de.mp4".into()),
                 },
                 New {
                     wort_id: 2,
-                    file_path: "abcde.mp4".into(),
-                    voice_id: "voice_100".into(),
+                    audio_name_es: Some("abcde_es.mp4".into()),
+                    audio_name_de: Some("abcde_de.mp4".into()),
                 },
             ];
             run_bulk_insert_update_scenario(
@@ -152,25 +152,25 @@ mod test_worte_audio_repo {
             let data_1 = vec![
                 New {
                     wort_id: 1,
-                    file_path: "12345.mp3".into(),
-                    voice_id: "voice_1".into(),
+                    audio_name_es: Some("12345_es.mp3".into()),
+                    audio_name_de: Some("12345_de.mp3".into()),
                 },
                 New {
                     wort_id: 2,
-                    file_path: "abcde.mp3".into(),
-                    voice_id: "voice_2".into(),
+                    audio_name_es: Some("abcde_es.mp3".into()),
+                    audio_name_de: Some("abcde_de.mp3".into()),
                 },
             ];
             let data_2 = vec![
                 New {
                     wort_id: 1,
-                    file_path: "12345.mp4".into(),
-                    voice_id: "voice_99".into(),
+                    audio_name_es: Some("12345_es.mp4".into()),
+                    audio_name_de: Some("12345_de.mp4".into()),
                 },
                 New {
                     wort_id: 2,
-                    file_path: "abcde.mp4".into(),
-                    voice_id: "voice_100".into(),
+                    audio_name_es: Some("abcde_es.mp4".into()),
+                    audio_name_de: Some("abcde_de.mp4".into()),
                 },
             ];
             run_bulk_insert_update_scenario(

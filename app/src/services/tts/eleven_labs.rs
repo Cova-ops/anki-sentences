@@ -26,6 +26,15 @@ pub enum LanguageVoice {
     Spanisch,
 }
 
+impl LanguageVoice {
+    pub fn get_posfix(&self) -> String {
+        match self {
+            LanguageVoice::Spanisch => "es".to_owned(),
+            LanguageVoice::Deutsch => "de".to_owned(),
+        }
+    }
+}
+
 pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> {
     let voice = match voice_choice {
         LanguageVoice::Deutsch => VOICE_ID_DE_MASC,

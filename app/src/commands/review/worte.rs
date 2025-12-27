@@ -5,7 +5,6 @@ use crate::{
     db::{
         get_conn,
         schemas::worte_review::{NewWorteReviewSchema, WorteReviewSchema},
-        worte::WorteRepo,
         worte_audio::WorteAudioRepo,
         worte_review::WorteReviewRepo,
     },

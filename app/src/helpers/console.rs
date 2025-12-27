@@ -9,6 +9,7 @@ use crate::{
         audios::{ManageAudios, audio_player::AudioPlayer},
         ui,
     },
+    services::tts::eleven_labs::LanguageVoice,
     utils,
 };
 
@@ -94,7 +95,7 @@ pub fn make_setze_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&s.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_setze(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_setze(*audio, LanguageVoice::Spanisch) {
                 player.play(path)?;
             }
         };
@@ -247,7 +248,7 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, LanguageVoice::Spanisch) {
                 player.play(path)?;
             }
         };
