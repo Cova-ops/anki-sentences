@@ -121,4 +121,42 @@ impl WorteReviewRepo {
 
         Ok(vec_ids)
     }
+
+    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+        let sql = r#"
+            SELECT wort_id
+            FROM worte_review wr
+            WHERE wr.deleted_at is NULL AND wr.wort_id > ?1
+            ORDER BY wr.wort_id
+            LIMIT ?2;
+        "#;
+
+        let mut stmt = conn.prepare(&sql)?;
+        let vec_ids = stmt
+            .query(params![last_id as i64, limit as i64])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(vec_ids)
+    }
+
+    pub fn delete_by_id(conn: &Connection, ids: &[i32]) -> Result<usize> {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+
+        let placeholder = vec!["?"; ids.len()].join(",");
+
+        let sql = format!(
+            "
+            DELETE FROM worte_review
+            WHERE wort_id IN ({placeholder});
+        "
+        );
+
+        let mut stmt = conn.prepare(&sql)?;
+        let rows = stmt.execute(params_from_iter(ids))?;
+
+        Ok(rows)
+    }
 }

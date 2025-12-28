@@ -122,38 +122,21 @@ impl WorteRepo {
         Ok(vec_out)
     }
 
-    pub fn fetch_worte_without_audio(conn: &Connection) -> Result<Vec<Schema>> {
-        let sql = "
-            SELECT
-                w.id,
-                w.gender_id,
-                w.wort_de,
-                w.wort_es,
-                w.plural,
-                w.niveau_id,
-                w.example_de,
-                w.example_es,
-                w.verb_aux,
-                w.trennbar,
-                w.reflexiv,
-                w.created_at,
-                w.deleted_at
+    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+        let sql = r#"
+            SELECT id
             FROM worte w
-            LEFT JOIN worte_audio wa ON w.id = wa.wort_id 
-            WHERE w.deleted_at IS NULL AND wa.wort_id is NULL
-            ORDER BY w.id ASC;
-        "
-        .to_string();
+            WHERE w.deleted_at is NULL AND id > ?1
+            ORDER BY w.id
+            LIMIT ?2;
+        "#;
 
-        let mut stmt = conn.prepare_cached(&sql)?;
+        let mut stmt = conn.prepare(&sql)?;
+        let vec_ids = stmt
+            .query(params![last_id as i64, limit as i64])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
 
-        let raws = stmt
-            .query([])
-            .context(format!("Sql - {}", sql))?
-            .mapped(Raw::from_sql)
-            .collect::<Result<Vec<Raw>, _>>()?;
-
-        let vec_out = Schema::from_vec_raw(raws)?;
-        Ok(vec_out)
+        Ok(vec_ids)
     }
 }
