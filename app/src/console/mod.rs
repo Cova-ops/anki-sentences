@@ -16,6 +16,8 @@ pub fn menu_main(config: &mut AppConfig) -> Result<()> {
 
     match cli.cmd {
         Command::Review { cmd } => commands::review::run(cmd, config)?,
+        Command::Import { cmd } => commands::import::run(cmd, config)?,
+        Command::Config { cmd } => commands::config::run(cmd, config)?,
         _ => todo!("Todavia no papito"),
     };
 

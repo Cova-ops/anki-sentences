@@ -36,6 +36,10 @@ pub enum Command {
         #[command(subcommand)]
         cmd: ProfileCmd,
     },
+    Config {
+        #[command(subcommand)]
+        cmd: ConfigCmd,
+    },
 }
 
 #[derive(ValueEnum, Debug, Clone)]
@@ -125,4 +129,19 @@ pub enum ProfileCmd {
     New,
     Use,
     Remove,
+}
+
+#[derive(ValueEnum, Debug, Clone)]
+pub enum ConfigKey {
+    SaveImportedFiles,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigCmd {
+    Set {
+        #[arg(value_enum)]
+        key: ConfigKey,
+        value: bool,
+    },
+    CleanData {},
 }
