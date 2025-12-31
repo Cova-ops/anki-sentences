@@ -2,8 +2,14 @@ use color_eyre::eyre::Result;
 use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::db::schemas::worte_audio::{
-    NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
+use crate::db::{
+    schemas::{
+        worte::{RawWorteSchema, WorteSchema},
+        worte_audio::{
+            NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
+        },
+    },
+    view::worte_audio_missing::{RawWorteAudioMissingSchema, WorteAudioMissingSchema},
 };
 
 #[cfg(test)]
@@ -86,6 +92,30 @@ impl WorteAudioRepo {
             .collect::<Result<Vec<i32>, _>>()?;
 
         Ok(vec_ids)
+    }
+
+    pub fn fetch_worte_without_audio(conn: &Connection) -> Result<Vec<WorteAudioMissingSchema>> {
+        let sql = "
+            SELECT
+                w.id,
+                w.wort_es,
+                w.wort_de,
+                wa.audio_name_es,
+                wa.audio_name_de
+            FROM worte w
+            LEFT JOIN worte_audio wa ON w.id = wa.wort_id 
+            WHERE w.deleted_at IS NULL AND (wa.audio_name_es is NULL OR wa.audio_name_de is NULL)
+            ORDER BY w.id ASC;";
+
+        let mut stmt = conn.prepare_cached(sql)?;
+
+        let raws = stmt
+            .query([])?
+            .mapped(RawWorteAudioMissingSchema::from_sql)
+            .collect::<Result<Vec<RawWorteAudioMissingSchema>, _>>()?;
+
+        let vec_out = WorteAudioMissingSchema::from_vec_raw(raws)?;
+        Ok(vec_out)
     }
 
     pub fn delete_by_id(conn: &Connection, ids: &[i32]) -> Result<usize> {

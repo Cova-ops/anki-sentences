@@ -28,10 +28,6 @@ pub enum Command {
         #[command(subcommand)]
         cmd: ReviewCmd,
     },
-    Audio {
-        #[command(subcommand)]
-        cmd: AudioCmd,
-    },
     Profile {
         #[command(subcommand)]
         cmd: ProfileCmd,
@@ -144,4 +140,5 @@ pub enum ConfigCmd {
         value: bool,
     },
     CleanData {},
+    DownloadAudios {},
 }

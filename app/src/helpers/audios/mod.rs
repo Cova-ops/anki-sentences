@@ -1,10 +1,10 @@
 use std::{
     collections::HashSet,
     fs::{self, File},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
-use color_eyre::eyre::{Context, OptionExt, Result, bail};
+use color_eyre::eyre::{Context, OptionExt, Result};
 
 use crate::services::tts::eleven_labs::LanguageVoice;
 
