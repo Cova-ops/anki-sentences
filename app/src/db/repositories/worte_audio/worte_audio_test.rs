@@ -104,12 +104,12 @@ mod test_worte_audio_repo {
             let res_2 = c2(&mut conn).expect("La actualización no debe fallar");
 
             assert_eq!(res_2[0].wort_id, 1);
-            assert_eq!(res_1[0].audio_name_es, Some("12345_es.mp4".into()));
-            assert_eq!(res_1[0].audio_name_de, Some("12345_de.mp4".into()));
+            assert_eq!(res_2[0].audio_name_es, Some("12345_es.mp4".into()));
+            assert_eq!(res_2[0].audio_name_de, Some("12345_de.mp4".into()));
 
             assert_eq!(res_2[1].wort_id, 2);
-            assert_eq!(res_1[1].audio_name_es, Some("abcde_es.mp4".into()));
-            assert_eq!(res_1[1].audio_name_de, Some("abcde_de.mp4".into()));
+            assert_eq!(res_2[1].audio_name_es, Some("abcde_es.mp4".into()));
+            assert_eq!(res_2[1].audio_name_de, Some("abcde_de.mp4".into()));
 
             let res_2 = placeholder_dates(res_2);
             insta::assert_debug_snapshot!(res_2);
