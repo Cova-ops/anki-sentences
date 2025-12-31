@@ -20,7 +20,7 @@ struct VoiceSettings {
     use_speaker_boost: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum LanguageVoice {
     Deutsch,
     Spanisch,
@@ -65,7 +65,7 @@ pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> 
         .header("Content-Type", "application/json")
         .json(&body)
         .send()?
-        .error_for_status()?; // Si falla, truena con error bonito
+        .error_for_status()?; // If fails, this make a pretty display error
 
     let bytes = res.bytes()?.to_vec();
     Ok(bytes)
