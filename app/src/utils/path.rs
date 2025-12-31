@@ -35,10 +35,20 @@ where
     Ok(())
 }
 
-pub fn path_to_string(path: &PathBuf) -> Result<String> {
+pub fn path_to_string(path: &Path) -> Result<String> {
     path.to_str()
         .map(|x| x.to_owned())
         .ok_or_eyre("Error getting string from path")
+}
+
+pub fn get_filename_from_path(path: &Path) -> Result<String> {
+    let filename = path
+        .file_name()
+        .and_then(|x| x.to_str())
+        .ok_or_eyre("Error converting OsStr to &str")?
+        .to_owned();
+
+    Ok(filename)
 }
 
 pub fn home_dir() -> PathBuf {
