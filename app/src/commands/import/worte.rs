@@ -1,9 +1,6 @@
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+use std::{env, path::Path};
 
-use color_eyre::eyre::{self, OptionExt, Result};
+use color_eyre::eyre::{Context, OptionExt, Result};
 
 use crate::{
     console::cli::TypeFile,
@@ -11,9 +8,9 @@ use crate::{
         get_conn, schemas::worte_audio::NewWorteAudioSchema, worte::WorteRepo,
         worte_audio::WorteAudioRepo,
     },
-    helpers::{self, audios::ManageAudios, csv, toml::AppConfig, ui},
+    helpers::{audios::ManageAudios, csv, toml::AppConfig},
     services::tts::{self, eleven_labs::LanguageVoice},
-    utils::{self, path::path_to_string},
+    utils,
 };
 
 const TEXT_INSTRUCTIONS: &str = r##"
@@ -115,6 +112,36 @@ Para poder agregar el archivo por favor pon la ruta donde se encuentra tu CSV. L
 Para regresar al menu principal favor de escribir "exit".
 "##;
 
+fn process_audio(
+    text: &str,
+    wort_id: i32,
+    manage_audios: &ManageAudios,
+    lang: LanguageVoice,
+) -> Result<String> {
+    let audio_bytes: Vec<u8> = tts::eleven_labs::generate_tts(text, lang)?;
+    let audio_path = manage_audios.save_audio_worte(audio_bytes, wort_id, lang)?;
+    let audio_name = utils::path::get_filename_from_path(&audio_path)?;
+
+    Ok(audio_name)
+}
+
+fn try_audio(
+    text: &str,
+    wort_id: i32,
+    manage_audios: &ManageAudios,
+    lang: LanguageVoice,
+) -> Option<String> {
+    match process_audio(text, wort_id, manage_audios, lang)
+        .wrap_err_with(|| format!("processing wort_id={wort_id}, lang={lang:?}, text={text}"))
+    {
+        Ok(name) => Some(name),
+        Err(err) => {
+            eprintln!("{:#?}", err);
+            None
+        }
+    }
+}
+
 pub fn run<P>(config: &AppConfig, path: P, type_file: TypeFile) -> Result<()>
 where
     P: AsRef<Path>,
@@ -149,43 +176,39 @@ where
     );
 
     for (i, wort) in res.iter().enumerate() {
-        let audio_bytes: Vec<u8> =
-            match tts::eleven_labs::generate_tts(&wort.worte_es, LanguageVoice::Spanisch) {
-                Ok(v) => v,
-                Err(err) => {
-                    println!("Error al generar el TTS de la palabra: {}", wort.worte_es);
-                    println!("{:#?}", err);
-                    continue;
-                }
-            };
+        let audio_name_es = try_audio(
+            &wort.worte_es,
+            wort.id,
+            &manage_audios,
+            LanguageVoice::Spanisch,
+        );
 
-        let audio_path =
-            match manage_audios.save_audio_worte(audio_bytes, wort.id, LanguageVoice::Spanisch) {
-                Ok(v) => v,
-                Err(err) => {
-                    println!("Error al guardar el archivo: {}", wort.worte_es);
-                    println!("{:#?}", err);
-                    continue;
-                }
-            };
+        let audio_name_de = try_audio(
+            &wort.worte_de,
+            wort.id,
+            &manage_audios,
+            LanguageVoice::Deutsch,
+        );
 
-        let audio_name = audio_path
-            .file_name()
-            .and_then(|x| x.to_str())
-            .ok_or_eyre("Error converting OsStr to &str")?
-            .to_owned();
+        if audio_name_es.is_none() && audio_name_de.is_none() {
+            continue;
+        }
 
         WorteAudioRepo::bulk_insert(
             &mut conn,
             &[NewWorteAudioSchema {
                 wort_id: wort.id,
-                audio_name_es: Some(audio_name.replace(".mp3", "_es.mp3")),
-                audio_name_de: Some(audio_name.replace(".mp3", "_de.mp3")),
+                audio_name_es,
+                audio_name_de,
             }],
         )?;
 
         println!("Audio completed {}/{}.", i + 1, new_data.len());
     }
+
+    println!();
+    println!("Descarga de audios completada :).");
+    println!();
 
     Ok(())
 }
