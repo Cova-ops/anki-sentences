@@ -1,2 +1,2 @@
 gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
-noun_common,Femenin,Plan,plan 123,Pläne 1223,C1,"Der Plan ist gut 123.","El plan es bueno 123.",,,
+noun_common,Maskuline,Plan,plan,Pläne,A2,"Der Plan ist gut.","El plan es bueno.",,,
