@@ -38,6 +38,7 @@ pub const CREATE_STR_INDEX_WORTE: &str = "
     CREATE INDEX IF NOT EXISTS idx_worte_created_at ON worte(created_at);
     CREATE INDEX IF NOT EXISTS idx_worte_gender_id ON worte(gender_id);
     CREATE INDEX IF NOT EXISTS idx_worte_niveau_id ON worte(niveau_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_worte_exact_es_de ON worte(wort_es, wort_de) WHERE deleted_at IS NULL;
 ";
 
 #[derive(Debug, Clone)]
@@ -62,7 +63,7 @@ pub struct WorteSchema {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, SqlModel)]
+#[derive(Debug, SqlModel, Clone)]
 #[sql(insert(
     gender_id, worte_de, worte_es, plural, niveau_id, example_de, example_es, verb_aux, trennbar,
     reflexiv

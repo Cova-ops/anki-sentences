@@ -1,14 +1,22 @@
-use std::{env, path::Path};
+use std::{collections::HashMap, env, path::Path};
 
-use color_eyre::eyre::{Context, OptionExt, Result};
+use color_eyre::eyre::{Context, OptionExt, Result, bail};
 
 use crate::{
     console::cli::TypeFile,
     db::{
-        get_conn, schemas::worte_audio::NewWorteAudioSchema, worte::WorteRepo,
+        get_conn,
+        schemas::{
+            niveau_liste::NiveauListeSchema,
+            worte::{NewWorteSchema, WorteSchema},
+            worte_audio::NewWorteAudioSchema,
+            worte_gender::WorteGenderSchema,
+        },
+        worte::WorteRepo,
         worte_audio::WorteAudioRepo,
+        worte_gram_type::WorteGramTypeRepo,
     },
-    helpers::{audios::ManageAudios, csv, toml::AppConfig},
+    helpers::{self, audios::ManageAudios, csv, toml::AppConfig},
     services::tts::{self, eleven_labs::LanguageVoice},
     utils,
 };
@@ -126,19 +134,215 @@ fn process_audio(
 }
 
 fn try_audio(
-    text: &str,
+    text_es: &str,
+    text_de: &str,
     wort_id: i32,
     manage_audios: &ManageAudios,
-    lang: LanguageVoice,
-) -> Option<String> {
-    match process_audio(text, wort_id, manage_audios, lang)
-        .wrap_err_with(|| format!("processing wort_id={wort_id}, lang={lang:?}, text={text}"))
-    {
+) -> (Option<String>, Option<String>) {
+    let path_es = match process_audio(text_es, wort_id, manage_audios, LanguageVoice::Spanisch)
+        .wrap_err_with(|| {
+            format!("processing wort_id={wort_id}, lang=LanguageVoice::Spanisch, text={text_es}")
+        }) {
         Ok(name) => Some(name),
         Err(err) => {
             eprintln!("{:#?}", err);
             None
         }
+    };
+
+    let path_de = match process_audio(text_de, wort_id, manage_audios, LanguageVoice::Deutsch)
+        .wrap_err_with(|| {
+            format!("processing wort_id={wort_id}, lang=LanguageVoice::Deutsch, text={text_de}")
+        }) {
+        Ok(name) => Some(name),
+        Err(err) => {
+            eprintln!("{:#?}", err);
+            None
+        }
+    };
+
+    (path_es, path_de)
+}
+
+enum ManageWortRepeatedResponse {
+    Skip,
+    ReplaceData(i32),
+    Cancel,
+}
+
+fn manage_wort_repeated(
+    old: &WorteSchema,
+    new: &NewWorteSchema,
+) -> Result<ManageWortRepeatedResponse> {
+    utils::console::clean_screen();
+
+    // vec<(field, old, new)>
+    let mut diffs: Vec<(String, String, String)> = vec![];
+
+    fn fmt_gender(id: Option<i32>) -> Result<String> {
+        Ok(match id {
+            Some(id) => {
+                let artikel = WorteGenderSchema::from_id(id)?.artikel;
+                format!("{id} ({artikel})")
+            }
+            None => "<None>".to_owned(),
+        })
+    }
+
+    let old_gender_id = old.gender_id.as_ref().map(|g| g.id); // Option<i32>
+    let new_gender_id = new.gender_id; // Option<i32>
+
+    if old_gender_id != new_gender_id {
+        diffs.push((
+            "gender ".to_owned(),
+            fmt_gender(old_gender_id)?,
+            fmt_gender(new_gender_id)?,
+        ));
+    }
+
+    fn fmt_plural(s: Option<&str>) -> String {
+        match s {
+            Some(s) => {
+                format!("{s}")
+            }
+            None => "<None>".to_owned(),
+        }
+    }
+
+    let old_plural = old.plural.as_deref();
+    let new_plural = new.plural.as_deref();
+
+    if old_plural != new_plural {
+        diffs.push((
+            "plural".to_owned(),
+            fmt_plural(old_plural),
+            fmt_plural(new_plural),
+        ));
+    }
+
+    fn fmt_niveau(id: i32) -> Result<String> {
+        let niveau = NiveauListeSchema::from_id(id)?.niveau;
+        Ok(format!("{id} ({niveau})"))
+    }
+
+    let old_niveau_id = old.niveau_id.id; // i32
+    let new_niveau_id = new.niveau_id; // i32
+
+    if old_niveau_id != new_niveau_id {
+        diffs.push((
+            "niveau".to_owned(),
+            fmt_niveau(old_niveau_id)?,
+            fmt_niveau(new_niveau_id)?,
+        ));
+    }
+
+    if old.example_es != new.example_es {
+        diffs.push((
+            "example (ES)".to_owned(),
+            old.example_es.to_owned(),
+            new.example_es.to_owned(),
+        ));
+    }
+
+    if old.example_de != new.example_de {
+        diffs.push((
+            "example (DE)".to_owned(),
+            old.example_de.to_owned(),
+            new.example_de.to_owned(),
+        ));
+    }
+
+    let old_verb_aux = old.verb_aux.as_deref();
+    let new_verb_aux = new.verb_aux.as_deref();
+
+    fn fmt_verb_aux(s: Option<&str>) -> String {
+        match s {
+            Some(v) => v.to_owned(),
+            None => "<None>".to_owned(),
+        }
+    }
+
+    if old_verb_aux != new_verb_aux {
+        diffs.push((
+            "verb_aux".to_owned(),
+            fmt_verb_aux(old_verb_aux),
+            fmt_verb_aux(new_verb_aux),
+        ));
+    }
+
+    let old_trennbar = old.trennbar.as_ref();
+    let new_trennbar = new.trennbar.as_ref();
+
+    fn fmt_trennbar(b: Option<&bool>) -> String {
+        match b {
+            Some(v) => v.to_string(),
+            None => "<None>".to_owned(),
+        }
+    }
+
+    if old_trennbar != new_trennbar {
+        diffs.push((
+            "trennbar".to_owned(),
+            fmt_trennbar(old_trennbar),
+            fmt_trennbar(new_trennbar),
+        ));
+    }
+
+    let old_reflexiv = old.reflexiv.as_ref();
+    let new_reflexiv = new.reflexiv.as_ref();
+
+    fn fmt_reflexiv(b: Option<&bool>) -> String {
+        match b {
+            Some(v) => v.to_string(),
+            None => "<None>".to_owned(),
+        }
+    }
+
+    if old_reflexiv != new_reflexiv {
+        diffs.push((
+            "reflexiv".to_owned(),
+            fmt_reflexiv(old_reflexiv),
+            fmt_reflexiv(new_reflexiv),
+        ));
+    }
+
+    // if it is exact the same as DB automatic ignore word
+    if diffs.is_empty() {
+        return Ok(ManageWortRepeatedResponse::Skip);
+    }
+
+    println!();
+    println!("[WARNING] Duplicate word detected");
+    println!();
+
+    println!("Word key:");
+    println!("\tES: {}", old.worte_es);
+    println!("\tDE: {}", old.worte_de);
+    println!("────────────────────────────────────────");
+    println!("Changes:");
+
+    for row in diffs {
+        println!("• {}", row.0);
+        println!("\told: {}", row.1);
+        println!("\tnew: {}", row.2);
+    }
+
+    println!();
+    println!("────────────────────────────────────────");
+    println!("How do you want to handle this word?");
+    println!("  [r] Replace existing data");
+    println!("  [s] Skip this word");
+    println!("  [q] Cancel import");
+
+    loop {
+        let input = helpers::ui::prompt_nonempty("> ")?.ok_or_eyre("prompt returned None")?;
+
+        return match input.trim().to_lowercase().as_str() {
+            "r" | "replace" => Ok(ManageWortRepeatedResponse::ReplaceData(old.id)),
+            "q" | "quit" => Ok(ManageWortRepeatedResponse::Cancel),
+            "s" | "skip" => Ok(ManageWortRepeatedResponse::Skip),
+            _ => continue,
+        };
     }
 }
 
@@ -162,33 +366,51 @@ where
     println!("Procesando {} nuevas palabras.", new_data.len());
     let mut conn = get_conn(config.get_database_path()?)?;
 
-    let res = WorteRepo::bulk_insert(&mut conn, &new_data)?;
+    let mut vec_new_worte: Vec<NewWorteSchema> = vec![];
+    let mut vec_update_worte: Vec<(i32, NewWorteSchema)> = vec![];
+    for n in new_data.into_iter() {
+        let data = &[(n.worte_es.clone(), n.worte_de.clone())];
+        let worte_repeated = WorteRepo::fetch_by_wort(&conn, data)?;
+
+        if worte_repeated.is_empty() {
+            vec_new_worte.push(n);
+            continue;
+        }
+
+        let res = manage_wort_repeated(&worte_repeated[0], &n)?;
+
+        match res {
+            ManageWortRepeatedResponse::Cancel => return Ok(()),
+            ManageWortRepeatedResponse::Skip => {}
+            ManageWortRepeatedResponse::ReplaceData(id) => vec_update_worte.push((id, n)),
+        };
+    }
+
+    // update words
+    for (id, new_worte) in vec_update_worte {
+        let tx = conn.transaction()?;
+        WorteGramTypeRepo::delete_by_id_tx(&tx, &[id])?;
+        WorteRepo::bulk_update_tx(&tx, &[(id, new_worte)])?;
+        tx.commit()?;
+    }
+
+    // insert new words
+    let res = WorteRepo::bulk_insert(&mut conn, &vec_new_worte)?;
 
     if !config.is_audio_enable()? {
-        println!("The Worte are added, audio download is disable");
+        println!("The Worte are added/updated, audio download is disable");
         return Ok(());
     }
 
-    println!("The Worte are added, audio download starts");
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
     );
 
+    println!("The Worte are added/updated, audio download starts");
     for (i, wort) in res.iter().enumerate() {
-        let audio_name_es = try_audio(
-            &wort.worte_es,
-            wort.id,
-            &manage_audios,
-            LanguageVoice::Spanisch,
-        );
-
-        let audio_name_de = try_audio(
-            &wort.worte_de,
-            wort.id,
-            &manage_audios,
-            LanguageVoice::Deutsch,
-        );
+        let (audio_name_es, audio_name_de) =
+            try_audio(&wort.worte_es, &wort.worte_de, wort.id, &manage_audios);
 
         if audio_name_es.is_none() && audio_name_de.is_none() {
             continue;
@@ -203,11 +425,11 @@ where
             }],
         )?;
 
-        println!("Audio completed {}/{}.", i + 1, new_data.len());
+        println!("Audio completed {}/{}.", i + 1, res.len());
     }
 
     println!();
-    println!("Descarga de audios completada :).");
+    println!("Audio download complete :).");
     println!();
 
     Ok(())

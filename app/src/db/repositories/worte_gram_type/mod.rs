@@ -27,7 +27,6 @@ impl WorteGramTypeRepo {
         let sql = r#"
             INSERT INTO worte_gram_type (id_worte, id_gram_type)
                 VALUES (?1, ?2)
-            
             RETURNING id_worte, id_gram_type, created_at, deleted_at;
         "#;
 
@@ -95,7 +94,14 @@ impl WorteGramTypeRepo {
         Ok(vec_ids)
     }
 
-    pub fn delete_by_id(conn: &Connection, ids: &[i32]) -> Result<usize> {
+    pub fn delete_by_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
+        let tx = conn.transaction()?;
+        let out = Self::delete_by_id_tx(&tx, ids)?;
+        tx.commit()?;
+        Ok(out)
+    }
+
+    pub fn delete_by_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
         if ids.is_empty() {
             return Ok(0);
         }
@@ -109,7 +115,7 @@ impl WorteGramTypeRepo {
         "
         );
 
-        let mut stmt = conn.prepare(&sql)?;
+        let mut stmt = tx.prepare_cached(&sql)?;
         let rows = stmt.execute(params_from_iter(ids))?;
 
         Ok(rows)
