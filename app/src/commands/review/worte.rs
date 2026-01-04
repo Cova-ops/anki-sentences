@@ -63,6 +63,7 @@ pub fn run(
         hash_audios,
         &manage_audio,
         batch,
+        no_shuffle,
     )?;
 
     // Obtenemos el id de las palabras que respondio

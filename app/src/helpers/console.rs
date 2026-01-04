@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use color_eyre::eyre::Result;
+use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
 use crate::{
@@ -212,6 +213,7 @@ pub fn make_worte_exercise_repeat(
     hash_audios: HashSet<i32>,
     manage_audio: &ManageAudios,
     batch: usize,
+    no_shuffle: bool,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
 
@@ -224,6 +226,10 @@ pub fn make_worte_exercise_repeat(
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
     let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    if no_shuffle {
+        let mut rng = rand::rng();
+        worte_correct.shuffle(&mut rng);
+    }
 
     let player = AudioPlayer::new();
     while !worte_correct.is_empty() && val_out == 0 {
@@ -271,7 +277,7 @@ pub fn make_worte_exercise_repeat(
         if input == correct_answer {
             if let Some(rep) = already_studied.get_mut(&w.id) {
                 if rep.repetition < 1 {
-                    // Primera vez que la acierta: subimos contador pero aún no la graduamos
+                    // Primera vez que la acierta: subimos contador pero aún no la guardamos
                     rep.add_repetition();
                     worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
                 } else {
@@ -321,6 +327,13 @@ pub fn make_worte_exercise_repeat(
         println!("Ejemplo: {}", w.example_de);
         println!("Traducción: {}", w.example_es);
         println!();
+
+        #[allow(clippy::collapsible_if)]
+        if let Some(audio) = hash_audios.get(&w.id) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, LanguageVoice::Deutsch) {
+                player.play(path)?;
+            }
+        };
 
         loop {
             let Some(input) = ui::prompt_nonempty("> ")? else {
