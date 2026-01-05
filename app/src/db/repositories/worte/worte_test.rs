@@ -31,7 +31,7 @@ mod test_worte_repo {
     fn data_minimun(conn: &mut Connection) -> Result<()> {
         let sc = scenario_worte_gender_schema();
         let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
-        WorteGenderSchema::init_data(&data)?;
+        WorteGenderSchema::init_data(&data);
 
         let sc = scenario_gram_type_schema();
         let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
@@ -39,7 +39,7 @@ mod test_worte_repo {
 
         let sc = scenario_niveau_liste_schema();
         let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
-        NiveauListeSchema::init_data(&data)?;
+        NiveauListeSchema::init_data(&data);
 
         Ok(())
     }

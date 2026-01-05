@@ -84,11 +84,11 @@ pub fn init_data(conn: &mut Connection) -> Result<()> {
 
     // GenderWorte
     let data = WorteGenderRepo::bulk_insert_tx(&tx, &SEED_WORTE_GENDER_LISTE)?;
-    WorteGenderSchema::init_data(&data)?;
+    WorteGenderSchema::init_data(&data);
 
     // NiveauWorte
     let data = NiveauListeRepo::bulk_insert_tx(&tx, &SEED_NIVEAU_LISTE)?;
-    NiveauListeSchema::init_data(&data)?;
+    NiveauListeSchema::init_data(&data);
 
     // GramType
     let data = GramTypeRepo::bulk_insert_tx(&tx, &SEED_GRAM_TYPE_LISTE)?;

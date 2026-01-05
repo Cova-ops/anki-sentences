@@ -1,8 +1,5 @@
 use color_eyre::eyre::{self, Result};
-use std::{
-    collections::HashMap,
-    sync::OnceLock,
-};
+use std::{collections::HashMap, sync::OnceLock};
 
 use crate::db::schemas::gram_type::{GramTypeSchema as Schema, NewGramTypeSchema as New};
 
@@ -24,15 +21,11 @@ impl Schema {
             .ok_or_else(|| eyre::eyre!("Gram Type not founded with id: {}", id))
     }
 
-    pub fn from_code<S>(code: S) -> Result<Self>
-    where
-        S: Into<String>,
-    {
+    pub fn from_code(code: &str) -> Result<Self> {
         let map = HASH_VALUES
             .get()
             .ok_or_else(|| eyre::eyre!("HASH_VALUES not initialized"))?;
 
-        let code = code.into();
         map.iter()
             .find(|(_, val)| val.code == code)
             .map(|(_, val)| Self { ..val.clone() })
