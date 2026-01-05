@@ -20,7 +20,7 @@ struct VoiceSettings {
     use_speaker_boost: bool,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LanguageVoice {
     Deutsch,
     Spanisch,

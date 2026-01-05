@@ -51,7 +51,11 @@ mod test_worte_review_repo {
         use std::time::Duration;
 
         use crate::{
-            db::{schemas::worte::NewWorteSchema, seeders::init_data, worte::WorteRepo},
+            db::{
+                schemas::{worte::NewWorteSchema, worte_review::ReviewDirection},
+                seeders::init_data,
+                worte::WorteRepo,
+            },
             helpers::time::fixed_date,
         };
 
@@ -104,6 +108,7 @@ mod test_worte_review_repo {
             assert_eq!(res_1.len(), 1);
 
             assert_eq!(res_1[0].wort_id, 1);
+            assert_eq!(res_1[0].direction, ReviewDirection::ES2DE);
             assert_eq!(res_1[0].interval, 1);
             assert_eq!(res_1[0].ease_factor, 2.5);
             assert_eq!(res_1[0].repetitions, 999);
@@ -120,6 +125,7 @@ mod test_worte_review_repo {
             assert_eq!(res_2.len(), 1);
 
             assert_eq!(res_2[0].wort_id, 1);
+            assert_eq!(res_2[0].direction, ReviewDirection::ES2DE);
             assert_eq!(res_2[0].interval, 10);
             assert_eq!(res_2[0].ease_factor, 1.3);
             assert_eq!(res_2[0].repetitions, 1);
@@ -131,9 +137,10 @@ mod test_worte_review_repo {
         }
 
         #[test]
-        fn test_bulk_insert() {
+        fn test_bulk_upsert() {
             let data_1 = vec![New {
                 wort_id: 1,
+                direction: ReviewDirection::ES2DE.to_string(),
                 interval: 1,
                 ease_factor: 2.5,
                 repetitions: 999,
@@ -142,6 +149,7 @@ mod test_worte_review_repo {
             }];
             let data_2 = vec![New {
                 wort_id: 1,
+                direction: ReviewDirection::ES2DE.to_string(),
                 interval: 10,
                 ease_factor: 1.3,
                 repetitions: 1,
@@ -155,9 +163,10 @@ mod test_worte_review_repo {
         }
 
         #[test]
-        fn test_bulk_insert_and_update_tx() {
+        fn test_bulk_upsert_tx() {
             let data_1 = vec![New {
                 wort_id: 1,
+                direction: ReviewDirection::ES2DE.to_string(),
                 interval: 1,
                 ease_factor: 2.5,
                 repetitions: 999,
@@ -166,6 +175,7 @@ mod test_worte_review_repo {
             }];
             let data_2 = vec![New {
                 wort_id: 1,
+                direction: ReviewDirection::ES2DE.to_string(),
                 interval: 10,
                 ease_factor: 1.3,
                 repetitions: 1,
@@ -196,7 +206,11 @@ mod test_worte_review_repo {
         use rusqlite::Connection;
 
         use crate::{
-            db::{schemas::worte::NewWorteSchema, seeders::init_data, worte::WorteRepo},
+            db::{
+                schemas::{worte::NewWorteSchema, worte_review::ReviewDirection},
+                seeders::init_data,
+                worte::WorteRepo,
+            },
             helpers::time::fixed_date,
         };
 
@@ -236,6 +250,7 @@ mod test_worte_review_repo {
             let data = vec![
                 New {
                     wort_id: 1,
+                    direction: ReviewDirection::ES2DE.to_string(),
                     interval: 1,
                     ease_factor: 2.5,
                     repetitions: 999,
@@ -243,7 +258,17 @@ mod test_worte_review_repo {
                     next_review: "2025-01-20 12:00:00".into(),
                 },
                 New {
+                    wort_id: 1,
+                    direction: ReviewDirection::DE2ES.to_string(),
+                    interval: 10,
+                    ease_factor: 1.3,
+                    repetitions: 1,
+                    last_review: "2025-12-10 12:00:00".into(),
+                    next_review: "2025-12-20 12:00:00".into(),
+                },
+                New {
                     wort_id: 2,
+                    direction: ReviewDirection::ES2DE.to_string(),
                     interval: 10,
                     ease_factor: 1.3,
                     repetitions: 1,
@@ -272,21 +297,32 @@ mod test_worte_review_repo {
             let res = WorteReviewRepo::fetch_by_wort_id(&conn, &data)
                 .expect("La consulta no debe fallar");
 
-            assert_eq!(res.len(), 2);
+            assert_eq!(res.len(), 3);
+            println!("Resultados: {:#?}", res);
 
             assert_eq!(res[0].wort_id, 1);
+            assert_eq!(res[0].direction, ReviewDirection::ES2DE);
             assert_eq!(res[0].interval, 1);
             assert_eq!(res[0].ease_factor, 2.5);
             assert_eq!(res[0].repetitions, 999);
             assert_eq!(res[0].last_review, fixed_date(2025, 1, 10, 12, 00, 00));
             assert_eq!(res[0].next_review, fixed_date(2025, 1, 20, 12, 00, 00));
 
-            assert_eq!(res[1].wort_id, 2);
+            assert_eq!(res[1].wort_id, 1);
+            assert_eq!(res[1].direction, ReviewDirection::DE2ES);
             assert_eq!(res[1].interval, 10);
             assert_eq!(res[1].ease_factor, 1.3);
             assert_eq!(res[1].repetitions, 1);
             assert_eq!(res[1].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
             assert_eq!(res[1].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
+
+            assert_eq!(res[2].wort_id, 2);
+            assert_eq!(res[2].direction, ReviewDirection::ES2DE);
+            assert_eq!(res[2].interval, 10);
+            assert_eq!(res[2].ease_factor, 1.3);
+            assert_eq!(res[2].repetitions, 1);
+            assert_eq!(res[2].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
+            assert_eq!(res[2].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
 
             let res = placeholder_dates(res);
             insta::assert_debug_snapshot!(res);

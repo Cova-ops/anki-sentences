@@ -214,12 +214,18 @@ pub fn make_worte_exercise_repeat(
     manage_audio: &ManageAudios,
     batch: usize,
     no_shuffle: bool,
+    lang: LanguageVoice,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
 
     let mut vec_out: Vec<(i32, u8)> = vec![];
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
+
+    let lang_second_audio = match lang {
+        LanguageVoice::Spanisch => LanguageVoice::Deutsch,
+        LanguageVoice::Deutsch => LanguageVoice::Spanisch,
+    };
 
     let take = ids_worte.len().min(batch);
     let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
@@ -237,10 +243,14 @@ pub fn make_worte_exercise_repeat(
 
         utils::console::clean_screen();
         let worte_remaining = worte_correct.len() + ids_worte.len();
+        let worte = match lang {
+            LanguageVoice::Spanisch => &w.worte_es,
+            LanguageVoice::Deutsch => &w.worte_de,
+        };
         println!(
             "{}",
             TEXT_WORTE_ONCE
-                .replace("{wort}", &w.worte_es)
+                .replace("{wort}", worte)
                 .replace("{remainding}", &worte_remaining.to_string())
                 .replace(
                     "{gram_type}",
@@ -254,7 +264,7 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, LanguageVoice::Spanisch) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang) {
                 player.play(path)?;
             }
         };
@@ -268,9 +278,13 @@ pub fn make_worte_exercise_repeat(
             break;
         }
 
-        let correct_answer = match w.gender_id {
-            Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
-            None => w.worte_de.clone(),
+        let correct_answer = if lang == LanguageVoice::Spanisch {
+            match w.gender_id {
+                Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+                None => w.worte_de.clone(),
+            }
+        } else {
+            w.worte_es.clone()
         };
 
         let input = input.trim();
@@ -330,7 +344,7 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, LanguageVoice::Deutsch) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang_second_audio) {
                 player.play(path)?;
             }
         };
@@ -354,5 +368,3 @@ pub fn make_worte_exercise_repeat(
 
     Ok((val_out, vec_out))
 }
-
-// TODO: Change storage of audio to home dir

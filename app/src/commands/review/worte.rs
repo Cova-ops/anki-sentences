@@ -4,11 +4,12 @@ use crate::{
     console::cli::ReviewWorteSection,
     db::{
         get_conn,
-        schemas::worte_review::{NewWorteReviewSchema, WorteReviewSchema},
+        schemas::worte_review::{NewWorteReviewSchema, ReviewDirection, WorteReviewSchema},
         worte_audio::WorteAudioRepo,
         worte_review::WorteReviewRepo,
     },
     helpers::{self, review_state::ReviewState, time, toml::AppConfig},
+    services::tts::eleven_labs::LanguageVoice,
     utils,
 };
 
@@ -17,9 +18,19 @@ use color_eyre::Result;
 use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
-fn get_review_new_ids(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
-    let mut vec_ids = WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review)?;
-    vec_ids.append(&mut WorteReviewRepo::fetch_new_wort_id_4_review(&conn)?);
+fn get_review_new_ids(
+    conn: &Connection,
+    date_review: String,
+    lang: LanguageVoice,
+) -> Result<Vec<i32>> {
+    let lang = ReviewDirection::from_lang(lang);
+
+    let mut vec_ids =
+        WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review, lang.clone())?;
+
+    vec_ids.append(&mut WorteReviewRepo::fetch_new_wort_id_4_review(
+        &conn, lang,
+    )?);
     vec_ids.sort_unstable();
     vec_ids.dedup();
 
@@ -31,13 +42,17 @@ pub fn run(
     section: ReviewWorteSection,
     batch: usize,
     no_shuffle: bool,
+    lang: LanguageVoice,
 ) -> Result<()> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
     let mut ids_worte: Vec<i32> = match section {
-        ReviewWorteSection::NewAndReview => get_review_new_ids(&conn, time::today_local_string(1))?,
-        ReviewWorteSection::OnlyNew => WorteReviewRepo::fetch_new_wort_id_4_review(&conn)?,
-
+        ReviewWorteSection::NewAndReview => {
+            get_review_new_ids(&conn, time::today_local_string(1), lang.clone())?
+        }
+        ReviewWorteSection::OnlyNew => {
+            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, ReviewDirection::from_lang(lang))?
+        }
         _ => todo!("Aguantame papito"),
     };
 
@@ -64,6 +79,7 @@ pub fn run(
         &manage_audio,
         batch,
         no_shuffle,
+        lang,
     )?;
 
     // Obtenemos el id de las palabras que respondio
@@ -97,6 +113,7 @@ pub fn run(
         let next = review_state.next_review_date_from(now);
         vec_new_worte_review.push(NewWorteReviewSchema {
             wort_id,
+            direction: ReviewDirection::from_lang(lang).to_string(),
             interval: review_state.interval,
             ease_factor: review_state.ease_factor,
             repetitions: review_state.repetitions,

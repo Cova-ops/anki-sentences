@@ -85,7 +85,15 @@ pub enum ReviewSetzeSection {
 
 #[derive(Subcommand, Debug)]
 pub enum ReviewCmd {
-    Worte {
+    WorteEs {
+        #[arg(long, value_enum, default_value_t = ReviewWorteSection::NewAndReview)]
+        section: ReviewWorteSection,
+        #[arg(long, default_value_t = 20)]
+        batch: usize,
+        #[arg(long, action = clap::ArgAction::SetFalse)]
+        no_shuffle: bool,
+    },
+    WorteDe {
         #[arg(long, value_enum, default_value_t = ReviewWorteSection::NewAndReview)]
         section: ReviewWorteSection,
         #[arg(long, default_value_t = 20)]

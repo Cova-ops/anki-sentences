@@ -3,7 +3,8 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::worte_review::{
-    NewWorteReviewSchema as New, RawWorteReviewSchema as Raw, WorteReviewSchema as Schema,
+    NewWorteReviewSchema as New, RawWorteReviewSchema as Raw, ReviewDirection,
+    WorteReviewSchema as Schema,
 };
 
 #[cfg(test)]
@@ -25,17 +26,36 @@ impl WorteReviewRepo {
         }
 
         let sql = r#"
-            INSERT INTO worte_review (wort_id, interval, ease_factor, repetitions, last_review, next_review)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+            INSERT INTO worte_review (
+                wort_id,
+                direction,
+                interval,
+                ease_factor,
+                repetitions,
+                last_review,
+                next_review
+            )
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
 
-            ON CONFLICT(wort_id) DO UPDATE SET 
-                interval = ?2,
-                ease_factor = ?3,
-                repetitions = ?4,
-                last_review = ?5,
-                next_review = ?6
-            
-            RETURNING id, wort_id, interval, ease_factor, repetitions, last_review, next_review, created_at, deleted_at;
+            ON CONFLICT(wort_id, direction)
+            DO UPDATE SET
+                interval      = excluded.interval,
+                ease_factor   = excluded.ease_factor,
+                repetitions   = excluded.repetitions,
+                last_review   = excluded.last_review,
+                next_review   = excluded.next_review
+
+            RETURNING
+                id,
+                wort_id,
+                direction,
+                interval,
+                ease_factor,
+                repetitions,
+                last_review,
+                next_review,
+                created_at,
+                deleted_at;
         "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
@@ -61,11 +81,23 @@ impl WorteReviewRepo {
         let sql = format!(
             "
                 SELECT 
-                    id, wort_id, interval, ease_factor, repetitions,
-                    last_review, next_review, created_at, deleted_at
-                FROM worte_review wr
-                WHERE wr.deleted_at is NULL AND
-                wr.wort_id in ({placeholders})
+                    id,
+                    wort_id,
+                    direction,
+                    interval,
+                    ease_factor,
+                    repetitions,
+                    last_review,
+                    next_review,
+                    created_at,
+                    deleted_at
+                FROM 
+                    worte_review wr
+                WHERE 
+                    wr.deleted_at is NULL
+                    AND wr.wort_id in ({placeholders})
+                ORDER BY
+                    wr.id ASC;
             "
         );
 
@@ -79,20 +111,26 @@ impl WorteReviewRepo {
         Ok(vec_out)
     }
 
-    pub fn fetch_new_wort_id_4_review(conn: &Connection) -> Result<Vec<i32>> {
+    pub fn fetch_new_wort_id_4_review(
+        conn: &Connection,
+        lang: ReviewDirection,
+    ) -> Result<Vec<i32>> {
         let sql = format!(
-            "
+            r#"
                 SELECT
                     w.id
                 FROM worte w
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM worte_review wr
-                    WHERE wr.wort_id = w.id
+                    WHERE 
+                        wr.wort_id = w.id
+                        AND direction = "{}"
                 )
                 AND w.deleted_at IS NULL
                 ORDER BY w.id ASC;
-            "
+            "#,
+            lang.to_string()
         );
 
         let mut stmt = conn.prepare(&sql)?;
@@ -104,16 +142,24 @@ impl WorteReviewRepo {
         Ok(vec_ids)
     }
 
-    pub fn fetch_review_wort_id_by_day(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
-        let sql = r#"
+    pub fn fetch_review_wort_id_by_day(
+        conn: &Connection,
+        date_review: String,
+        lang: ReviewDirection,
+    ) -> Result<Vec<i32>> {
+        let sql = format!(
+            r#"
             SELECT wort_id
             FROM worte_review
             WHERE next_review < ?1
+                AND direction = "{}"
                 AND deleted_at IS NULL
             ORDER BY next_review ASC;
-        "#;
+        "#,
+            lang.to_string()
+        );
 
-        let mut stmt = conn.prepare(sql)?;
+        let mut stmt = conn.prepare(&sql)?;
         let vec_ids = stmt
             .query(params![date_review])?
             .mapped(|r| r.get(0))
