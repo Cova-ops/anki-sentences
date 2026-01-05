@@ -206,8 +206,6 @@ Snapshots are reviewed explicitly, making regressions easy to detect when:
 
 ## ⚙️ CI – GitHub Actions
 
-⚙️ CI – GitHub Actions
-
 The project includes a GitHub Actions pipeline that runs on every push and pull request.
 
 Steps:

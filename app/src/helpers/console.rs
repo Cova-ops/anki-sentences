@@ -1,18 +1,16 @@
 use std::collections::{HashMap, HashSet};
 
 use color_eyre::eyre::Result;
+use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
 use crate::{
-    db::{
-        schemas::{setze::SetzeSchema, worte::WorteSchema},
-        setze::SetzeRepo,
-        worte::WorteRepo,
-    },
+    db::{setze::SetzeRepo, worte::WorteRepo},
     helpers::{
         audios::{ManageAudios, audio_player::AudioPlayer},
         ui,
     },
+    services::tts::eleven_labs::LanguageVoice,
     utils,
 };
 
@@ -67,7 +65,8 @@ pub fn make_setze_exercise_repeat(
     conn: &Connection,
     ids_setze: Vec<i32>,
     hash_audios: HashSet<i32>,
-    offset: usize,
+    manage_audio: &ManageAudios,
+    batch: usize,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_setze = ids_setze;
 
@@ -75,7 +74,7 @@ pub fn make_setze_exercise_repeat(
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
 
-    let take = ids_setze.len().min(offset);
+    let take = ids_setze.len().min(batch);
     let aux_ids: Vec<i32> = ids_setze.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
@@ -85,7 +84,7 @@ pub fn make_setze_exercise_repeat(
     while !setze_correct.is_empty() {
         let s = setze_correct[0].clone();
 
-        utils::clean_screen();
+        utils::console::clean_screen();
         let setze_remaining = setze_correct.len() + ids_setze.len();
         println!(
             "{}",
@@ -97,7 +96,7 @@ pub fn make_setze_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&s.id) {
-            if let Ok(Some(path)) = ManageAudios::get_audio_setze(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_setze(*audio, LanguageVoice::Spanisch) {
                 player.play(path)?;
             }
         };
@@ -212,7 +211,10 @@ pub fn make_worte_exercise_repeat(
     conn: &Connection,
     ids_worte: Vec<i32>,
     hash_audios: HashSet<i32>,
-    offset: usize,
+    manage_audio: &ManageAudios,
+    batch: usize,
+    no_shuffle: bool,
+    lang: LanguageVoice,
 ) -> Result<(i32, Vec<(i32, u8)>)> {
     let mut ids_worte = ids_worte;
 
@@ -220,22 +222,35 @@ pub fn make_worte_exercise_repeat(
     let mut val_out = 0;
     let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
 
-    let take = ids_worte.len().min(offset);
+    let lang_second_audio = match lang {
+        LanguageVoice::Spanisch => LanguageVoice::Deutsch,
+        LanguageVoice::Deutsch => LanguageVoice::Spanisch,
+    };
+
+    let take = ids_worte.len().min(batch);
     let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
     let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    if no_shuffle {
+        let mut rng = rand::rng();
+        worte_correct.shuffle(&mut rng);
+    }
 
     let player = AudioPlayer::new();
     while !worte_correct.is_empty() && val_out == 0 {
         let w = worte_correct[0].clone();
 
-        utils::clean_screen();
+        utils::console::clean_screen();
         let worte_remaining = worte_correct.len() + ids_worte.len();
+        let worte = match lang {
+            LanguageVoice::Spanisch => &w.worte_es,
+            LanguageVoice::Deutsch => &w.worte_de,
+        };
         println!(
             "{}",
             TEXT_WORTE_ONCE
-                .replace("{wort}", &w.worte_es)
+                .replace("{wort}", worte)
                 .replace("{remainding}", &worte_remaining.to_string())
                 .replace(
                     "{gram_type}",
@@ -249,7 +264,7 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = ManageAudios::get_audio_worte(*audio) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang) {
                 player.play(path)?;
             }
         };
@@ -263,16 +278,20 @@ pub fn make_worte_exercise_repeat(
             break;
         }
 
-        let correct_answer = match w.gender_id {
-            Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
-            None => w.worte_de.clone(),
+        let correct_answer = if lang == LanguageVoice::Spanisch {
+            match w.gender_id {
+                Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+                None => w.worte_de.clone(),
+            }
+        } else {
+            w.worte_es.clone()
         };
 
         let input = input.trim();
         if input == correct_answer {
             if let Some(rep) = already_studied.get_mut(&w.id) {
                 if rep.repetition < 1 {
-                    // Primera vez que la acierta: subimos contador pero aún no la graduamos
+                    // Primera vez que la acierta: subimos contador pero aún no la guardamos
                     rep.add_repetition();
                     worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
                 } else {
@@ -322,6 +341,13 @@ pub fn make_worte_exercise_repeat(
         println!("Ejemplo: {}", w.example_de);
         println!("Traducción: {}", w.example_es);
         println!();
+
+        #[allow(clippy::collapsible_if)]
+        if let Some(audio) = hash_audios.get(&w.id) {
+            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang_second_audio) {
+                player.play(path)?;
+            }
+        };
 
         loop {
             let Some(input) = ui::prompt_nonempty("> ")? else {

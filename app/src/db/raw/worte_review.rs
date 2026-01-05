@@ -3,7 +3,7 @@ use sql_model::FromRaw;
 
 use crate::{
     db::schemas::worte_review::{
-         RawWorteReviewSchema as Raw, WorteReviewSchema as Schema,
+        RawWorteReviewSchema as Raw, ReviewDirection, WorteReviewSchema as Schema,
     },
     helpers::time::string_2_datetime,
 };
@@ -20,6 +20,7 @@ impl FromRaw<Raw> for Schema {
             id: r.id,
 
             wort_id: r.wort_id,
+            direction: ReviewDirection::try_from(r.direction.as_str())?,
             interval: r.interval,
             ease_factor: r.ease_factor,
             repetitions: r.repetitions,

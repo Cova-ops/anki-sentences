@@ -1,5 +1,5 @@
 use color_eyre::eyre::Result;
-use rusqlite::{Connection, Transaction, params};
+use rusqlite::{Connection, Transaction};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::gram_type::{

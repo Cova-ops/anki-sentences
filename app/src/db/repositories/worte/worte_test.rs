@@ -279,39 +279,5 @@ mod test_worte_repo {
             let res_1 = placeholder_dates(res_1);
             insta::assert_debug_snapshot!(res_1);
         }
-
-        #[test]
-        fn test_fetch_id_neue_worte() {
-            let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
-
-            let res_1 = WorteRepo::fetch_id_neue_worte(&conn).expect("Error al hacer el fetch");
-
-            assert_eq!(res_1.len(), 2);
-            assert_eq!(res_1[0], 1);
-            assert_eq!(res_1[1], 2);
-
-            insta::assert_debug_snapshot!(res_1);
-
-            WorteReviewRepo::bulk_insert(
-                &mut conn,
-                &[NewWorteReviewSchema {
-                    wort_id: 1,
-                    repetitions: 1,
-                    ease_factor: 2.0,
-                    interval: 1,
-                    last_review: "2025-01-10 12:00:00".into(),
-                    next_review: "2025-01-10 12:00:00".into(),
-                }],
-            )
-            .expect("Error al hacer el insert de worte review");
-
-            let res_2 = WorteRepo::fetch_id_neue_worte(&conn).expect("Error al hacer el fetch");
-
-            assert_eq!(res_2.len(), 1);
-            assert_eq!(res_2[0], 2);
-
-            insta::assert_debug_snapshot!(res_2);
-        }
     }
 }

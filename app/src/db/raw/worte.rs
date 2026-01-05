@@ -4,7 +4,7 @@ use sql_model::FromRaw;
 use crate::{
     db::schemas::{
         niveau_liste::NiveauListeSchema,
-        worte::{RawWorteSchema as Raw, WorteSchema as Schema},
+        worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},
         worte_gender::WorteGenderSchema,
     },
     helpers::time::string_2_datetime,

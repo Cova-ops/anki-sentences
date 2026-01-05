@@ -5,15 +5,23 @@ expression: res_2
 [
     Snapshot {
         wort_id: 1,
-        file_path: "12345.mp4",
-        voice_id: "voice_99",
+        audio_name_es: Some(
+            "12345_es.mp4",
+        ),
+        audio_name_de: Some(
+            "12345_de.mp4",
+        ),
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
     Snapshot {
         wort_id: 2,
-        file_path: "abcde.mp4",
-        voice_id: "voice_100",
+        audio_name_es: Some(
+            "abcde_es.mp4",
+        ),
+        audio_name_de: Some(
+            "abcde_de.mp4",
+        ),
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },

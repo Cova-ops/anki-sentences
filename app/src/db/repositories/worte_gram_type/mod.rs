@@ -1,5 +1,5 @@
 use color_eyre::eyre::{Context, Result};
-use rusqlite::{Connection, Transaction, params_from_iter};
+use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::schemas::worte_gram_type::{
@@ -27,7 +27,6 @@ impl WorteGramTypeRepo {
         let sql = r#"
             INSERT INTO worte_gram_type (id_worte, id_gram_type)
                 VALUES (?1, ?2)
-            
             RETURNING id_worte, id_gram_type, created_at, deleted_at;
         "#;
 
@@ -75,5 +74,50 @@ impl WorteGramTypeRepo {
 
         let out = Schema::from_vec_raw(raw)?;
         Ok(out)
+    }
+
+    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+        let sql = r#"
+            SELECT id_worte
+            FROM worte_gram_type wgt
+            WHERE wgt.deleted_at is NULL AND wgt.id_worte > ?1
+            ORDER BY wgt.id_worte
+            LIMIT ?2;
+        "#;
+
+        let mut stmt = conn.prepare(&sql)?;
+        let vec_ids = stmt
+            .query(params![last_id as i64, limit as i64])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(vec_ids)
+    }
+
+    pub fn delete_by_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
+        let tx = conn.transaction()?;
+        let out = Self::delete_by_id_tx(&tx, ids)?;
+        tx.commit()?;
+        Ok(out)
+    }
+
+    pub fn delete_by_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+
+        let placeholder = vec!["?"; ids.len()].join(",");
+
+        let sql = format!(
+            "
+            DELETE FROM worte_gram_type
+            WHERE id_worte IN ({placeholder});
+        "
+        );
+
+        let mut stmt = tx.prepare_cached(&sql)?;
+        let rows = stmt.execute(params_from_iter(ids))?;
+
+        Ok(rows)
     }
 }

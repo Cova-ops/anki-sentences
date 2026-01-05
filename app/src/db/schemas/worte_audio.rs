@@ -3,9 +3,9 @@ use sql_model::SqlModel;
 
 pub const CREATE_STR_TABLE_WORTE_AUDIO: &str = "
 CREATE TABLE IF NOT EXISTS worte_audio(
-    wort_id      INTEGER PRIMARY KEY,
-    file_path    TEXT NOT NULL,
-    voice_id     TEXT NOT NULL,
+    wort_id         INTEGER PRIMARY KEY,
+    audio_name_es   TEXT NOT NULL,
+    audio_name_de   TEXT NOT NULL,
 
     -- Generic
     created_at          TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -17,16 +17,15 @@ CREATE TABLE IF NOT EXISTS worte_audio(
 )";
 
 pub const CREATE_STR_INDEX_WORTE_AUDIO: &str = "
-    CREATE INDEX IF NOT EXISTS idx_worte_audio_voice_id ON worte_audio(voice_id);
 ";
 
 #[derive(Debug, Clone, SqlModel)]
 #[sql(raw_type = "RawWorteAudioSchema")]
-#[sql(raw(wort_id, file_path, voice_id, created_at, deleted_at))]
+#[sql(raw(wort_id, audio_name_es, audio_name_de, created_at, deleted_at))]
 pub struct WorteAudioSchema {
     pub wort_id: i32,
-    pub file_path: String,
-    pub voice_id: String,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 
     // Generic
     pub created_at: DateTime<Utc>,
@@ -34,19 +33,19 @@ pub struct WorteAudioSchema {
 }
 
 #[derive(Debug, SqlModel)]
-#[sql(insert(wort_id, file_path, voice_id))]
+#[sql(insert(wort_id, audio_name_es, audio_name_de))]
 pub struct NewWorteAudioSchema {
     pub wort_id: i32,
-    pub file_path: String,
-    pub voice_id: String,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 }
 
 #[derive(Debug, SqlModel)]
-#[sql(raw(wort_id, file_path, voice_id, created_at, deleted_at))]
+#[sql(raw(wort_id, audio_name_es, audio_name_de, created_at, deleted_at))]
 pub struct RawWorteAudioSchema {
     pub wort_id: i32,
-    pub file_path: String,
-    pub voice_id: String,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 
     // Generic
     pub created_at: String,

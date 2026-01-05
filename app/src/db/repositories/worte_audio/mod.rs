@@ -1,9 +1,15 @@
 use color_eyre::eyre::Result;
-use rusqlite::{Connection, Transaction, params_from_iter};
+use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::db::schemas::worte_audio::{
-    NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
+use crate::db::{
+    schemas::{
+        worte::{RawWorteSchema, WorteSchema},
+        worte_audio::{
+            NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
+        },
+    },
+    view::worte_audio_missing::{RawWorteAudioMissingSchema, WorteAudioMissingSchema},
 };
 
 #[cfg(test)]
@@ -27,10 +33,10 @@ impl WorteAudioRepo {
         }
 
         let sql = r#"
-            INSERT INTO worte_audio (wort_id, file_path, voice_id)
+            INSERT INTO worte_audio (wort_id, audio_name_es, audio_name_de)
                 VALUES (?1, ?2, ?3)
-            ON CONFLICT(wort_id) DO UPDATE SET file_path = ?2, voice_id = ?3
-            RETURNING wort_id, file_path, voice_id, created_at, deleted_at;
+            ON CONFLICT(wort_id) DO UPDATE SET audio_name_es = ?2, audio_name_de = ?3
+            RETURNING wort_id, audio_name_es, audio_name_de, created_at, deleted_at;
             "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
@@ -52,7 +58,7 @@ impl WorteAudioRepo {
         let placeholders = vec!["?"; ids.len()].join(",");
         let sql = format!(
             "
-            SELECT wort_id, file_path, voice_id, created_at, deleted_at
+            SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
             WHERE wort_id in ({placeholders})
                 AND deleted_at is NULL
@@ -68,5 +74,67 @@ impl WorteAudioRepo {
 
         let vec_out = Schema::from_vec_raw(raw)?;
         Ok(vec_out)
+    }
+
+    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+        let sql = r#"
+            SELECT wort_id
+            FROM worte_audio wa
+            WHERE wa.deleted_at is NULL AND wa.wort_id > ?1
+            ORDER BY wa.wort_id
+            LIMIT ?2;
+        "#;
+
+        let mut stmt = conn.prepare(&sql)?;
+        let vec_ids = stmt
+            .query(params![last_id as i64, limit as i64])?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()?;
+
+        Ok(vec_ids)
+    }
+
+    pub fn fetch_worte_without_audio(conn: &Connection) -> Result<Vec<WorteAudioMissingSchema>> {
+        let sql = "
+            SELECT
+                w.id,
+                w.wort_es,
+                w.wort_de,
+                wa.audio_name_es,
+                wa.audio_name_de
+            FROM worte w
+            LEFT JOIN worte_audio wa ON w.id = wa.wort_id 
+            WHERE w.deleted_at IS NULL AND (wa.audio_name_es is NULL OR wa.audio_name_de is NULL)
+            ORDER BY w.id ASC;";
+
+        let mut stmt = conn.prepare_cached(sql)?;
+
+        let raws = stmt
+            .query([])?
+            .mapped(RawWorteAudioMissingSchema::from_sql)
+            .collect::<Result<Vec<RawWorteAudioMissingSchema>, _>>()?;
+
+        let vec_out = WorteAudioMissingSchema::from_vec_raw(raws)?;
+        Ok(vec_out)
+    }
+
+    pub fn delete_by_id(conn: &Connection, ids: &[i32]) -> Result<usize> {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+
+        let placeholder = vec!["?"; ids.len()].join(",");
+
+        let sql = format!(
+            "
+            DELETE FROM worte_audio
+            WHERE wort_id IN ({placeholder});
+        "
+        );
+
+        let mut stmt = conn.prepare(&sql)?;
+        let rows_afected = stmt.execute(params_from_iter(ids))?;
+
+        Ok(rows_afected)
     }
 }
