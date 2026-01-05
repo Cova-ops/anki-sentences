@@ -3,8 +3,6 @@ mod test_gram_type_repo {
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
 
-    use std::{thread, time::Duration};
-
     use crate::{
         db::{
             gram_type::GramTypeRepo,
