@@ -11,6 +11,9 @@ mod services;
 mod traits;
 mod utils;
 
+#[cfg(test)]
+mod test_utils;
+
 fn main() -> Result<()> {
     dotenvy::dotenv()?;
     color_eyre::install().unwrap();
