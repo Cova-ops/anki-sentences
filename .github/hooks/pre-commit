@@ -2,3 +2,4 @@
 
 echo "🧹 Running cargo fix (best effort)..."
 cargo fix --allow-staged --allow-dirty
+
