@@ -1,15 +1,99 @@
 ---
 source: app/src/db/repositories/worte/worte_test.rs
-expression: res_1.snapshot()
+expression: res.snapshot()
 ---
 [
     WorteSnapshot {
         id: 1,
         gram_type_id: [
             GramTypeSnapshot {
-                id: 1,
-                code: "noun_proper",
-                name: "Nombre propio",
+                id: 12,
+                code: "adverb_sentence_connector",
+                name: "Adverbio conector",
+                created_at: "<created_at>",
+                deleted_at: "<deleted_at>",
+            },
+            GramTypeSnapshot {
+                id: 27,
+                code: "conjunction_coordinating",
+                name: "Conjuncion coordinante",
+                created_at: "<created_at>",
+                deleted_at: "<deleted_at>",
+            },
+        ],
+        gender_id: None,
+        worte_de: "weitergehen",
+        worte_es: "seguir",
+        plural: None,
+        niveau_id: NiveauListeSnapshot {
+            id: 1,
+            niveau: "A2",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        example_de: "Wir gehen weiter, bis wir zu Hause sind.",
+        example_es: "Seguimos hasta llegar a casa.",
+        verb_aux: Some(
+            "sein",
+        ),
+        trennbar: Some(
+            true,
+        ),
+        reflexiv: Some(
+            false,
+        ),
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteSnapshot {
+        id: 2,
+        gram_type_id: [
+            GramTypeSnapshot {
+                id: 9,
+                code: "adverb_place",
+                name: "Adverbio lugar",
+                created_at: "<created_at>",
+                deleted_at: "<deleted_at>",
+            },
+            GramTypeSnapshot {
+                id: 31,
+                code: "particle_negation",
+                name: "Particula negacion",
+                created_at: "<created_at>",
+                deleted_at: "<deleted_at>",
+            },
+        ],
+        gender_id: None,
+        worte_de: "müde werden",
+        worte_es: "ponerse cansado",
+        plural: None,
+        niveau_id: NiveauListeSnapshot {
+            id: 1,
+            niveau: "A2",
+            created_at: "<created_at>",
+            deleted_at: "<deleted_at>",
+        },
+        example_de: "Ich werde nach der Arbeit immer müde.",
+        example_es: "Siempre me pongo cansado después del trabajo.",
+        verb_aux: Some(
+            "sein",
+        ),
+        trennbar: Some(
+            false,
+        ),
+        reflexiv: Some(
+            false,
+        ),
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteSnapshot {
+        id: 3,
+        gram_type_id: [
+            GramTypeSnapshot {
+                id: 4,
+                code: "verb_auxiliary",
+                name: "Verbo auxiliar",
                 created_at: "<created_at>",
                 deleted_at: "<deleted_at>",
             },
@@ -23,64 +107,22 @@ expression: res_1.snapshot()
                 deleted_at: "<deleted_at>",
             },
         ),
-        worte_de: "Hund",
-        worte_es: "Perro",
+        worte_de: "Frist",
+        worte_es: "plazo (de entrega)",
         plural: Some(
-            "Hunde",
+            "Fristen",
         ),
-        niveau_id: NiveauListeSnapshot {
-            id: 1,
-            niveau: "A2",
-            created_at: "<created_at>",
-            deleted_at: "<deleted_at>",
-        },
-        example_de: "Beispiel",
-        example_es: "Ejemplo",
-        verb_aux: None,
-        trennbar: None,
-        reflexiv: None,
-        created_at: "<created_at>",
-        deleted_at: "<deleted_at>",
-    },
-    WorteSnapshot {
-        id: 2,
-        gram_type_id: [
-            GramTypeSnapshot {
-                id: 2,
-                code: "verb_main",
-                name: "Verbo lexico",
-                created_at: "<created_at>",
-                deleted_at: "<deleted_at>",
-            },
-            GramTypeSnapshot {
-                id: 3,
-                code: "verb_modal",
-                name: "Verbo modal",
-                created_at: "<created_at>",
-                deleted_at: "<deleted_at>",
-            },
-        ],
-        gender_id: None,
-        worte_de: "laufen",
-        worte_es: "correr",
-        plural: None,
         niveau_id: NiveauListeSnapshot {
             id: 2,
             niveau: "B1",
             created_at: "<created_at>",
             deleted_at: "<deleted_at>",
         },
-        example_de: "Beispiel",
-        example_es: "Ejemplo",
-        verb_aux: Some(
-            "sein",
-        ),
-        trennbar: Some(
-            false,
-        ),
-        reflexiv: Some(
-            false,
-        ),
+        example_de: "Die Frist endet morgen.",
+        example_es: "El plazo termina mañana.",
+        verb_aux: None,
+        trennbar: None,
+        reflexiv: None,
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },

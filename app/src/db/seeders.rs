@@ -92,7 +92,7 @@ pub fn init_data(conn: &mut Connection) -> Result<()> {
 
     // GramType
     let data = GramTypeRepo::bulk_insert_tx(&tx, &SEED_GRAM_TYPE_LISTE)?;
-    GramTypeSchema::init_data(&data)?;
+    GramTypeSchema::init_data(&data);
 
     tx.commit()?;
 

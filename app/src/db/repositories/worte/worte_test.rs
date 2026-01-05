@@ -8,7 +8,12 @@ mod test_worte_repo {
         db::{
             gram_type::GramTypeRepo,
             niveau_liste::NiveauListeRepo,
-            schemas::worte::{NewWorteSchema as New, WorteSchema as Schema},
+            schemas::{
+                gram_type::GramTypeSchema,
+                niveau_liste::NiveauListeSchema,
+                worte::{NewWorteSchema as New, WorteSchema as Schema},
+                worte_gender::WorteGenderSchema,
+            },
             setup_test_db,
             worte::WorteRepo,
             worte_gender::WorteGenderRepo,
@@ -25,19 +30,21 @@ mod test_worte_repo {
 
     fn data_minimun(conn: &mut Connection) -> Result<()> {
         let sc = scenario_worte_gender_schema();
-        WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
+        let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
+        WorteGenderSchema::init_data(&data)?;
 
         let sc = scenario_gram_type_schema();
-        GramTypeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
+        GramTypeSchema::init_data(&data);
 
         let sc = scenario_niveau_liste_schema();
-        NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
+        NiveauListeSchema::init_data(&data)?;
 
         Ok(())
     }
 
     mod bulk_insert {
-
         use super::*;
 
         fn run_bulk_insert_scenario<F>(insert_fn: F, sc: Scenario<New>)
@@ -47,11 +54,11 @@ mod test_worte_repo {
             let mut conn = setup_test_db().unwrap();
             data_minimun(&mut conn).expect("Error al iniciar datos dummy");
 
-            let res_1 = insert_fn(&mut conn, &sc.initial).expect("La inserción no debe fallar");
+            let res = insert_fn(&mut conn, &sc.initial).expect("La inserción no debe fallar");
 
-            res_1.assert_eq_fields(&sc.initial);
+            res.assert_eq_fields(&sc.initial);
 
-            insta::assert_debug_snapshot!("after_insert", res_1.snapshot());
+            insta::assert_debug_snapshot!("after_insert", res.snapshot());
         }
 
         #[test]
@@ -62,7 +69,6 @@ mod test_worte_repo {
     }
 
     mod fetch {
-
         use super::*;
 
         fn init_data_local(conn: &mut Connection, sc: &Scenario<New>) -> Result<()> {
@@ -80,12 +86,70 @@ mod test_worte_repo {
             let sc = scenario_worte_schema();
             init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
 
-            let res_1 = WorteRepo::fetch_by_id(&conn, &[1, 2]).expect("Error al hacer el fetch");
+            let res = WorteRepo::fetch_by_id(&conn, &[1, 2, 3]).expect("Error al hacer el fetch");
 
             // We take only the two first of the array
-            let data_compare: Vec<New> = sc.initial.into_iter().take(2).collect();
-            res_1.assert_eq_fields(&data_compare);
-            insta::assert_debug_snapshot!(res_1.snapshot());
+            let data_compare: Vec<New> = sc.initial.into_iter().take(3).collect();
+            res.assert_eq_fields(&data_compare);
+            insta::assert_debug_snapshot!("fetch_by_id", res.snapshot());
+        }
+
+        #[test]
+        fn test_fetch_all_ids() {
+            let mut conn = setup_test_db().unwrap();
+
+            let sc = scenario_worte_schema();
+            init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
+
+            let limit = 2;
+            let mut last_id = 0;
+
+            let mut res: Vec<i32> = vec![];
+            loop {
+                let mut a = WorteRepo::fetch_all_ids(&conn, limit, last_id)
+                    .expect("Error al hacer el fetch");
+
+                if a.is_empty() {
+                    break;
+                }
+
+                last_id = a.last().unwrap().clone();
+                res.append(&mut a);
+            }
+
+            let len_compare: usize = sc.initial.len();
+            assert_eq!(res.len(), len_compare);
+
+            let vec_compare: Vec<i32> = (1..=len_compare as i32).collect();
+            assert_eq!(res, vec_compare);
+
+            insta::assert_debug_snapshot!("fetch_all_ids", res);
+        }
+
+        #[test]
+        fn test_fetch_by_wort() {
+            let mut conn = setup_test_db().unwrap();
+
+            let sc = scenario_worte_schema();
+            init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
+
+            let mut worte_fetched: Vec<(String, String)> = sc
+                .initial
+                .iter()
+                .take(5)
+                .map(|w| (w.worte_es.clone(), w.worte_de.clone()))
+                .collect();
+
+            let last = worte_fetched.last_mut();
+            *last.unwrap() = ("Test test tes".to_owned(), "1234567890".to_owned());
+
+            let res =
+                WorteRepo::fetch_by_wort(&conn, &worte_fetched).expect("Error al hacer el fetch");
+
+            let data_compare: Vec<New> = sc.initial.into_iter().take(4).collect();
+            res.assert_eq_fields(&data_compare);
+
+            insta::assert_debug_snapshot!("fetch_by_wort", res.snapshot());
         }
     }
 }

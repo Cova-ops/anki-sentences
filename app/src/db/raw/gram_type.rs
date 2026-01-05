@@ -1,51 +1,42 @@
-use color_eyre::eyre::{Result, bail};
+use color_eyre::eyre::{self, Result};
 use std::{
     collections::HashMap,
-    sync::{LazyLock, Mutex},
+    sync::OnceLock,
 };
 
 use crate::db::schemas::gram_type::{GramTypeSchema as Schema, NewGramTypeSchema as New};
 
-static HASH_VALUES: LazyLock<Mutex<HashMap<i32, Schema>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static HASH_VALUES: OnceLock<HashMap<i32, Schema>> = OnceLock::new();
 
 impl Schema {
-    pub fn init_data(data: &[Self]) -> Result<()> {
-        let mut hash = HASH_VALUES.lock().unwrap();
-        for d in data {
-            hash.insert(d.id, d.clone());
-        }
-        Ok(())
+    pub fn init_data(data: &[Schema]) {
+        let map: HashMap<i32, Schema> = data.iter().cloned().map(|s| (s.id, s)).collect();
+        let _ = HASH_VALUES.set(map); // si ya estaba seteado, ignora o maneja error
     }
 
-    pub fn from_id<I>(id: I) -> Result<Self>
-    where
-        I: Into<i32>,
-    {
-        let id = id.into();
-        let hash = HASH_VALUES.lock().unwrap();
-        let result = hash.get(&id).cloned();
-        match result {
-            Some(v) => Ok(v),
-            None => bail!("Gram Type no encontrado con el id: {}", id),
-        }
+    pub fn from_id(id: i32) -> Result<Self> {
+        let map = HASH_VALUES
+            .get()
+            .ok_or_else(|| eyre::eyre!("HASH_VALUES not initialized"))?;
+
+        map.get(&id)
+            .cloned()
+            .ok_or_else(|| eyre::eyre!("Gram Type not founded with id: {}", id))
     }
 
     pub fn from_code<S>(code: S) -> Result<Self>
     where
         S: Into<String>,
     {
-        let code = code.into();
-        let hash = HASH_VALUES.lock().unwrap();
-        let result = hash
-            .iter()
-            .find(|(_, val)| val.code == code)
-            .map(|(_, val)| Self { ..val.clone() });
+        let map = HASH_VALUES
+            .get()
+            .ok_or_else(|| eyre::eyre!("HASH_VALUES not initialized"))?;
 
-        match result {
-            Some(v) => Ok(v),
-            None => bail!("Gram Type no encontrado con el código: {}", code),
-        }
+        let code = code.into();
+        map.iter()
+            .find(|(_, val)| val.code == code)
+            .map(|(_, val)| Self { ..val.clone() })
+            .ok_or_else(|| eyre::eyre!("Gram Type not founded with code: {}", code))
     }
 }
 
