@@ -1,7 +1,4 @@
-use crate::{
-    db::schemas::{gram_type::NewGramTypeSchema, niveau_liste::NewNiveauListeSchema},
-    test_utils::scenarios::Scenario,
-};
+use crate::{db::schemas::niveau_liste::NewNiveauListeSchema, test_utils::scenarios::Scenario};
 
 pub fn scenario_niveau_liste_schema() -> Scenario<NewNiveauListeSchema> {
     Scenario {
@@ -20,4 +17,3 @@ pub fn scenario_niveau_liste_schema() -> Scenario<NewNiveauListeSchema> {
         ],
     }
 }
-

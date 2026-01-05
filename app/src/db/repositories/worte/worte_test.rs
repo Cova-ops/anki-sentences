@@ -222,13 +222,9 @@ mod test_worte_repo {
         use color_eyre::eyre::Result;
         use rusqlite::Connection;
 
-        use crate::{
-            db::{
-                schemas::worte_review::NewWorteReviewSchema, seeders::init_data, setup_test_db,
-                worte_review::WorteReviewRepo,
-            },
-            helpers::time::fixed_date,
-        };
+        use crate::db::{
+                seeders::init_data, setup_test_db,
+            };
 
         fn init_data_local(conn: &mut Connection) -> Result<()> {
             init_data(conn)?;
