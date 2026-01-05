@@ -44,7 +44,7 @@ mod test_worte_repo {
         Ok(())
     }
 
-    mod bulk_insert {
+    mod insert {
         use super::*;
 
         fn run_bulk_insert_scenario<F>(insert_fn: F, sc: Scenario<New>)
@@ -150,6 +150,40 @@ mod test_worte_repo {
             res.assert_eq_fields(&data_compare);
 
             insta::assert_debug_snapshot!("fetch_by_wort", res.snapshot());
+        }
+    }
+
+    mod update {
+        use super::*;
+
+        fn init_data_local(conn: &mut Connection, sc: &Scenario<New>) -> Result<()> {
+            data_minimun(conn)?;
+
+            WorteRepo::bulk_insert(conn, &sc.initial)?;
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_bulk_update() -> Result<()> {
+            let mut conn = setup_test_db().unwrap();
+            let sc = scenario_worte_schema();
+            init_data_local(&mut conn, &sc)?;
+
+            let data_update: Vec<(i32, New)> = sc
+                .update
+                .iter()
+                .enumerate()
+                .map(|(i, w)| ((i + 1) as i32, w.clone()))
+                .collect();
+
+            let res = WorteRepo::bulk_update(&mut conn, &data_update)?;
+
+            res.assert_eq_fields(&sc.update);
+
+            insta::assert_debug_snapshot!("bulk_update", res.snapshot());
+
+            Ok(())
         }
     }
 }

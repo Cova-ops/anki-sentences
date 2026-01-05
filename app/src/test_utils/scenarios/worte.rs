@@ -167,7 +167,7 @@ pub fn scenario_worte_schema() -> Scenario<New> {
                 worte_de: "müde werden, test".into(),
                 worte_es: "ponerse cansado, test".into(),
                 plural: Some("1234567890".into()),
-                niveau_id: 6,
+                niveau_id: 5,
                 example_de: "Ich werde nach der Arbeit immer müde.".into(),
                 example_es: "Siempre me pongo cansado después del trabajo.".into(),
                 verb_aux: None,

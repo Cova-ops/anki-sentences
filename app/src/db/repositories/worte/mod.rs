@@ -130,9 +130,9 @@ impl WorteRepo {
                 trennbar, reflexiv, created_at, deleted_at;
         "#;
 
-        let mut stmt = tx.prepare_cached(sql)?;
+        let mut stmt = tx.prepare(sql)?;
 
-        let mut vec_out = Vec::with_capacity(data.len());
+        let mut vec_out: Vec<Schema> = Vec::with_capacity(data.len());
         for d in data {
             let params = params![
                 d.0,
@@ -149,8 +149,9 @@ impl WorteRepo {
             ];
 
             let raw = stmt
-                .query_one(params, Raw::from_sql)
-                .context(format!("sql: {}, params: {:#?}", sql, d))?;
+                .query_row(params, Raw::from_sql)
+                .with_context(|| format!("sql: {sql}\nupdate_id: {}\nnew_data: {:#?}", d.0, d.1))?;
+
             vec_out.push(Schema::from_raw(raw)?);
         }
 
@@ -169,7 +170,7 @@ impl WorteRepo {
             }
         }
 
-        WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
+        // WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
 
         Ok(vec_out)
     }
