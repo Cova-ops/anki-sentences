@@ -1,5 +1,6 @@
 pub trait SnapshotFields {
     type Output;
+    fn snapshot_ref(&self) -> Self::Output;
     fn snapshot(self) -> Self::Output;
 }
 

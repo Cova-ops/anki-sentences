@@ -3,21 +3,21 @@ source: app/src/db/repositories/gram_type/gram_type_test.rs
 expression: res_2.snapshot()
 ---
 [
-    Snapshot {
+    GramTypeSnapshot {
         id: 0,
         code: "noun_common edit",
         name: "Sustantivo comun edit",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
-    Snapshot {
+    GramTypeSnapshot {
         id: 1,
         code: "noun_proper edit",
         name: "Nombre propio edit",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
-    Snapshot {
+    GramTypeSnapshot {
         id: 2,
         code: "verb_main edit",
         name: "Verbo lexico edit",

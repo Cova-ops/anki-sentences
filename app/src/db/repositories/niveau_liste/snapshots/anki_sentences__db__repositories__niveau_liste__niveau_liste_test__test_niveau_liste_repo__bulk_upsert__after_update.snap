@@ -3,19 +3,19 @@ source: app/src/db/repositories/niveau_liste/niveau_liste_test.rs
 expression: res_2.snapshot()
 ---
 [
-    Snapshot {
+    NiveauListeSnapshot {
         id: 0,
         niveau: "A1 test",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
-    Snapshot {
+    NiveauListeSnapshot {
         id: 1,
         niveau: "A2 test",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
-    Snapshot {
+    NiveauListeSnapshot {
         id: 2,
         niveau: "B1 test",
         created_at: "<created_at>",

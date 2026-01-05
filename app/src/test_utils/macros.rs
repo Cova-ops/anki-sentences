@@ -8,7 +8,7 @@ macro_rules! impl_test_helpers_for_schema {
         fields = [ $( $field:ident : $fty:ty ),* $(,)? ],
         placeholders = [ $( $ph:ident ),* $(,)? ]
     ) => {
-        #[derive(Debug)]
+        #[derive(Debug, Clone, PartialEq, Eq)]
         #[allow(dead_code)]
         pub struct $Snapshot {
             $( pub $field: $fty, )*
@@ -18,6 +18,12 @@ macro_rules! impl_test_helpers_for_schema {
         impl crate::test_utils::traits::SnapshotFields for $Schema {
             type Output = $Snapshot;
 
+            fn snapshot_ref(&self) -> $Snapshot {
+                $Snapshot {
+                    $( $field: self.$field.clone(), )*
+                    $( $ph: concat!("<", stringify!($ph), ">").to_string(), )*
+                }
+            }
             fn snapshot(self) -> $Snapshot {
                 $Snapshot {
                     $( $field: self.$field, )*
@@ -31,6 +37,20 @@ macro_rules! impl_test_helpers_for_schema {
 
             fn snapshot(self) -> Vec<$Snapshot> {
                 self.into_iter().map(|s| s.snapshot()).collect()
+            }
+            fn snapshot_ref(&self) -> Vec<$Snapshot> {
+                self.iter().map(|s| s.snapshot_ref()).collect()
+            }
+        }
+
+        impl crate::test_utils::traits::SnapshotFields for Option<$Schema> {
+            type Output = Option<$Snapshot>;
+
+            fn snapshot_ref(&self) -> Option<$Snapshot> {
+                self.as_ref().map(|v| v.snapshot_ref())
+            }
+            fn snapshot(self) -> Option<$Snapshot> {
+                self.map(|v| v.snapshot())
             }
         }
 

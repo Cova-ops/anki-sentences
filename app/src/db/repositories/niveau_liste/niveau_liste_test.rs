@@ -9,20 +9,11 @@ mod test_niveau_liste_repo {
             schemas::niveau_liste::{NewNiveauListeSchema as New, NiveauListeSchema as Schema},
             setup_test_db,
         },
-        impl_test_helpers_for_schema,
         test_utils::{
             scenarios::{Scenario, niveau_liste::scenario_niveau_liste_schema},
             traits::{AssertEqFields, SnapshotFields},
         },
     };
-
-    impl_test_helpers_for_schema!(
-        schema = Schema,
-        new = New,
-        snapshot = Snapshot,
-        fields = [ id: i32, niveau: String ],
-        placeholders = [ created_at, deleted_at ]
-    );
 
     mod bulk_upsert {
 

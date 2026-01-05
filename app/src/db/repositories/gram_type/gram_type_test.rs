@@ -9,20 +9,11 @@ mod test_gram_type_repo {
             schemas::gram_type::{GramTypeSchema as Schema, NewGramTypeSchema as New},
             setup_test_db,
         },
-        impl_test_helpers_for_schema,
         test_utils::{
             scenarios::{Scenario, gram_type::scenario_gram_type_schema},
             traits::{AssertEqFields, SnapshotFields},
         },
     };
-
-    impl_test_helpers_for_schema!(
-        schema = Schema,
-        new = New,
-        snapshot = Snapshot,
-        fields = [ id: i32, code: String, name: String ],
-        placeholders = [ created_at, deleted_at ]
-    );
 
     mod bulk_upsert {
 
