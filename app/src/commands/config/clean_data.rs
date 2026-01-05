@@ -1,10 +1,9 @@
-use std::{collections::HashSet, fs::remove_file};
+use std::collections::HashSet;
 
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
 use crate::{
-    console::cli::TypeFile,
     db::{
         get_conn, worte::WorteRepo, worte_audio::WorteAudioRepo,
         worte_gram_type::WorteGramTypeRepo, worte_review::WorteReviewRepo,
@@ -13,7 +12,6 @@ use crate::{
         audios::{AudioKind, ManageAudios},
         toml::AppConfig,
     },
-    services::tts::eleven_labs::LanguageVoice,
 };
 
 fn collect_orphans<F>(

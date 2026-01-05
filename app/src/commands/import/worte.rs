@@ -1,6 +1,6 @@
-use std::{collections::HashMap, env, path::Path};
+use std::{env, path::Path};
 
-use color_eyre::eyre::{Context, OptionExt, Result, bail};
+use color_eyre::eyre::{Context, OptionExt, Result};
 
 use crate::{
     console::cli::TypeFile,

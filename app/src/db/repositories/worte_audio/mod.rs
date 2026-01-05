@@ -3,12 +3,9 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
-    schemas::{
-        worte::{RawWorteSchema, WorteSchema},
-        worte_audio::{
+    schemas::worte_audio::{
             NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
         },
-    },
     view::worte_audio_missing::{RawWorteAudioMissingSchema, WorteAudioMissingSchema},
 };
 
