@@ -4,16 +4,23 @@ expression: res_2.snapshot()
 ---
 [
     Snapshot {
+        id: 0,
+        code: "noun_common edit",
+        name: "Sustantivo comun edit",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    Snapshot {
         id: 1,
-        code: "abc",
-        name: "def",
+        code: "noun_proper edit",
+        name: "Nombre propio edit",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
     Snapshot {
         id: 2,
-        code: "987",
-        name: "zyw",
+        code: "verb_main edit",
+        name: "Verbo lexico edit",
         created_at: "<created_at>",
         deleted_at: "<deleted_at>",
     },
