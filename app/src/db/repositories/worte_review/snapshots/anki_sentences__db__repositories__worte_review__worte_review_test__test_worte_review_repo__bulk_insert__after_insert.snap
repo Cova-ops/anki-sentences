@@ -1,6 +1,6 @@
 ---
 source: app/src/db/repositories/worte_review/worte_review_test.rs
-expression: res.snapshot()
+expression: res_1.snapshot()
 ---
 [
     WorteReviewSnapshot {
@@ -20,6 +20,17 @@ expression: res.snapshot()
         interval: 12,
         ease_factor: 3.5,
         repetitions: 1,
+        last_review: "2025-01-10 12:00:00 UTC",
+        next_review: "2025-01-20 12:00:00 UTC",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteReviewSnapshot {
+        id: 3,
+        wort_id: 2,
+        interval: 1,
+        ease_factor: 2.5,
+        repetitions: 999,
         last_review: "2025-01-10 12:00:00 UTC",
         next_review: "2025-01-20 12:00:00 UTC",
         created_at: "<created_at>",

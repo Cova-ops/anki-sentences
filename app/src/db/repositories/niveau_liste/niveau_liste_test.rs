@@ -3,25 +3,15 @@ mod test_niveau_liste_repo {
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
 
-    use crate::{
-        db::{
-            niveau_liste::NiveauListeRepo,
-            schemas::niveau_liste::{NewNiveauListeSchema as New, NiveauListeSchema as Schema},
-            setup_test_db,
-        },
-        test_utils::{
-            scenarios::{Scenario, niveau_liste::scenario_niveau_liste_schema},
-            traits::{AssertEqFields, SnapshotFields},
-        },
-    };
+    use crate::test_utils::prelude::*;
 
     mod bulk_upsert {
 
         use super::*;
 
-        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<New>)
+        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<NewNiveauListeSchema>)
         where
-            F: Fn(&mut Connection, &[New]) -> Result<Vec<Schema>>,
+            F: Fn(&mut Connection, &[NewNiveauListeSchema]) -> Result<Vec<NiveauListeSchema>>,
         {
             let mut conn = setup_test_db().unwrap();
 
@@ -36,7 +26,7 @@ mod test_niveau_liste_repo {
 
         #[test]
         fn test_bulk_insert_and_update() {
-            let sc = scenario_niveau_liste_schema();
+            let sc = scenario_niveau_liste();
             run_bulk_upsert_scenario(|conn, data| NiveauListeRepo::bulk_insert(conn, data), sc);
         }
     }

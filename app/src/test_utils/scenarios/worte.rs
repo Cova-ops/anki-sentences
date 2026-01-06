@@ -1,6 +1,6 @@
 use crate::{db::schemas::worte::NewWorteSchema as New, test_utils::scenarios::Scenario};
 
-pub fn scenario_worte_schema() -> Scenario<New> {
+pub fn scenario_worte() -> Scenario<New> {
     Scenario {
         initial: vec![
             New {

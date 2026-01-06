@@ -1,331 +1,84 @@
-use crate::db::setup_test_db;
-
 #[cfg(test)]
 mod test_worte_review_repo {
 
-    use crate::db::{
-        schemas::worte_review::{NewWorteReviewSchema as New, WorteReviewSchema as Schema},
-        worte_review::WorteReviewRepo,
-    };
+    use color_eyre::eyre::Result;
+    use rusqlite::Connection;
 
-    use super::*;
+    use crate::test_utils::prelude::*;
 
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct Snapshot {
-        id: i32,
-        wort_id: i32,
-        interval: u32,
-        ease_factor: f32,
-        repetitions: u32,
-        last_review: String,
-        next_review: String,
+    fn data_minimun(conn: &mut Connection) -> Result<()> {
+        let sc = scenario_worte_gender();
+        let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
+        WorteGenderSchema::init_data(&data);
 
-        created_at: String,
-        deleted_at: String,
-    }
+        let sc = scenario_gram_type();
+        let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
+        GramTypeSchema::init_data(&data);
 
-    fn placeholder_dates(data: Vec<Schema>) -> Vec<Snapshot> {
-        data.into_iter()
-            .map(|d| Snapshot {
-                id: d.id,
+        let sc = scenario_niveau_liste();
+        let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
+        NiveauListeSchema::init_data(&data);
 
-                wort_id: d.wort_id,
-                interval: d.interval,
-                ease_factor: d.ease_factor,
-                repetitions: d.repetitions,
-                last_review: d.last_review.to_string(),
-                next_review: d.next_review.to_string(),
+        let sc = scenario_worte();
+        WorteRepo::bulk_insert(conn, &sc.initial)?;
 
-                created_at: "<created_at>".into(),
-                deleted_at: "<deleted_at>".into(),
-            })
-            .collect()
+        Ok(())
     }
 
     mod bulk_insert {
-
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
-        use std::thread;
-        use std::time::Duration;
-
-        use crate::{
-            db::{
-                schemas::{worte::NewWorteSchema, worte_review::ReviewDirection},
-                seeders::init_data,
-                worte::WorteRepo,
-            },
-            helpers::time::fixed_date,
-        };
-
         use super::*;
 
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            let data = vec![
-                NewWorteSchema {
-                    gram_type: vec![1],
-                    gender_id: Some(1),
-                    worte_de: "Hund".into(),
-                    worte_es: "Perro".into(),
-                    plural: Some("Hunde".into()),
-                    niveau_id: 1,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: None,
-                    trennbar: None,
-                    reflexiv: None,
-                },
-                NewWorteSchema {
-                    gram_type: vec![2, 3],
-                    gender_id: None,
-                    worte_de: "laufen".into(),
-                    worte_es: "correr".into(),
-                    plural: None,
-                    niveau_id: 2,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: Some("sein".into()),
-                    trennbar: Some(false),
-                    reflexiv: Some(false),
-                },
-            ];
-            WorteRepo::bulk_insert(conn, &data)?;
-            Ok(())
-        }
-
-        fn run_bulk_insert_update_scenario<F1, F2>(c1: F1, c2: F2)
-        where
-            F1: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-            F2: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-        {
+        #[test]
+        fn test_bulk_upsert() -> Result<()> {
             let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+            data_minimun(&mut conn)?;
 
-            let res_1 = c1(&mut conn).expect("La inserción no debe fallar");
+            let sc = scenario_worte_review();
 
-            assert_eq!(res_1.len(), 1);
+            let res_1 = WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
+            res_1.assert_eq_fields(&sc.initial);
+            insta::assert_debug_snapshot!("after_insert", res_1.snapshot());
 
-            assert_eq!(res_1[0].wort_id, 1);
-            assert_eq!(res_1[0].direction, ReviewDirection::ES2DE);
-            assert_eq!(res_1[0].interval, 1);
-            assert_eq!(res_1[0].ease_factor, 2.5);
-            assert_eq!(res_1[0].repetitions, 999);
-            assert_eq!(res_1[0].last_review, fixed_date(2025, 1, 10, 12, 00, 00));
-            assert_eq!(res_1[0].next_review, fixed_date(2025, 1, 20, 12, 00, 00));
+            let res_2 = WorteReviewRepo::bulk_insert(&mut conn, &sc.update)?;
+            res_2.assert_eq_fields(&sc.update);
+            insta::assert_debug_snapshot!("after_update", res_2.snapshot());
 
-            let res_1 = placeholder_dates(res_1);
-            insta::assert_debug_snapshot!(res_1);
-
-            thread::sleep(Duration::from_millis(100));
-
-            let res_2 = c2(&mut conn).expect("La inserción no debe fallar");
-
-            assert_eq!(res_2.len(), 1);
-
-            assert_eq!(res_2[0].wort_id, 1);
-            assert_eq!(res_2[0].direction, ReviewDirection::ES2DE);
-            assert_eq!(res_2[0].interval, 10);
-            assert_eq!(res_2[0].ease_factor, 1.3);
-            assert_eq!(res_2[0].repetitions, 1);
-            assert_eq!(res_2[0].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
-            assert_eq!(res_2[0].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
-
-            let res_2 = placeholder_dates(res_2);
-            insta::assert_debug_snapshot!(res_2);
-        }
-
-        #[test]
-        fn test_bulk_upsert() {
-            let data_1 = vec![New {
-                wort_id: 1,
-                direction: ReviewDirection::ES2DE.to_string(),
-                interval: 1,
-                ease_factor: 2.5,
-                repetitions: 999,
-                last_review: "2025-01-10 12:00:00".into(),
-                next_review: "2025-01-20 12:00:00".into(),
-            }];
-            let data_2 = vec![New {
-                wort_id: 1,
-                direction: ReviewDirection::ES2DE.to_string(),
-                interval: 10,
-                ease_factor: 1.3,
-                repetitions: 1,
-                last_review: "2025-12-10 12:00:00".into(),
-                next_review: "2025-12-20 12:00:00".into(),
-            }];
-            run_bulk_insert_update_scenario(
-                |conn| WorteReviewRepo::bulk_insert(conn, &data_1),
-                |conn| WorteReviewRepo::bulk_insert(conn, &data_2),
-            );
-        }
-
-        #[test]
-        fn test_bulk_upsert_tx() {
-            let data_1 = vec![New {
-                wort_id: 1,
-                direction: ReviewDirection::ES2DE.to_string(),
-                interval: 1,
-                ease_factor: 2.5,
-                repetitions: 999,
-                last_review: "2025-01-10 12:00:00".into(),
-                next_review: "2025-01-20 12:00:00".into(),
-            }];
-            let data_2 = vec![New {
-                wort_id: 1,
-                direction: ReviewDirection::ES2DE.to_string(),
-                interval: 10,
-                ease_factor: 1.3,
-                repetitions: 1,
-                last_review: "2025-12-10 12:00:00".into(),
-                next_review: "2025-12-20 12:00:00".into(),
-            }];
-
-            run_bulk_insert_update_scenario(
-                |conn| {
-                    let tx = conn.transaction()?;
-                    let out = WorteReviewRepo::bulk_insert_tx(&tx, &data_1)?;
-                    tx.commit()?;
-                    Ok(out)
-                },
-                |conn| {
-                    let tx = conn.transaction()?;
-                    let out = WorteReviewRepo::bulk_insert_tx(&tx, &data_2)?;
-                    tx.commit()?;
-                    Ok(out)
-                },
-            );
+            Ok(())
         }
     }
 
     mod fetch {
 
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
-
-        use crate::{
-            db::{
-                schemas::{worte::NewWorteSchema, worte_review::ReviewDirection},
-                seeders::init_data,
-                worte::WorteRepo,
-            },
-            helpers::time::fixed_date,
-        };
-
         use super::*;
 
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            let data = vec![
-                NewWorteSchema {
-                    gram_type: vec![1],
-                    gender_id: Some(1),
-                    worte_de: "Hund".into(),
-                    worte_es: "Perro".into(),
-                    plural: Some("Hunde".into()),
-                    niveau_id: 1,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: None,
-                    trennbar: None,
-                    reflexiv: None,
-                },
-                NewWorteSchema {
-                    gram_type: vec![2, 3],
-                    gender_id: None,
-                    worte_de: "laufen".into(),
-                    worte_es: "correr".into(),
-                    plural: None,
-                    niveau_id: 2,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: Some("sein".into()),
-                    trennbar: Some(false),
-                    reflexiv: Some(false),
-                },
-            ];
-            WorteRepo::bulk_insert(conn, &data)?;
-            let data = vec![
-                New {
-                    wort_id: 1,
-                    direction: ReviewDirection::ES2DE.to_string(),
-                    interval: 1,
-                    ease_factor: 2.5,
-                    repetitions: 999,
-                    last_review: "2025-01-10 12:00:00".into(),
-                    next_review: "2025-01-20 12:00:00".into(),
-                },
-                New {
-                    wort_id: 1,
-                    direction: ReviewDirection::DE2ES.to_string(),
-                    interval: 10,
-                    ease_factor: 1.3,
-                    repetitions: 1,
-                    last_review: "2025-12-10 12:00:00".into(),
-                    next_review: "2025-12-20 12:00:00".into(),
-                },
-                New {
-                    wort_id: 2,
-                    direction: ReviewDirection::ES2DE.to_string(),
-                    interval: 10,
-                    ease_factor: 1.3,
-                    repetitions: 1,
-                    last_review: "2025-12-10 12:00:00".into(),
-                    next_review: "2025-12-20 12:00:00".into(),
-                },
-            ];
-            WorteReviewRepo::bulk_insert(conn, &data)?;
-            Ok(())
-        }
-
         #[test]
-        fn test_fetch_by_wort_id() {
+        fn test_fetch_by_wort_id() -> Result<()> {
             let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+            data_minimun(&mut conn)?;
 
-            let res =
-                WorteReviewRepo::fetch_by_wort_id(&conn, &[]).expect("La consulta no debe fallar");
+            let sc = scenario_worte_review();
+            WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
 
-            assert_eq!(res.len(), 0);
+            let res = WorteReviewRepo::fetch_by_wort_id(&conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("fetch_empty", res);
 
-            let res = placeholder_dates(res);
-            insta::assert_debug_snapshot!(res);
+            let mut data = sc
+                .initial
+                .iter()
+                .map(|w| w.wort_id.clone())
+                .take(2)
+                .collect::<Vec<i32>>();
 
-            let data = [1, 2, 3];
+            data.push(-32); // This ID should never exist
             let res = WorteReviewRepo::fetch_by_wort_id(&conn, &data)
                 .expect("La consulta no debe fallar");
 
-            assert_eq!(res.len(), 3);
-            println!("Resultados: {:#?}", res);
+            let data_compared: Vec<NewWorteReviewSchema> = sc.initial.into_iter().take(2).collect();
+            res.assert_eq_fields(&data_compared);
+            insta::assert_debug_snapshot!("fetch_by_wort_id", res.snapshot());
 
-            assert_eq!(res[0].wort_id, 1);
-            assert_eq!(res[0].direction, ReviewDirection::ES2DE);
-            assert_eq!(res[0].interval, 1);
-            assert_eq!(res[0].ease_factor, 2.5);
-            assert_eq!(res[0].repetitions, 999);
-            assert_eq!(res[0].last_review, fixed_date(2025, 1, 10, 12, 00, 00));
-            assert_eq!(res[0].next_review, fixed_date(2025, 1, 20, 12, 00, 00));
-
-            assert_eq!(res[1].wort_id, 1);
-            assert_eq!(res[1].direction, ReviewDirection::DE2ES);
-            assert_eq!(res[1].interval, 10);
-            assert_eq!(res[1].ease_factor, 1.3);
-            assert_eq!(res[1].repetitions, 1);
-            assert_eq!(res[1].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
-            assert_eq!(res[1].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
-
-            assert_eq!(res[2].wort_id, 2);
-            assert_eq!(res[2].direction, ReviewDirection::ES2DE);
-            assert_eq!(res[2].interval, 10);
-            assert_eq!(res[2].ease_factor, 1.3);
-            assert_eq!(res[2].repetitions, 1);
-            assert_eq!(res[2].last_review, fixed_date(2025, 12, 10, 12, 00, 00));
-            assert_eq!(res[2].next_review, fixed_date(2025, 12, 20, 12, 00, 00));
-
-            let res = placeholder_dates(res);
-            insta::assert_debug_snapshot!(res);
+            Ok(())
         }
     }
 }

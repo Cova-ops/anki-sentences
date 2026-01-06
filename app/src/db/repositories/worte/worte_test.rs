@@ -4,40 +4,18 @@ mod test_worte_repo {
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
 
-    use crate::{
-        db::{
-            gram_type::GramTypeRepo,
-            niveau_liste::NiveauListeRepo,
-            schemas::{
-                gram_type::GramTypeSchema,
-                niveau_liste::NiveauListeSchema,
-                worte::{NewWorteSchema as New, WorteSchema as Schema},
-                worte_gender::WorteGenderSchema,
-            },
-            setup_test_db,
-            worte::WorteRepo,
-            worte_gender::WorteGenderRepo,
-        },
-        test_utils::{
-            scenarios::{
-                Scenario, gram_type::scenario_gram_type_schema,
-                niveau_liste::scenario_niveau_liste_schema, worte::scenario_worte_schema,
-                worte_gender::scenario_worte_gender_schema,
-            },
-            traits::{AssertEqFields, SnapshotFields},
-        },
-    };
+    use crate::test_utils::prelude::*;
 
     fn data_minimun(conn: &mut Connection) -> Result<()> {
-        let sc = scenario_worte_gender_schema();
+        let sc = scenario_worte_gender();
         let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
         WorteGenderSchema::init_data(&data);
 
-        let sc = scenario_gram_type_schema();
+        let sc = scenario_gram_type();
         let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
         GramTypeSchema::init_data(&data);
 
-        let sc = scenario_niveau_liste_schema();
+        let sc = scenario_niveau_liste();
         let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
         NiveauListeSchema::init_data(&data);
 
@@ -47,9 +25,9 @@ mod test_worte_repo {
     mod insert {
         use super::*;
 
-        fn run_bulk_insert_scenario<F>(insert_fn: F, sc: Scenario<New>)
+        fn run_bulk_insert_scenario<F>(insert_fn: F, sc: Scenario<NewWorteSchema>)
         where
-            F: Fn(&mut Connection, &[New]) -> Result<Vec<Schema>>,
+            F: Fn(&mut Connection, &[NewWorteSchema]) -> Result<Vec<WorteSchema>>,
         {
             let mut conn = setup_test_db().unwrap();
             data_minimun(&mut conn).expect("Error al iniciar datos dummy");
@@ -63,7 +41,7 @@ mod test_worte_repo {
 
         #[test]
         fn test_bulk_insert() {
-            let sc = scenario_worte_schema();
+            let sc = scenario_worte();
             run_bulk_insert_scenario(|conn, data| WorteRepo::bulk_insert(conn, data), sc);
         }
     }
@@ -71,7 +49,7 @@ mod test_worte_repo {
     mod fetch {
         use super::*;
 
-        fn init_data_local(conn: &mut Connection, sc: &Scenario<New>) -> Result<()> {
+        fn init_data_local(conn: &mut Connection, sc: &Scenario<NewWorteSchema>) -> Result<()> {
             data_minimun(conn)?;
 
             WorteRepo::bulk_insert(conn, &sc.initial)?;
@@ -83,13 +61,13 @@ mod test_worte_repo {
         fn test_fetch_by_id() {
             let mut conn = setup_test_db().unwrap();
 
-            let sc = scenario_worte_schema();
+            let sc = scenario_worte();
             init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
 
             let res = WorteRepo::fetch_by_id(&conn, &[1, 2, 3]).expect("Error al hacer el fetch");
 
             // We take only the two first of the array
-            let data_compare: Vec<New> = sc.initial.into_iter().take(3).collect();
+            let data_compare: Vec<NewWorteSchema> = sc.initial.into_iter().take(3).collect();
             res.assert_eq_fields(&data_compare);
             insta::assert_debug_snapshot!("fetch_by_id", res.snapshot());
         }
@@ -98,7 +76,7 @@ mod test_worte_repo {
         fn test_fetch_all_ids() {
             let mut conn = setup_test_db().unwrap();
 
-            let sc = scenario_worte_schema();
+            let sc = scenario_worte();
             init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
 
             let limit = 2;
@@ -130,7 +108,7 @@ mod test_worte_repo {
         fn test_fetch_by_wort() {
             let mut conn = setup_test_db().unwrap();
 
-            let sc = scenario_worte_schema();
+            let sc = scenario_worte();
             init_data_local(&mut conn, &sc).expect("Error al iniciar datos dummy");
 
             let mut worte_fetched: Vec<(String, String)> = sc
@@ -146,7 +124,7 @@ mod test_worte_repo {
             let res =
                 WorteRepo::fetch_by_wort(&conn, &worte_fetched).expect("Error al hacer el fetch");
 
-            let data_compare: Vec<New> = sc.initial.into_iter().take(4).collect();
+            let data_compare: Vec<NewWorteSchema> = sc.initial.into_iter().take(4).collect();
             res.assert_eq_fields(&data_compare);
 
             insta::assert_debug_snapshot!("fetch_by_wort", res.snapshot());
@@ -156,7 +134,7 @@ mod test_worte_repo {
     mod update {
         use super::*;
 
-        fn init_data_local(conn: &mut Connection, sc: &Scenario<New>) -> Result<()> {
+        fn init_data_local(conn: &mut Connection, sc: &Scenario<NewWorteSchema>) -> Result<()> {
             data_minimun(conn)?;
 
             WorteRepo::bulk_insert(conn, &sc.initial)?;
@@ -167,10 +145,10 @@ mod test_worte_repo {
         #[test]
         fn test_bulk_update() -> Result<()> {
             let mut conn = setup_test_db().unwrap();
-            let sc = scenario_worte_schema();
+            let sc = scenario_worte();
             init_data_local(&mut conn, &sc)?;
 
-            let data_update: Vec<(i32, New)> = sc
+            let data_update: Vec<(i32, NewWorteSchema)> = sc
                 .update
                 .iter()
                 .enumerate()

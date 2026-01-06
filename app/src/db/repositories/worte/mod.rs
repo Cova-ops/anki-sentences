@@ -99,6 +99,7 @@ impl WorteRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_update(conn: &mut Connection, data: &[(i32, New)]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_update_tx(&tx, data)?;
@@ -106,6 +107,7 @@ impl WorteRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_update_tx(tx: &Transaction, data: &[(i32, New)]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);

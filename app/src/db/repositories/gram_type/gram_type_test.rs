@@ -3,25 +3,15 @@ mod test_gram_type_repo {
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
 
-    use crate::{
-        db::{
-            gram_type::GramTypeRepo,
-            schemas::gram_type::{GramTypeSchema as Schema, NewGramTypeSchema as New},
-            setup_test_db,
-        },
-        test_utils::{
-            scenarios::{Scenario, gram_type::scenario_gram_type_schema},
-            traits::{AssertEqFields, SnapshotFields},
-        },
-    };
+    use crate::test_utils::prelude::*;
 
     mod bulk_upsert {
 
         use super::*;
 
-        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<New>)
+        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<NewGramTypeSchema>)
         where
-            F: Fn(&mut Connection, &[New]) -> Result<Vec<Schema>>,
+            F: Fn(&mut Connection, &[NewGramTypeSchema]) -> Result<Vec<GramTypeSchema>>,
         {
             let mut conn = setup_test_db().unwrap();
 
@@ -37,7 +27,7 @@ mod test_gram_type_repo {
 
         #[test]
         fn test_bulk_upsert() {
-            let sc = scenario_gram_type_schema();
+            let sc = scenario_gram_type();
             run_bulk_upsert_scenario(|conn, data| GramTypeRepo::bulk_insert(conn, data), sc);
         }
     }

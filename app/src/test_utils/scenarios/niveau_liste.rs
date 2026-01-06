@@ -1,6 +1,6 @@
 use crate::{db::schemas::niveau_liste::NewNiveauListeSchema, test_utils::scenarios::Scenario};
 
-pub fn scenario_niveau_liste_schema() -> Scenario<NewNiveauListeSchema> {
+pub fn scenario_niveau_liste() -> Scenario<NewNiveauListeSchema> {
     Scenario {
         initial: vec![
             NewNiveauListeSchema::new(0, "A1"),

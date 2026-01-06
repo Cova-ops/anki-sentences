@@ -1,6 +1,6 @@
 use crate::{db::schemas::gram_type::NewGramTypeSchema, test_utils::scenarios::Scenario};
 
-pub fn scenario_gram_type_schema() -> Scenario<NewGramTypeSchema> {
+pub fn scenario_gram_type() -> Scenario<NewGramTypeSchema> {
     Scenario {
         initial: vec![
             NewGramTypeSchema::new(0, "noun_common", "Sustantivo comun"),

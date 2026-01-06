@@ -1,6 +1,6 @@
 use crate::{db::schemas::worte_gender::NewWorteGenderSchema, test_utils::scenarios::Scenario};
 
-pub fn scenario_worte_gender_schema() -> Scenario<NewWorteGenderSchema> {
+pub fn scenario_worte_gender() -> Scenario<NewWorteGenderSchema> {
     Scenario {
         initial: vec![
             NewWorteGenderSchema::new(0, "Maskuline", "der"),

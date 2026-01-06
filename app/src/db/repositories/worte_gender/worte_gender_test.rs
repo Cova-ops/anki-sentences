@@ -3,29 +3,15 @@ mod test_worte_gender_repo {
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
 
-    use crate::{
-        db::{
-            schemas::worte_gender::{NewWorteGenderSchema as New, WorteGenderSchema as Schema},
-            setup_test_db,
-        },
-        test_utils::{
-            scenarios::Scenario,
-            traits::{AssertEqFields, SnapshotFields},
-        },
-    };
+    use crate::test_utils::prelude::*;
 
     mod bulk_upsert {
 
-        use crate::{
-            db::worte_gender::WorteGenderRepo,
-            test_utils::scenarios::worte_gender::scenario_worte_gender_schema,
-        };
-
         use super::*;
 
-        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<New>)
+        fn run_bulk_upsert_scenario<F>(insert_fn: F, sc: Scenario<NewWorteGenderSchema>)
         where
-            F: Fn(&mut Connection, &[New]) -> Result<Vec<Schema>>,
+            F: Fn(&mut Connection, &[NewWorteGenderSchema]) -> Result<Vec<WorteGenderSchema>>,
         {
             let mut conn = setup_test_db().unwrap();
 
@@ -40,7 +26,7 @@ mod test_worte_gender_repo {
 
         #[test]
         fn test_bulk_insert_and_update() {
-            let sc = scenario_worte_gender_schema();
+            let sc = scenario_worte_gender();
             run_bulk_upsert_scenario(|conn, data| WorteGenderRepo::bulk_insert(conn, data), sc);
         }
     }
