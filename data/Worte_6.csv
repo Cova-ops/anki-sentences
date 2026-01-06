@@ -1,0 +1,71 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+noun_common,Maskuline,Baum,árbol,Bäume,A1,"Der Baum ist sehr alt.","El árbol es muy viejo.",,,
+noun_common,Neutrum,Dach,tejado/techo exterior,Dächer,A1,"Das Dach ist kaputt.","El tejado está roto.",,,
+noun_common,Maskuline,Boden,suelo/piso,Böden,A1,"Der Boden ist nass.","El suelo está mojado.",,,
+noun_common,Maskuline,Dachboden,ático,Dachböden,A2,"Auf dem Dachboden stehen alte Kisten.","En el ático hay cajas viejas.",,,
+verb_main,,lachen,reír,,A1,"Wir lachen über den Witz.","Nos reímos del chiste.","haben","No","No"
+noun_common,Femenin,Masse,masa/multitud,Massen,B1,"In der Stadt gibt es heute eine große Menschenmasse.","Hoy hay una gran multitud en la ciudad.",,,
+adverb_time,,sofort,de inmediato,,A2,"Komm sofort nach Hause!","¡Ven a casa de inmediato!",,,
+noun_common,Plural,Schmerzen,dolor(es),,A2,"Ich habe starke Schmerzen im Rücken.","Tengo dolores fuertes en la espalda.",,,
+noun_common,Maskuline,Rettungswagen,ambulancia,Rettungswagen,A2,"Der Rettungswagen ist schon da.","La ambulancia ya llegó.",,,
+noun_common,Maskuline,Führerschein,licencia de conducir, Führerscheine,A2,"Ich habe meinen Führerschein dabei.","Traigo mi licencia de conducir.",,,
+noun_common,Neutrum,Ziel,meta/objetivo,Ziele,A2,"Unser Ziel ist klar.","Nuestro objetivo está claro.",,,
+verb_main,,senken,bajar/reducir,,B1,"Wir senken die Preise.","Bajamos los precios.","haben","No","No"
+noun_common,Femenin,Seltenheit,rareza,Seltenheiten,B2,"So ein Fehler ist eine Seltenheit.","Un error así es una rareza.",,,
+noun_common,Maskuline,Schaden,daño,Schäden,B1,"Der Schaden ist größer als gedacht.","El daño es más grande de lo pensado.",,,
+noun_common,Femenin,Versicherung,seguro (aseguranza),Versicherungen,B1,"Die Versicherung bezahlt den Schaden.","El seguro paga el daño.",,,
+noun_common,Maskuline,Unfall,accidente,Unfälle,A2,"Er hatte einen Unfall auf der Autobahn.","Tuvo un accidente en la autopista.",,,
+noun_common,Maskuline,Ausweis,identificación/documento de identidad,Ausweise,A2,"Kann ich bitte Ihren Ausweis sehen?","¿Puedo ver su identificación, por favor?",,,
+verb_main,,verdienen,ganar (dinero)/merecer,,A2,"Ich verdiene nicht genug Geld.","No gano suficiente dinero.","haben","No","No"
+noun_common,Plural,Geschwister,hermanos/as (siblings),,A2,"Ich habe zwei Geschwister.","Tengo dos hermanos.",,,
+noun_common,Femenin,Erwartung,expectativa,Erwartungen,B2,"Die Erwartung war sehr hoch.","La expectativa era muy alta.",,,
+adverb_sentence_connector,,deswegen,por eso,,A2,"Es regnet, deswegen bleiben wir zu Hause.","Está lloviendo, por eso nos quedamos en casa.",,,
+noun_common,Femenin,Geschichte,historia/relato,Geschichten,A2,"Ich kenne deine Geschichte.","Conozco tu historia.",,,
+conjunction_subordinating,,sondern,sino (sino que),,A2,"Ich gehe nicht ins Kino, sondern ich bleibe zu Hause.","No voy al cine, sino que me quedo en casa.",,,
+determiner_quantifier,,beide,ambos/as,,A2,"Beide sind heute krank.","Ambos están enfermos hoy.",,,
+noun_common,Maskuline,Spiegel,espejo,Spiegel,A2,"Der Spiegel hängt an der Wand.","El espejo cuelga en la pared.",,,
+noun_common,Neutrum,Spiegelbild,reflejo,Spiegelbilder,B1,"Ich sehe mein Spiegelbild im Fenster.","Veo mi reflejo en la ventana.",,,
+pronoun_indefinite,,irgendjemand,alguien,,A2,"Irgendjemand hat an der Tür geklopft.","Alguien tocó la puerta.",,,
+noun_common,Maskuline,Beitrag,aporte/contribución/publicación,Beiträge,B1,"Danke für deinen Beitrag.","Gracias por tu aporte.",,,
+noun_common,Maskuline,Gast,huésped/invitado,Gäste,A2,"Der Gast wartet an der Rezeption.","El huésped espera en la recepción.",,,
+noun_common,Femenin,Gesellschaft,sociedad/compañía,Gesellschaften,B2,"In unserer Gesellschaft ist Datenschutz wichtig.","En nuestra sociedad la privacidad de datos es importante.",,,
+verb_separable,,festlegen,definir/establecer,,B2,"Wir legen die Regeln jetzt fest.","Definimos las reglas ahora.","haben","Si","No"
+adjective,,verboten,prohibido,,A2,"Hier ist Rauchen verboten.","Aquí está prohibido fumar.",,,
+verb_main,,verbieten,prohibir,,B1,"Der Chef verbietet private Handys im Büro.","El jefe prohíbe celulares personales en la oficina.","haben","No","No"
+adverb_degree,,vollkommen,completamente,,B2,"Das ist vollkommen falsch.","Eso está completamente mal.",,,
+verb_main,,erlauben,permitir,,A2,"Kannst du mir das kurz erlauben?","¿Puedes permitírmelo un momento?","haben","No","No"
+pronoun_indefinite,,irgendwer,alguien,,A2,"Irgendwer muss das gemacht haben.","Alguien debió haberlo hecho.",,,
+verb_auxiliary,,werden,convertirse/llegar a ser (auxiliar),,A2,"Ich werde morgen früher aufstehen.","Mañana me voy a levantar más temprano.","sein","No","No"
+noun_common,Maskuline,Witz,chiste,Witze,A2,"Der Witz war echt lustig.","El chiste estuvo muy gracioso.",,,
+noun_common,Neutrum,Jahrhundert,siglo,Jahrhunderte,B1,"Das 21. Jahrhundert ist voller Technologie.","El siglo XXI está lleno de tecnología.",,,
+noun_common,Femenin,Neuigkeit,novedad/noticia,Neuigkeiten,B1,"Ich habe eine Neuigkeit für dich.","Tengo una noticia para ti.",,,
+noun_common,Neutrum,Summen,zumbido,Summern,B2,"Das Summen der Bienen war laut.","El zumbido de las abejas era fuerte.",,,
+noun_common,Femenin,Summe,suma/cantidad,Summen,B1,"Die Summe ist zu hoch.","La suma es demasiado alta.",,,
+verb_main,,summen,zumbar,,B1,"Die Bienen summen im Garten.","Las abejas zumban en el jardín.","haben","No","No"
+noun_common,Maskuline,Honig,miel,,A1,"Ich esse Brot mit Honig.","Como pan con miel.",,,
+verb_separable,,einsteigen,subirse (a un vehículo)/entrar,,A2,"Steig bitte ins Auto ein.","Por favor, súbete al coche.","sein","Si","No"
+noun_common,Neutrum,Sortiment,surtido/variedad (de productos),Sortimente,B2,"Das Sortiment ist größer als früher.","El surtido es más grande que antes.",,,
+verb_main,,vergrößern,agrandar/aumentar,,B2,"Wir vergrößern das Angebot.","Aumentamos la oferta.","haben","No","No"
+fixed_phrase,,sich einbezogen fühlen,sentirse incluido,,B2,"Ich fühle mich in der Gruppe einbezogen.","Me siento incluido en el grupo.","haben","No","Si"
+verb_main,,schmecken,saber (tener sabor)/gustar (comida),,A2,"Das schmeckt wirklich gut!","¡Eso sabe realmente bien!","haben","No","No"
+noun_common,Neutrum,Kaninchen,conejo,Kaninchen,A1,"Das Kaninchen frisst eine Karotte.","El conejo come una zanahoria.",,,
+noun_common,Maskuline,Anspruch,exigencia/derecho/pretensión,Ansprüche,B2,"Er hat einen hohen Anspruch an Qualität.","Él tiene una alta exigencia de calidad.",,,
+adverb_time,,bislang,hasta ahora,,B1,"Bislang hat alles gut funktioniert.","Hasta ahora todo ha funcionado bien.",,,
+adjective,,komisch,extraño/raro,,A2,"Das ist irgendwie komisch.","Eso es algo extraño.",,,
+verb_main,,werfen,arrojar/lanzar,,A2,"Bitte wirf den Ball nicht so hoch.","Por favor no lances la pelota tan alto.","haben","No","No"
+verb_main,,bereiten,preparar/causar,,B1,"Ich bereite das Essen vor.","Preparo la comida.","haben","No","No"
+noun_common,Femenin,Lieferung,entrega,Lieferungen,A2,"Die Lieferung kommt morgen an.","La entrega llega mañana.",,,
+noun_common,Neutrum,Zeichen,señal/signo,Zeichen,A2,"Das ist ein gutes Zeichen.","Esa es una buena señal.",,,
+noun_common,Maskuline,Ernst,seriedad,Ernste,B2,"Jetzt ist es ernst.","Ahora va en serio.",,,
+verb_main,,beschreiben,describir,,B1,"Kannst du das Problem genauer beschreiben?","¿Puedes describir el problema con más detalle?","haben","No","No"
+fixed_phrase,,gut drauf,generado/de buen humor,,B1,"Heute bin ich richtig gut drauf.","Hoy estoy de muy buen humor.",,,
+noun_common,Maskuline,Körper,cuerpo,Körper,A2,"Mein Körper ist müde.","Mi cuerpo está cansado.",,,
+noun_common,Maskuline,Saugroboter,robot aspiradora,Saugroboter,A2,"Der Saugroboter fährt durch die Wohnung.","El robot aspiradora recorre el departamento.",,,
+noun_common,Femenin,Spritze,jeringa,Spritzen,B1,"Die Spritze liegt auf dem Tisch.","La jeringa está sobre la mesa.",,,
+noun_common,Maskuline,Unterschied,diferencia,Unterschiede,A2,"Der Unterschied ist deutlich.","La diferencia es clara.",,,
+verb_main,,erfinden,inventar,,A2,"Er erfindet eine neue Geschichte.","Él inventa una nueva historia.","haben","No","No"
+adjective,,heiß,caliente,,A1,"Der Kaffee ist noch heiß.","El café todavía está caliente.",,,
+fixed_phrase,,zum Mitnehmen,para llevar,,A1,"Ich hätte das gerne zum Mitnehmen.","Me gustaría eso para llevar.",,,
+fixed_phrase,,zum Hieressen,para comer aquí,,A1,"Ist das zum Hieressen oder zum Mitnehmen?","¿Es para comer aquí o para llevar?",,,
+verb_main,,bestellen,pedir/ordenar,,A1,"Ich möchte einen Kaffee bestellen.","Quiero pedir un café.","haben","No","No"
+verb_main,,bezahlen,pagar,,A1,"Kann ich bitte mit Karte bezahlen?","¿Puedo pagar con tarjeta, por favor?","haben","No","No"
