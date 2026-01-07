@@ -44,6 +44,7 @@ impl WorteGramTypeRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_by_wort_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);
@@ -77,7 +78,7 @@ impl WorteGramTypeRepo {
         Ok(out)
     }
 
-    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+    pub fn fetch_all_worte_id(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
         let sql = r#"
             SELECT id_worte
             FROM worte_gram_type wgt

@@ -84,7 +84,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
         limit,
         &hash_ids,
         &mut hash_ids_remove,
-        WorteGramTypeRepo::fetch_all_ids,
+        WorteGramTypeRepo::fetch_all_worte_id,
     )?;
 
     let ids_remove: Vec<i32> = hash_ids_remove.into_iter().collect();
