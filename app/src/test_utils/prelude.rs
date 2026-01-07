@@ -11,6 +11,7 @@ pub use crate::db::{
     setup_test_db,
     worte::WorteRepo,
     worte_gender::WorteGenderRepo,
+    worte_gram_type::WorteGramTypeRepo,
     worte_review::WorteReviewRepo,
 };
 
@@ -18,7 +19,7 @@ pub use crate::test_utils::{
     scenarios::{
         Scenario, gram_type::scenario_gram_type, niveau_liste::scenario_niveau_liste,
         worte::scenario_worte, worte_gender::scenario_worte_gender,
-        worte_review::scenario_worte_review,
+        worte_review::scenario_worte_review, worte_gram_type::scenario_worte_gram_type
     },
     traits::{AssertEqFields, SnapshotFields},
 };

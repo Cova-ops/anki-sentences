@@ -12,6 +12,7 @@ mod worte_gram_type_test;
 pub struct WorteGramTypeRepo;
 
 impl WorteGramTypeRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -19,6 +20,7 @@ impl WorteGramTypeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -42,7 +44,6 @@ impl WorteGramTypeRepo {
         Ok(vec_out)
     }
 
-    // TODO: HAcer el test
     pub fn fetch_by_wort_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);
