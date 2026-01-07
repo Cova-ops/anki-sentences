@@ -59,11 +59,15 @@ mod test_worte_review_repo {
 
     mod fetch {
 
+        use std::collections::HashSet;
+
+        use crate::db::schemas::worte_review::ReviewDirection;
+
         use super::*;
 
         #[test]
         fn test_fetch_by_wort_id() -> Result<()> {
-            let mut conn = setup_test_db().unwrap();
+            let mut conn = setup_test_db()?;
             data_minimun(&mut conn)?;
 
             let sc = scenario_worte_review();
@@ -91,6 +95,73 @@ mod test_worte_review_repo {
             insta::assert_debug_snapshot!(
                 "[WorteReview::fetch_by_wort_id] - fetch",
                 res.snapshot()
+            );
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_new_wort_id_4_review() -> Result<()> {
+            fn fetch_new_ids_both(conn: &Connection) -> Result<Vec<i32>> {
+                let mut res =
+                    WorteReviewRepo::fetch_new_wort_id_4_review(conn, ReviewDirection::ES2DE)?;
+                let mut res2 =
+                    WorteReviewRepo::fetch_new_wort_id_4_review(conn, ReviewDirection::DE2ES)?;
+
+                res.append(&mut res2);
+                res.sort_unstable();
+                Ok(res)
+            }
+
+            let mut conn = setup_test_db()?;
+            data_minimun(&mut conn)?;
+
+            let sc_wort = scenario_worte();
+
+            // If there are no reviews, ALL IDs for both directions should be returned,
+            // but since the query returns IDs (not pairs), you'll end up with duplicate IDs. let n = sc_wort.initial.len();
+            let n = sc_wort.initial.len();
+            let mut data_compared = Vec::with_capacity(n * 2);
+            for id in 1..=n as i32 {
+                data_compared.push(id); // ES2DE
+                data_compared.push(id); // DE2ES
+            }
+            data_compared.sort_unstable();
+
+            let res = fetch_new_ids_both(&conn)?;
+            assert_eq!(res, data_compared);
+            insta::assert_debug_snapshot!(
+                "[WorteReview::fetch_new_wort_id_4_review] - initial",
+                res
+            );
+
+            let sc = scenario_worte_review();
+            WorteReviewRepo::bulk_upsert(&mut conn, &sc.initial)?;
+
+            let sc_ids: HashSet<(i32, ReviewDirection)> = sc
+                .initial
+                .iter()
+                .map(|w| -> Result<(i32, ReviewDirection)> {
+                    Ok((w.wort_id, ReviewDirection::try_from(w.direction.as_str())?))
+                })
+                .collect::<Result<HashSet<_>>>()?;
+
+            let mut data_compared = vec![];
+            for id in 1..=n as i32 {
+                if !sc_ids.contains(&(id, ReviewDirection::ES2DE)) {
+                    data_compared.push(id);
+                }
+                if !sc_ids.contains(&(id, ReviewDirection::DE2ES)) {
+                    data_compared.push(id);
+                }
+            }
+            data_compared.sort_unstable();
+
+            let res = fetch_new_ids_both(&conn)?;
+            assert_eq!(res, data_compared);
+            insta::assert_debug_snapshot!(
+                "[WorteReview::fetch_new_wort_id_4_review] - after insert",
+                res
             );
 
             Ok(())

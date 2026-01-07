@@ -114,6 +114,7 @@ impl WorteReviewRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_new_wort_id_4_review(
         conn: &Connection,
         lang: ReviewDirection,

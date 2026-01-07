@@ -28,7 +28,7 @@ pub const CREATE_STR_INDEX_WORTE_REVIEW: &str = "
     CREATE UNIQUE INDEX IF NOT EXISTS idx_worte_review_unique ON worte_review(wort_id, direction);
 ";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ReviewDirection {
     ES2DE,
     DE2ES,
