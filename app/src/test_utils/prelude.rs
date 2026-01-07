@@ -2,9 +2,9 @@ pub use crate::db::{
     gram_type::GramTypeRepo,
     niveau_liste::NiveauListeRepo,
     schemas::{
-        gram_type::{GramTypeSchema, NewGramTypeSchema},
-        niveau_liste::{NewNiveauListeSchema, NiveauListeSchema},
-        worte::{NewWorteSchema, WorteSchema},
+        gram_type::GramTypeSchema,
+        niveau_liste::NiveauListeSchema,
+        worte::NewWorteSchema,
         worte_gender::{NewWorteGenderSchema, WorteGenderSchema},
         worte_gram_type::NewWorteGramTypeSchema,
         worte_review::NewWorteReviewSchema,
