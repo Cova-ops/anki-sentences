@@ -24,6 +24,8 @@ static CONFIG_FILE_NAME: &str = "Config.toml";
 
 // ~/.config/anki-sentences/
 // ├── Config.toml
+// ├── assets_general/
+// │   └── audio_artikel/
 // ├── profiles/
 // │   ├── default/
 // │   │   ├── assets/
