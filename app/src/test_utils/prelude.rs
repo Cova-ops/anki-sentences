@@ -5,7 +5,7 @@ pub use crate::db::{
         gram_type::GramTypeSchema,
         niveau_liste::NiveauListeSchema,
         worte::NewWorteSchema,
-        worte_gender::{NewWorteGenderSchema, WorteGenderSchema},
+        worte_gender::WorteGenderSchema,
         worte_gram_type::NewWorteGramTypeSchema,
         worte_review::NewWorteReviewSchema,
     },
