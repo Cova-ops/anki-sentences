@@ -27,7 +27,7 @@ mod test_worte_gender_repo {
         #[test]
         fn test_bulk_insert_and_update() {
             let sc = scenario_worte_gender();
-            run_bulk_upsert_scenario(|conn, data| WorteGenderRepo::bulk_insert(conn, data), sc);
+            run_bulk_upsert_scenario(|conn, data| WorteGenderRepo::bulk_upsert(conn, data), sc);
         }
     }
 }

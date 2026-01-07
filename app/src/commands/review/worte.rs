@@ -128,7 +128,7 @@ pub fn run(
     }
 
     // guardamos en db la info de las revisiones
-    WorteReviewRepo::bulk_insert(&mut conn, &vec_new_worte_review)?;
+    WorteReviewRepo::bulk_upsert(&mut conn, &vec_new_worte_review)?;
 
     if r.0 == 1 {
         return Ok(());

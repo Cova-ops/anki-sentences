@@ -94,7 +94,7 @@ pub fn run(
     }
 
     // guardamos en db la info de las revisiones
-    SetzeReviewRepo::bulk_insert(&mut conn, &vec_new_setze_review)?;
+    SetzeReviewRepo::bulk_upsert(&mut conn, &vec_new_setze_review)?;
 
     if r.0 == 1 {
         return Ok(());

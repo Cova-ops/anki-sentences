@@ -416,7 +416,7 @@ where
             continue;
         }
 
-        WorteAudioRepo::bulk_insert(
+        WorteAudioRepo::bulk_upsert(
             &mut conn,
             &[NewWorteAudioSchema {
                 wort_id: wort.id,

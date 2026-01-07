@@ -14,15 +14,15 @@ pub struct WorteReviewRepo;
 
 impl WorteReviewRepo {
     #[cfg_attr(feature = "tested", doc = "v0.2")]
-    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
-        let out = Self::bulk_insert_tx(&tx, data)?;
+        let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
     #[cfg_attr(feature = "tested", doc = "v0.2")]
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
         }

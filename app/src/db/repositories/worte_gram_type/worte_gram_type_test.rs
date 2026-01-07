@@ -8,15 +8,15 @@ mod test_worte_gram_type_repo {
 
     fn data_minimun(conn: &mut Connection) -> Result<()> {
         let sc = scenario_worte_gender();
-        let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
+        let data = WorteGenderRepo::bulk_upsert(conn, &sc.initial)?;
         WorteGenderSchema::init_data(&data);
 
         let sc = scenario_gram_type();
-        let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = GramTypeRepo::bulk_upsert(conn, &sc.initial)?;
         GramTypeSchema::init_data(&data);
 
         let sc = scenario_niveau_liste();
-        let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = NiveauListeRepo::bulk_upsert(conn, &sc.initial)?;
         NiveauListeSchema::init_data(&data);
 
         let mut sc = scenario_worte();

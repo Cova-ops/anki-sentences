@@ -8,15 +8,15 @@ mod test_worte_review_repo {
 
     fn data_minimun(conn: &mut Connection) -> Result<()> {
         let sc = scenario_worte_gender();
-        let data = WorteGenderRepo::bulk_insert(conn, &sc.initial)?;
+        let data = WorteGenderRepo::bulk_upsert(conn, &sc.initial)?;
         WorteGenderSchema::init_data(&data);
 
         let sc = scenario_gram_type();
-        let data = GramTypeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = GramTypeRepo::bulk_upsert(conn, &sc.initial)?;
         GramTypeSchema::init_data(&data);
 
         let sc = scenario_niveau_liste();
-        let data = NiveauListeRepo::bulk_insert(conn, &sc.initial)?;
+        let data = NiveauListeRepo::bulk_upsert(conn, &sc.initial)?;
         NiveauListeSchema::init_data(&data);
 
         let sc = scenario_worte();
@@ -35,18 +35,18 @@ mod test_worte_review_repo {
 
             let sc = scenario_worte_review();
 
-            let res = WorteReviewRepo::bulk_insert(&mut conn, &[])?;
+            let res = WorteReviewRepo::bulk_upsert(&mut conn, &[])?;
             res.assert_eq_fields(&vec![]);
             insta::assert_debug_snapshot!("[WorteReview::bulk_upsert] - empty", res.snapshot());
 
-            let res = WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
+            let res = WorteReviewRepo::bulk_upsert(&mut conn, &sc.initial)?;
             res.assert_eq_fields(&sc.initial);
             insta::assert_debug_snapshot!(
                 "[WorteReview::bulk_upsert] - after insert",
                 res.snapshot()
             );
 
-            let res = WorteReviewRepo::bulk_insert(&mut conn, &sc.update)?;
+            let res = WorteReviewRepo::bulk_upsert(&mut conn, &sc.update)?;
             res.assert_eq_fields(&sc.update);
             insta::assert_debug_snapshot!(
                 "[WorteReview::bulk_upsert] - after update",
@@ -67,7 +67,7 @@ mod test_worte_review_repo {
             data_minimun(&mut conn)?;
 
             let sc = scenario_worte_review();
-            WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
+            WorteReviewRepo::bulk_upsert(&mut conn, &sc.initial)?;
 
             let res = WorteReviewRepo::fetch_by_wort_id(&conn, &[])?;
             res.assert_eq_fields(&vec![]);

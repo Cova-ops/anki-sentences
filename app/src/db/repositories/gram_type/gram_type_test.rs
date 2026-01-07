@@ -11,17 +11,17 @@ mod test_gram_type_repo {
         fn test_bulk_upsert() -> Result<()> {
             let mut conn = setup_test_db()?;
 
-            let res = GramTypeRepo::bulk_insert(&mut conn, &[])?;
+            let res = GramTypeRepo::bulk_upsert(&mut conn, &[])?;
             res.assert_eq_fields(&vec![]);
             insta::assert_debug_snapshot!("[GramType::bulk_upsert] - empty", res.snapshot());
 
             let sc = scenario_gram_type();
 
-            let res = GramTypeRepo::bulk_insert(&mut conn, &sc.initial)?;
+            let res = GramTypeRepo::bulk_upsert(&mut conn, &sc.initial)?;
             res.assert_eq_fields(&sc.initial);
             insta::assert_debug_snapshot!("[GramType::bulk_upsert] - after insert", res.snapshot());
 
-            let res = GramTypeRepo::bulk_insert(&mut conn, &sc.update)?;
+            let res = GramTypeRepo::bulk_upsert(&mut conn, &sc.update)?;
             res.assert_eq_fields(&sc.update);
             insta::assert_debug_snapshot!("[GramType::bulk_upsert] - after update", res.snapshot());
 

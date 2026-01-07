@@ -77,7 +77,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
             continue;
         }
 
-        WorteAudioRepo::bulk_insert(
+        WorteAudioRepo::bulk_upsert(
             &mut conn,
             &[NewWorteAudioSchema {
                 wort_id: wort.id,
