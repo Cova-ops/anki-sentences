@@ -103,6 +103,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
     let (mut hash_mp3_worte, _) = manage_audios.get_all_ids_files()?;
 

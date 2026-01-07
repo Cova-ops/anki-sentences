@@ -54,6 +54,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
 
     for (i, wort) in worte_without_audio.into_iter().enumerate() {

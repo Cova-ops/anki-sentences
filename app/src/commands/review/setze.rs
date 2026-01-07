@@ -45,6 +45,7 @@ pub fn run(
     let manage_audio = helpers::audios::ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
     let r = helpers::console::make_setze_exercise_repeat(
         &conn,

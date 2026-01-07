@@ -12,6 +12,9 @@ use crate::utils::{self, path::home_dir};
 static DIR_CONFIG: &str = ".config/anki-sentences";
 static DIR_PROFILES: &str = "profiles";
 
+static DIR_ASSETS_GENERAL: &str = "assets_general";
+static DIR_AUDIO_ARTIKEL: &str = "audio_artikel";
+
 static DIR_ASSETS: &str = "assets";
 static DIR_AUDIOS: &str = "audios";
 static DIR_WORTE: &str = "worte";
@@ -93,15 +96,25 @@ pub struct AppConfig {
     profiles: HashMap<String, ProfileConfig>,
     actual_profile: String,
 
+    assets_general_path: PathBuf,
+    audio_artikel_path: PathBuf,
+
     #[serde(skip)]
     config_file_path: Option<PathBuf>,
 }
 
 impl AppConfig {
-    pub fn new(config_file_path: &Path) -> Self {
+    pub fn new(config_file_path: &Path, assets_general_path: &Path) -> Self {
+        let assets_general_path = assets_general_path.to_owned();
+        let audio_artikel_path = assets_general_path.join(DIR_AUDIO_ARTIKEL);
+
         Self {
             profiles: HashMap::from([("Default".into(), ProfileConfig::default())]),
             actual_profile: "Default".into(),
+
+            assets_general_path,
+            audio_artikel_path,
+
             config_file_path: Some(config_file_path.to_owned()),
         }
     }
@@ -117,9 +130,19 @@ impl AppConfig {
             fs::create_dir_all(folder_profiles.clone())?;
         }
 
+        let dir_assets_general = folder.join(DIR_ASSETS_GENERAL);
+        if !dir_assets_general.try_exists()? {
+            fs::create_dir_all(dir_assets_general.clone())?;
+        }
+
+        let dir_audios_artikel = dir_assets_general.join(DIR_AUDIO_ARTIKEL);
+        if !dir_audios_artikel.try_exists()? {
+            fs::create_dir_all(dir_audios_artikel.clone())?;
+        }
+
         let file_path = folder.join(CONFIG_FILE_NAME);
         if !file_path.try_exists()? {
-            let new_config = AppConfig::new(&file_path);
+            let new_config = AppConfig::new(&file_path, &dir_assets_general);
             new_config.save_config()?;
 
             // Create all the dirs
@@ -187,6 +210,10 @@ impl AppConfig {
 
         self.save_config()?;
         Ok(())
+    }
+
+    pub fn get_path_audios_artikel(&self) -> Result<&Path> {
+        Ok(&self.audio_artikel_path)
     }
 
     // INFORMATION FROM ACTUAL PROFILE

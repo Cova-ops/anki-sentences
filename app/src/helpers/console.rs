@@ -5,7 +5,7 @@ use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
 use crate::{
-    db::{setze::SetzeRepo, worte::WorteRepo},
+    db::{schemas::worte_gender::GenderGermanListe, setze::SetzeRepo, worte::WorteRepo},
     helpers::{
         audios::{ManageAudios, audio_player::AudioPlayer},
         ui,
@@ -264,7 +264,19 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang) {
+            if lang == LanguageVoice::Deutsch {
+                if let Some(gender) = w.gender_id.as_ref() {
+                    let path_artikel = manage_audio
+                        .get_audio_artikel(GenderGermanListe::try_from(gender.artikel.as_str())?);
+
+                    if let Ok(path) = path_artikel {
+                        player.play(path)?;
+                    }
+                }
+            }
+
+            let path_word = manage_audio.get_audio_worte(*audio, lang);
+            if let Ok(Some(path)) = path_word {
                 player.play(path)?;
             }
         };
@@ -279,7 +291,7 @@ pub fn make_worte_exercise_repeat(
         }
 
         let correct_answer = if lang == LanguageVoice::Spanisch {
-            match w.gender_id {
+            match w.gender_id.as_ref() {
                 Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
                 None => w.worte_de.clone(),
             }
@@ -344,7 +356,17 @@ pub fn make_worte_exercise_repeat(
 
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
-            if let Ok(Some(path)) = manage_audio.get_audio_worte(*audio, lang_second_audio) {
+            if lang_second_audio == LanguageVoice::Deutsch {
+                if let Some(gender) = w.gender_id.as_ref() {
+                    let path_artikel = manage_audio
+                        .get_audio_artikel(GenderGermanListe::try_from(gender.artikel.as_str())?)?;
+
+                    player.play(path_artikel)?;
+                }
+            }
+
+            let path_word = manage_audio.get_audio_worte(*audio, lang_second_audio);
+            if let Ok(Some(path)) = path_word {
                 player.play(path)?;
             }
         };

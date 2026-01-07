@@ -24,6 +24,13 @@ fn run() -> Result<()> {
     let mut config = AppConfig::load_config()?;
     let name_db = config.get_database_path()?;
 
+    helpers::audios::ManageAudios::new(
+        config.get_path_audios_worte()?,
+        config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
+    )
+    .check_audios_artikel()?;
+
     db::init_db(name_db)?;
     console::menu_main(&mut config)?;
 

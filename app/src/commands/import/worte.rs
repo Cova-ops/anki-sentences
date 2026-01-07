@@ -405,6 +405,7 @@ where
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
 
     println!("The Worte are added/updated, audio download starts");
