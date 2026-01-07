@@ -137,4 +137,54 @@ mod test_worte_gram_type_repo {
             Ok(())
         }
     }
+
+    mod delete {
+
+        use super::*;
+
+        fn insert_fields(conn: &mut Connection) -> Result<()> {
+            let sc = scenario_worte_gram_type();
+            WorteGramTypeRepo::bulk_insert(conn, &sc.initial)?;
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_delete_by_wort_id() -> Result<()> {
+            let mut conn = setup_test_db()?;
+            data_minimun(&mut conn)?;
+            insert_fields(&mut conn)?;
+
+            let sc = scenario_worte_gram_type();
+
+            let res = WorteGramTypeRepo::delete_by_wort_id(&mut conn, &[])?;
+            assert_eq!(res, 0);
+            insta::assert_debug_snapshot!("[WorteGramType::delete_by_wort_id] - empty", res);
+
+            let ids_remove: Vec<i32> = sc.initial.into_iter().map(|w| w.id_worte).collect();
+            let res = WorteGramTypeRepo::delete_by_wort_id(&mut conn, &ids_remove)?;
+            assert_eq!(res, ids_remove.len());
+            insta::assert_debug_snapshot!("[WorteGramType::delete_by_wort_id] - delete all", res);
+
+            let limit = 999;
+            let mut last_id = 0;
+
+            let mut vec_res: Vec<i32> = vec![];
+            loop {
+                let mut res = WorteGramTypeRepo::fetch_all_worte_id(&conn, limit, last_id)?;
+
+                if res.is_empty() {
+                    break;
+                }
+
+                last_id = res.last().unwrap().clone();
+                vec_res.append(&mut res);
+            }
+
+            assert_eq!(vec_res.len(), 0);
+            insta::assert_debug_snapshot!("[WorteGramType::delete_by_wort_id] - fetch empty", res);
+
+            Ok(())
+        }
+    }
 }
