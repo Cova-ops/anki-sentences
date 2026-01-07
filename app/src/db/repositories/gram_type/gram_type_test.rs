@@ -9,7 +9,7 @@ mod test_gram_type_repo {
 
         #[test]
         fn test_bulk_upsert() -> Result<()> {
-            let mut conn = setup_test_db().unwrap();
+            let mut conn = setup_test_db()?;
 
             let res = GramTypeRepo::bulk_insert(&mut conn, &[])?;
             res.assert_eq_fields(&vec![]);
