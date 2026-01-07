@@ -48,11 +48,14 @@ mod test_worte_gram_type_repo {
 
             let res = WorteGramTypeRepo::bulk_insert(&mut conn, &[])?;
             res.assert_eq_fields(&vec![]);
-            insta::assert_debug_snapshot!("empty_insert", res.snapshot());
+            insta::assert_debug_snapshot!("[WorteGramType::bulk_insert] - empty", res.snapshot());
 
             let res = WorteGramTypeRepo::bulk_insert(&mut conn, &sc.initial)?;
             res.assert_eq_fields(&sc.initial);
-            insta::assert_debug_snapshot!("bulk_insert", res.snapshot());
+            insta::assert_debug_snapshot!(
+                "[WorteGramType::bulk_insert] - bulk insert",
+                res.snapshot()
+            );
 
             Ok(())
         }
@@ -78,7 +81,10 @@ mod test_worte_gram_type_repo {
 
             let res = WorteGramTypeRepo::fetch_by_wort_id(&conn, &[])?;
             res.assert_eq_fields(&vec![]);
-            insta::assert_debug_snapshot!("empty_fetch", res.snapshot());
+            insta::assert_debug_snapshot!(
+                "[WorteGramType::fetch_by_wort_id] - empty",
+                res.snapshot()
+            );
 
             let id_fetch = vec![1];
             let res = WorteGramTypeRepo::fetch_by_wort_id(&conn, &id_fetch)?;

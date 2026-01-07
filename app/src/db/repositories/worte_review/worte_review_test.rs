@@ -35,13 +35,23 @@ mod test_worte_review_repo {
 
             let sc = scenario_worte_review();
 
-            let res_1 = WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
-            res_1.assert_eq_fields(&sc.initial);
-            insta::assert_debug_snapshot!("after_insert", res_1.snapshot());
+            let res = WorteReviewRepo::bulk_insert(&mut conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[WorteReview::bulk_upsert] - empty", res.snapshot());
 
-            let res_2 = WorteReviewRepo::bulk_insert(&mut conn, &sc.update)?;
-            res_2.assert_eq_fields(&sc.update);
-            insta::assert_debug_snapshot!("after_update", res_2.snapshot());
+            let res = WorteReviewRepo::bulk_insert(&mut conn, &sc.initial)?;
+            res.assert_eq_fields(&sc.initial);
+            insta::assert_debug_snapshot!(
+                "[WorteReview::bulk_upsert] - after insert",
+                res.snapshot()
+            );
+
+            let res = WorteReviewRepo::bulk_insert(&mut conn, &sc.update)?;
+            res.assert_eq_fields(&sc.update);
+            insta::assert_debug_snapshot!(
+                "[WorteReview::bulk_upsert] - after update",
+                res.snapshot()
+            );
 
             Ok(())
         }
@@ -61,7 +71,10 @@ mod test_worte_review_repo {
 
             let res = WorteReviewRepo::fetch_by_wort_id(&conn, &[])?;
             res.assert_eq_fields(&vec![]);
-            insta::assert_debug_snapshot!("fetch_empty", res);
+            insta::assert_debug_snapshot!(
+                "[WorteReview::fetch_by_wort_id] - empty",
+                res.snapshot()
+            );
 
             let mut data = sc
                 .initial
@@ -71,12 +84,14 @@ mod test_worte_review_repo {
                 .collect::<Vec<i32>>();
 
             data.push(-32); // This ID should never exist
-            let res = WorteReviewRepo::fetch_by_wort_id(&conn, &data)
-                .expect("La consulta no debe fallar");
+            let res = WorteReviewRepo::fetch_by_wort_id(&conn, &data)?;
 
             let data_compared: Vec<NewWorteReviewSchema> = sc.initial.into_iter().take(2).collect();
             res.assert_eq_fields(&data_compared);
-            insta::assert_debug_snapshot!("fetch_by_wort_id", res.snapshot());
+            insta::assert_debug_snapshot!(
+                "[WorteReview::fetch_by_wort_id] - fetch",
+                res.snapshot()
+            );
 
             Ok(())
         }
