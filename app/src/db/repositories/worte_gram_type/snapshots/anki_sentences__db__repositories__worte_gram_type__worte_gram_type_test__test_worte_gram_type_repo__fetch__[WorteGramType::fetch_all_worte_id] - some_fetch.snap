@@ -1,0 +1,8 @@
+---
+source: app/src/db/repositories/worte_gram_type/worte_gram_type_test.rs
+expression: vec_res
+---
+[
+    1,
+    2,
+]

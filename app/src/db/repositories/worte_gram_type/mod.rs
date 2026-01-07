@@ -78,6 +78,7 @@ impl WorteGramTypeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_all_worte_id(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
         let sql = r#"
             SELECT id_worte

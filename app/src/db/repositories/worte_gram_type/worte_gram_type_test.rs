@@ -82,7 +82,6 @@ mod test_worte_gram_type_repo {
 
             let id_fetch = vec![1];
             let res = WorteGramTypeRepo::fetch_by_wort_id(&conn, &id_fetch)?;
-            println!("res: {:#?}", res);
             let data_compared: Vec<NewWorteGramTypeSchema> = sc
                 .initial
                 .iter()
@@ -91,7 +90,49 @@ mod test_worte_gram_type_repo {
                 .collect();
 
             res.assert_eq_fields(&data_compared);
-            insta::assert_debug_snapshot!("some_fetch", res.snapshot());
+            insta::assert_debug_snapshot!(
+                "[WorteGramType::fetch_by_wort_id] - some_fetch",
+                res.snapshot()
+            );
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_all_worte_id() -> Result<()> {
+            let mut conn = setup_test_db().unwrap();
+            data_minimun(&mut conn)?;
+            insert_fields(&mut conn)?;
+
+            let sc = scenario_worte_gram_type();
+
+            let limit: usize = 1;
+            let mut last_id: i32 = 0;
+
+            let mut vec_res: Vec<i32> = vec![];
+            loop {
+                let mut res = WorteGramTypeRepo::fetch_all_worte_id(&conn, limit, last_id)?;
+
+                if res.is_empty() {
+                    break;
+                }
+
+                last_id = res.last().unwrap().clone();
+                vec_res.append(&mut res);
+            }
+
+            let mut data_compared: Vec<i32> = sc.initial.into_iter().map(|w| w.id_worte).collect();
+            data_compared.sort_unstable();
+            data_compared.dedup();
+
+            assert_eq!(vec_res.len(), data_compared.len());
+            for (r, d) in vec_res.iter().zip(data_compared.iter()) {
+                assert_eq!(r, d);
+            }
+            insta::assert_debug_snapshot!(
+                "[WorteGramType::fetch_all_worte_id] - some_fetch",
+                vec_res
+            );
 
             Ok(())
         }
