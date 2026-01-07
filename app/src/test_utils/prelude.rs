@@ -7,7 +7,7 @@ pub use crate::db::{
         worte::NewWorteSchema,
         worte_gender::WorteGenderSchema,
         worte_gram_type::NewWorteGramTypeSchema,
-        worte_review::NewWorteReviewSchema,
+        worte_review::{NewWorteReviewSchema, ReviewDirection},
     },
     setup_test_db,
     worte::WorteRepo,

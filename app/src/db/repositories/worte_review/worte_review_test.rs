@@ -3,6 +3,7 @@ mod test_worte_review_repo {
 
     use color_eyre::eyre::Result;
     use rusqlite::Connection;
+    use std::collections::HashSet;
 
     use crate::test_utils::prelude::*;
 
@@ -58,11 +59,6 @@ mod test_worte_review_repo {
     }
 
     mod fetch {
-
-        use std::collections::HashSet;
-
-        use crate::db::schemas::worte_review::ReviewDirection;
-
         use super::*;
 
         #[test]
