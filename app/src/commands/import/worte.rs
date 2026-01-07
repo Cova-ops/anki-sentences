@@ -389,7 +389,7 @@ where
     // update words
     for (id, new_worte) in vec_update_worte {
         let tx = conn.transaction()?;
-        WorteGramTypeRepo::delete_by_id_tx(&tx, &[id])?;
+        WorteGramTypeRepo::delete_by_wort_id_tx(&tx, &[id])?;
         WorteRepo::bulk_update_tx(&tx, &[(id, new_worte)])?;
         tx.commit()?;
     }

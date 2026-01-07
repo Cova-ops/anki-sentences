@@ -97,14 +97,16 @@ impl WorteGramTypeRepo {
         Ok(vec_ids)
     }
 
-    pub fn delete_by_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn delete_by_wort_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
         let tx = conn.transaction()?;
-        let out = Self::delete_by_id_tx(&tx, ids)?;
+        let out = Self::delete_by_wort_id_tx(&tx, ids)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn delete_by_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn delete_by_wort_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
         if ids.is_empty() {
             return Ok(0);
         }

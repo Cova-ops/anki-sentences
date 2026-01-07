@@ -95,7 +95,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let rows_affected = WorteReviewRepo::delete_by_id(&conn, &ids_remove)?;
     println!("Rows affected on table worte_review: {}", rows_affected);
 
-    let rows_affected = WorteGramTypeRepo::delete_by_id(&mut conn, &ids_remove)?;
+    let rows_affected = WorteGramTypeRepo::delete_by_wort_id(&mut conn, &ids_remove)?;
     println!("Rows affected on table worte_gram_type: {}", rows_affected);
 
     // TODO: tambien valdiar los audios locales
