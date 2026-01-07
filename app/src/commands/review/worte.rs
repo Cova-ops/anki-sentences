@@ -99,10 +99,15 @@ pub fn run(
     // Recorremos el arreglo de palabras que respondio el usuario
     for wort in r.1 {
         let wort_id = wort.0;
-        let quality = wort.1;
+        let mut quality = wort.1;
+
+        // Si se equivoco reinciamos el contador
+        let review_state = if quality == 0 {
+            quality = 1;
+            ReviewState::new()
 
         // Si tiene historico de revisiones usamos esa info, si no creamos un nuevo struct
-        let review_state = if let Some(val) = hash_worte_review.get(&wort_id) {
+        } else if let Some(val) = hash_worte_review.get(&wort_id) {
             ReviewState::from(val.interval, val.ease_factor, val.repetitions)
         } else {
             ReviewState::new()

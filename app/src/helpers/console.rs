@@ -297,7 +297,7 @@ pub fn make_worte_exercise_repeat(
                 } else {
                     // Si la bandera de once_mistake esta en true, quiere decir que se equivoco con la
                     // palabra por lo menos una vez
-                    let easy = if rep.once_mistake { 1 } else { 2 };
+                    let easy = 0;
                     vec_out.push((w.id, easy));
                     worte_correct.remove(0);
 
@@ -313,7 +313,7 @@ pub fn make_worte_exercise_repeat(
                 }
             } else {
                 // La tuvo correcta a la primera
-                let easy = 2;
+                let easy = 1;
                 vec_out.push((w.id, easy));
                 worte_correct.remove(0);
 
