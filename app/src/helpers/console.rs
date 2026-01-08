@@ -245,7 +245,10 @@ pub fn make_worte_exercise_repeat(
         let worte_remaining = worte_correct.len() + ids_worte.len();
         let worte = match lang {
             LanguageVoice::Spanisch => &w.worte_es,
-            LanguageVoice::Deutsch => &w.worte_de,
+            LanguageVoice::Deutsch => match w.gender_id.as_ref() {
+                Some(v) => &format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+                None => &w.worte_de,
+            },
         };
         println!(
             "{}",
