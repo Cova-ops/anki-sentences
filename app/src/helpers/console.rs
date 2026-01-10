@@ -293,17 +293,42 @@ pub fn make_worte_exercise_repeat(
             break;
         }
 
-        let correct_answer = if lang == LanguageVoice::Spanisch {
-            match w.gender_id.as_ref() {
+        let correct_answer: Vec<String> = if lang == LanguageVoice::Spanisch {
+            let out = match w.gender_id.as_ref() {
                 Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
                 None => w.worte_de.clone(),
-            }
+            };
+            vec![out]
         } else {
-            w.worte_es.clone()
+            let mut depth = 0usize;
+
+            let cleaned: String = w
+                .worte_es
+                .chars()
+                .filter_map(|c| match c {
+                    '(' => {
+                        depth += 1;
+                        None
+                    }
+                    ')' => {
+                        depth = depth.saturating_sub(1);
+                        None
+                    }
+                    _ if depth > 0 => None,
+                    _ => Some(c),
+                })
+                .collect();
+
+            cleaned
+                .split('/')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_owned)
+                .collect()
         };
 
-        let input = input.trim();
-        if input == correct_answer {
+        let input = input.trim().to_owned();
+        if correct_answer.contains(&input) {
             if let Some(rep) = already_studied.get_mut(&w.id) {
                 if rep.repetition < 1 {
                     // Primera vez que la acierta: subimos contador pero aún no la guardamos
@@ -328,7 +353,7 @@ pub fn make_worte_exercise_repeat(
                 }
             } else {
                 // La tuvo correcta a la primera
-                let easy = 1;
+                let easy = 2;
                 vec_out.push((w.id, easy));
                 worte_correct.remove(0);
 
@@ -350,7 +375,7 @@ pub fn make_worte_exercise_repeat(
 
         println!();
         println!("Palabra incorrecta");
-        println!("La palabra correcta es: {}", correct_answer);
+        println!("La palabra correcta es: {}", correct_answer.join(" / "));
 
         println!();
         println!("Ejemplo: {}", w.example_de);
@@ -383,8 +408,8 @@ pub fn make_worte_exercise_repeat(
                 break;
             }
 
-            let input = input.trim();
-            if input == correct_answer {
+            let input = input.trim().to_owned();
+            if correct_answer.contains(&input) {
                 worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
                 break;
             }
