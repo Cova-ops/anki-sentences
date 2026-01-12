@@ -91,6 +91,7 @@ pub fn run(
 
     let hash_worte_review: HashMap<i32, WorteReviewSchema> = vec_worte_review
         .into_iter()
+        .filter(|f| f.direction == ReviewDirection::from_lang(lang))
         .map(|wr| (wr.wort_id, wr))
         .collect();
 
@@ -100,15 +101,10 @@ pub fn run(
     // Recorremos el arreglo de palabras que respondio el usuario
     for wort in r.1 {
         let wort_id = wort.0;
-        let mut quality = wort.1;
-
-        // Si se equivoco reinciamos el contador
-        let review_state = if quality == 0 {
-            quality = 1;
-            ReviewState::new()
+        let quality = wort.1;
 
         // Si tiene historico de revisiones usamos esa info, si no creamos un nuevo struct
-        } else if let Some(val) = hash_worte_review.get(&wort_id) {
+        let review_state = if let Some(val) = hash_worte_review.get(&wort_id) {
             ReviewState::from(val.interval, val.ease_factor, val.repetitions)
         } else {
             ReviewState::new()
