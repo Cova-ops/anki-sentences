@@ -46,12 +46,15 @@ pub fn run(
 ) -> Result<()> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
+    let today = time::today_local_string(1);
+    let review_direction = ReviewDirection::from_lang(lang);
     let mut ids_worte: Vec<i32> = match section {
-        ReviewWorteSection::NewAndReview => {
-            get_review_new_ids(&conn, time::today_local_string(1), lang.clone())?
-        }
+        ReviewWorteSection::NewAndReview => get_review_new_ids(&conn, today, lang)?,
         ReviewWorteSection::OnlyNew => {
-            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, ReviewDirection::from_lang(lang))?
+            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, review_direction)?
+        }
+        ReviewWorteSection::OnlyReview => {
+            WorteReviewRepo::fetch_review_wort_id_by_day(&conn, today, review_direction)?
         }
         _ => todo!("Aguantame papito"),
     };
