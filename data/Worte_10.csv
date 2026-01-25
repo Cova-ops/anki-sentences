@@ -1,0 +1,57 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,essenziell,esencial,,B1,"Das ist essenziell für den Plan.","Eso es esencial para el plan.",,,
+adjective,,kaputt,roto / descompuesto,,A2,"Mein Handy ist kaputt.","Mi celular está descompuesto.",,,
+adjective,,billig,barato,,A2,"Das ist billig, aber es funktioniert.","Eso es barato, pero funciona.",,,
+adjective,,teuer,caro,,A2,"Das Ticket ist zu teuer.","El boleto está demasiado caro.",,,
+verb_main,,trennen,separar,,A2,"Ich trenne Arbeit und Freizeit.","Yo separo el trabajo y el tiempo libre.","haben","No","No"
+verb_separable,,fortsetzen,continuar,,B1,"Wir setzen das Gespräch später fort.","Continuamos la conversación más tarde.","haben","Si","No"
+noun_common,Maskuline,Empfänger,receptor / destinatario,Empfänger,A2,"Der Empfänger hat die Nachricht bekommen.","El destinatario recibió el mensaje.",,,
+noun_common,Femenin,Empfängerin,receptora / destinataria,Empfängerinnen,A2,"Die Empfängerin liest die E-Mail sofort.","La destinataria lee el correo de inmediato.",,,
+noun_common,Femenin,Niere,riñón,Nieren,B1,"Die Niere ist ein wichtiges Organ.","El riñón es un órgano importante.",,,
+verb_separable,,mitteilen,comunicar / informar,,B1,"Kannst du mir die Adresse mitteilen?","¿Puedes comunicarme la dirección?","haben","Si","No"
+noun_common,Plural,Kenntnisse,conocimientos,Kenntnisse,B1,"Ich habe gute Kenntnisse in JavaScript.","Tengo buenos conocimientos de JavaScript.",,,
+verb_main,,nehmen,tomar,,A2,"Ich nehme den Bus zur Arbeit.","Tomo el autobús al trabajo.","haben","No","No"
+conjunction_subordinating,,während,mientras,,B1,"Während ich warte, höre ich Musik.","Mientras espero, escucho música.",,,
+preposition_genitive,,während,durante,,B1,"Während des Tages arbeite ich viel.","Durante el día trabajo mucho.",,,
+noun_common,Femenin,Fähigkeit,habilidad,Fähigkeiten,B1,"Kommunikation ist eine wichtige Fähigkeit.","La comunicación es una habilidad importante.",,,
+noun_common,Femenin,Etage,piso / planta,Etagen,A2,"Meine Wohnung ist in der dritten Etage.","Mi departamento está en el tercer piso.",,,
+adjective,,gesperrt,cerrado / bloqueado,,B1,"Die Straße ist heute gesperrt.","La calle está cerrada hoy.",,,
+adjective,,professionell,profesional,,B1,"Er wirkt sehr professionell.","Él se ve muy profesional.",,,
+adjective,,streng,estricto,,A2,"Der Lehrer ist streng, aber fair.","El profesor es estricto, pero justo.",,,
+noun_common,Neutrum,Aussehen,apariencia,,A2,"Sein Aussehen hat sich verändert.","Su apariencia ha cambiado.",,,
+adjective,,grell,chillón / muy brillante,,B1,"Die Farbe ist zu grell.","El color es demasiado chillón.",,,
+verb_main,,leuchten,brillar,,B1,"Das Licht leuchtet grell.","La luz brilla muy fuerte.","haben","No","No"
+verb_main,,blenden,deslumbrar,,B1,"Die Sonne blendet mich.","El sol me deslumbra.","haben","No","No"
+adjective,,faul,perezoso,,A2,"Ich bin heute zu faul zum Kochen.","Hoy estoy demasiado perezoso para cocinar.",,,
+adjective,,kompliziert,complicado,,B1,"Das ist kompliziert, aber machbar.","Eso es complicado, pero se puede hacer.",,,
+noun_common,Neutrum,Ding,cosa,Dinge,A1,"Gib mir bitte das Ding da.","Dame por favor esa cosa.",,,
+verb_main,,klingen,sonar,,A2,"Das klingt gut.","Eso suena bien.","haben","No","No"
+adjective,,klug,listo / inteligente,,A2,"Das war eine kluge Entscheidung.","Esa fue una decisión inteligente.",,,
+noun_common,Maskuline,Verwandter,familiar / pariente,Verwandte,A2,"Ein Verwandter besucht uns am Wochenende.","Un familiar nos visita el fin de semana.",,,
+noun_common,Femenin,Verwandte,familiar / pariente,Verwandte,A2,"Eine Verwandte wohnt in Berlin.","Una familiar vive en Berlín.",,,
+noun_common,Femenin,Stiefmutter,madrastra,Stiefmütter,A2,"Seine Stiefmutter ist nett.","Su madrastra es amable.",,,
+noun_common,Maskuline,Stiefvater,padrastro,Stiefväter,A2,"Mein Stiefvater hilft mir oft.","Mi padrastro me ayuda a menudo.",,,
+noun_common,Femenin,Halbschwester,media hermana,Halbschwestern,A2,"Meine Halbschwester ist jünger als ich.","Mi media hermana es más joven que yo.",,,
+noun_common,Maskuline,Halbbruder,medio hermano,Halbbrüder,A2,"Ich treffe meinen Halbbruder morgen.","Mañana veo a mi medio hermano.",,,
+noun_common,Maskuline,Stiefbruder,hermanastro,Stiefbrüder,A2,"Mein Stiefbruder spielt Fußball.","Mi hermanastro juega fútbol.",,,
+noun_common,Femenin,Stiefschwester,hermanastra,Stiefschwestern,A2,"Meine Stiefschwester studiert Medizin.","Mi hermanastra estudia medicina.",,,
+adjective,,wichtig,importante,,A1,"Das ist wichtig für mich.","Eso es importante para mí.",,,
+noun_common,Neutrum,Geheimnis,secreto,Geheimnisse,A2,"Das ist ein Geheimnis.","Eso es un secreto.",,,
+noun_common,Maskuline,Zahnarzt,dentista,Zahnärzte,A2,"Ich habe morgen einen Termin beim Zahnarzt.","Mañana tengo una cita con el dentista.",,,
+noun_common,Femenin,Zahnärztin,dentista,Zahnärztinnen,A2,"Die Zahnärztin erklärt alles sehr ruhig.","La dentista explica todo con calma.",,,
+noun_common,Maskuline,Akku,batería (de dispositivo),Akkus,A2,"Der Akku ist fast leer.","La batería ya casi está vacía.",,,
+noun_common,Neutrum,Rad,rueda,Räder,A2,"Das Rad ist kaputt.","La rueda está rota.",,,
+verb_main,,bleiben,quedarse / permanecer,,A1,"Ich bleibe heute zu Hause.","Hoy me quedo en casa.","sein","No","No"
+verb_main,,rufen,llamar (a gritos),,A2,"Er ruft nach Hilfe.","Él grita pidiendo ayuda.","haben","No","No"
+verb_separable,,anrufen,llamar por teléfono,,A1,"Ich rufe dich später an.","Te llamo más tarde.","haben","Si","No"
+verb_separable,,zurückrufen,devolver la llamada,,B1,"Ich rufe dich gleich zurück.","Te devuelvo la llamada en un momento.","haben","Si","No"
+noun_common,Neutrum,Werk,fábrica / planta,Werke,B1,"Er arbeitet im Werk.","Él trabaja en la fábrica.",,,
+noun_common,Femenin,Zitrone,limón,Zitronen,A1,"Ich brauche eine Zitrone für den Tee.","Necesito un limón para el té.",,,
+noun_common,Femenin,Zwiebel,cebolla,Zwiebeln,A1,"Die Zwiebel riecht stark.","La cebolla huele fuerte.",,,
+noun_common,Femenin,Nase,nariz,Nasen,A1,"Meine Nase ist kalt.","Mi nariz está fría.",,,
+noun_common,Neutrum,Fensterglas,vidrio de la ventana,Fenstergläser,B1,"Das Fensterglas ist sauber.","El vidrio de la ventana está limpio.",,,
+noun_common,Maskuline,Mitbewohner,compañero de piso,Mitbewohner,A2,"Mein Mitbewohner kocht heute.","Mi compañero de piso cocina hoy.",,,
+noun_common,Femenin,Mitbewohnerin,compañera de piso,Mitbewohnerinnen,A2,"Meine Mitbewohnerin arbeitet von zu Hause.","Mi compañera de piso trabaja desde casa.",,,
+noun_common,Femenin,Kirche,iglesia,Kirchen,A1,"Die Kirche ist im Zentrum.","La iglesia está en el centro.",,,
+noun_common,Neutrum,Eis,helado / hielo,,A1,"Ich esse gern Eis.","Me gusta comer helado.",,,
+verb_separable,,"sich ausheulen",desahogarse llorando,,B1,"Ich heule mich bei dir aus.","Me desahogo llorando contigo.","haben","Si","Si"
