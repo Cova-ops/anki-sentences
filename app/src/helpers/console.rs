@@ -182,7 +182,7 @@ pub fn make_setze_exercise_repeat(
     Ok((val_out, vec_out))
 }
 
-const TEXT_WORTE_ONCE: &str = r##"
+const TEXT_WORTE_WRITE: &str = r##"
 Para salir pon la palara "exit".                 Faltantes: {remainding}
 Algunas letras que te pueden ayudar. :)
           - ß ẞ ä ö ü Ä Ö Ü 
@@ -207,7 +207,7 @@ Por favor traducela...
 ///     - 0 -> No se la sabe
 ///     - 1 -> Se la sabe pero dificil
 ///     - 2 -> Se la sabe facil
-pub fn make_worte_exercise_repeat(
+pub fn make_worte_exercise_write(
     conn: &Connection,
     ids_worte: Vec<i32>,
     hash_audios: HashSet<i32>,
@@ -252,7 +252,7 @@ pub fn make_worte_exercise_repeat(
         };
         println!(
             "{}",
-            TEXT_WORTE_ONCE
+            TEXT_WORTE_WRITE
                 .replace("{wort}", worte)
                 .replace("{remainding}", &worte_remaining.to_string())
                 .replace(
@@ -412,6 +412,243 @@ pub fn make_worte_exercise_repeat(
             if correct_answer.contains(&input) {
                 worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
                 break;
+            }
+        }
+    }
+
+    Ok((val_out, vec_out))
+}
+
+const TEXT_WORTE_SPEAK: &str = r##"
+Words remaining: {remaining}
+
+Category : {gram_type}
+Word     : {wort}
+
+What do you want to do?
+  [r] 🔊 Repeat audio
+  [1] ✅ I know this word
+  [0] ❌ I don’t know this word
+  [q] 🚪 Exit review
+
+"##;
+
+/// return:
+/// - Seguir o no seguir con el proceso:
+///   - 0 Finishing sentences
+///   - 1 User typed "exit"
+/// - Vec<(i32, u8)>:
+///   - 1° -> wort_id
+///   - 2° -> resultado usuario
+///     - 0 -> No se la sabe
+///     - 1 -> Se la sabe pero dificil
+///     - 2 -> Se la sabe facil
+pub fn make_worte_exercise_speak(
+    conn: &Connection,
+    ids_worte: Vec<i32>,
+    hash_audios: HashSet<i32>,
+    manage_audio: &ManageAudios,
+    batch: usize,
+    no_shuffle: bool,
+    lang: LanguageVoice,
+) -> Result<(i32, Vec<(i32, u8)>)> {
+    let mut ids_worte = ids_worte;
+
+    let mut vec_out: Vec<(i32, u8)> = vec![];
+    let mut val_out = 0;
+    let mut already_studied: HashMap<i32, ManageRepetitions> = HashMap::new();
+
+    let lang_second_audio = match lang {
+        LanguageVoice::Spanisch => LanguageVoice::Deutsch,
+        LanguageVoice::Deutsch => LanguageVoice::Spanisch,
+    };
+
+    let take = ids_worte.len().min(batch);
+    let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
+
+    // Obtenemos toda la info del bloque de palabras que vamos a usar
+    let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    if no_shuffle {
+        let mut rng = rand::rng();
+        worte_correct.shuffle(&mut rng);
+    }
+
+    let player = AudioPlayer::new();
+    while !worte_correct.is_empty() && val_out == 0 {
+        let w = worte_correct[0].clone();
+
+        utils::console::clean_screen();
+        let worte_remaining = worte_correct.len() + ids_worte.len();
+        let worte = match lang {
+            LanguageVoice::Spanisch => &w.worte_es,
+            LanguageVoice::Deutsch => match w.gender_id.as_ref() {
+                Some(v) => &format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+                None => &w.worte_de,
+            },
+        };
+        println!(
+            "{}",
+            TEXT_WORTE_SPEAK
+                .replace("{wort}", worte)
+                .replace("{remaining}", &worte_remaining.to_string())
+                .replace(
+                    "{gram_type}",
+                    &w.gram_type_id
+                        .into_iter()
+                        .map(|r| format!("{} ", r.name))
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+        );
+
+        player.play_from_path(manage_audio, hash_audios.get(&w.id), &w.gender_id, lang)?;
+
+        let input: String = loop {
+            let Some(input) = ui::prompt_nonempty("> ")? else {
+                continue;
+            };
+
+            match input.as_ref() {
+                "1" | "q" | "0" | "exit" => break input,
+                "r" => {
+                    player.play_from_path(
+                        manage_audio,
+                        hash_audios.get(&w.id),
+                        &w.gender_id,
+                        lang,
+                    )?;
+                }
+                _ => {}
+            }
+        };
+
+        if input == "q" || input == "exit" {
+            val_out = 1;
+            break;
+        }
+
+        let correct_answer: Vec<String> = if lang == LanguageVoice::Spanisch {
+            let out = match w.gender_id.as_ref() {
+                Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+                None => w.worte_de.clone(),
+            };
+            vec![out]
+        } else {
+            let mut depth = 0usize;
+
+            let cleaned: String = w
+                .worte_es
+                .chars()
+                .filter_map(|c| match c {
+                    '(' => {
+                        depth += 1;
+                        None
+                    }
+                    ')' => {
+                        depth = depth.saturating_sub(1);
+                        None
+                    }
+                    _ if depth > 0 => None,
+                    _ => Some(c),
+                })
+                .collect();
+
+            cleaned
+                .split('/')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_owned)
+                .collect()
+        };
+
+        let input = input.trim().to_owned();
+        if input == "1" {
+            // Correct answer
+            if let Some(rep) = already_studied.get_mut(&w.id) {
+                if rep.repetition < 1 {
+                    // Primera vez que la acierta: subimos contador pero aún no la guardamos
+                    rep.add_repetition();
+                    worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
+                } else {
+                    // Si la bandera de once_mistake esta en true, quiere decir que se equivoco con la
+                    // palabra por lo menos una vez
+                    let easy = 1;
+                    vec_out.push((w.id, easy));
+                    worte_correct.remove(0);
+
+                    if !ids_worte.is_empty() {
+                        // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                        let id_new = ids_worte.remove(0);
+                        let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
+                        worte_correct.push(wort_new[0].clone());
+                    }
+
+                    // limpiamos el hashmap de la palabra que ya no se va a repetir
+                    already_studied.remove(&w.id);
+                }
+            } else {
+                // La tuvo correcta a la primera
+                let easy = 2;
+                vec_out.push((w.id, easy));
+                worte_correct.remove(0);
+
+                if !ids_worte.is_empty() {
+                    // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
+                    let id_new = ids_worte.remove(0);
+                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
+                    worte_correct.push(wort_new[0].clone());
+                }
+            }
+
+            continue;
+        }
+
+        already_studied
+            .entry(w.id)
+            .and_modify(|r| *r = ManageRepetitions::new_error())
+            .or_insert(ManageRepetitions::new_error());
+
+        println!();
+        println!("Palabra incorrecta");
+        println!("La palabra correcta es: {}", correct_answer.join(" / "));
+
+        println!();
+        println!("Ejemplo: {}", w.example_de);
+        println!("Traducción: {}", w.example_es);
+        println!();
+
+        // Reproduces audio in case of failed
+        player.play_from_path(
+            manage_audio,
+            hash_audios.get(&w.id),
+            &w.gender_id,
+            lang_second_audio,
+        )?;
+
+        loop {
+            let Some(input) = ui::prompt_nonempty("> ")? else {
+                break;
+            };
+
+            let input = input.trim().to_owned();
+            match input.as_ref() {
+                "q" | "exit" => {
+                    val_out = 1;
+                    break;
+                }
+                "1" => {
+                    worte_correct.rotate_left(1); // mueve el primer elemento al final del vector
+                    break;
+                }
+                "r" => {
+                    player.play_from_path(
+                        manage_audio,
+                        hash_audios.get(&w.id),
+                        &w.gender_id,
+                        lang,
+                    )?;
+                }
+                _ => {}
             }
         }
     }

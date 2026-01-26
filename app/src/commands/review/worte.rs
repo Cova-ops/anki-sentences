@@ -18,6 +18,11 @@ use color_eyre::Result;
 use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
+enum TypeExercise {
+    Write,
+    Speak,
+}
+
 fn get_review_new_ids(
     conn: &Connection,
     date_review: String,
@@ -59,6 +64,11 @@ pub fn run(
         _ => todo!("Aguantame papito"),
     };
 
+    let type_exercise = match lang {
+        LanguageVoice::Deutsch => TypeExercise::Speak,
+        LanguageVoice::Spanisch => TypeExercise::Write,
+    };
+
     let ids_audios = if config.is_audio_enable()? {
         WorteAudioRepo::fetch_by_id(&conn, &ids_worte)?
     } else {
@@ -76,18 +86,29 @@ pub fn run(
         config.get_path_audios_setze()?,
         config.get_path_audios_artikel()?,
     );
-    let r = helpers::console::make_worte_exercise_repeat(
-        &conn,
-        ids_worte,
-        hash_audios,
-        &manage_audio,
-        batch,
-        no_shuffle,
-        lang,
-    )?;
 
+    let result_review = match type_exercise {
+        TypeExercise::Write => helpers::console::make_worte_exercise_write(
+            &conn,
+            ids_worte,
+            hash_audios,
+            &manage_audio,
+            batch,
+            no_shuffle,
+            lang,
+        )?,
+        TypeExercise::Speak => helpers::console::make_worte_exercise_speak(
+            &conn,
+            ids_worte,
+            hash_audios,
+            &manage_audio,
+            batch,
+            no_shuffle,
+            lang,
+        )?,
+    };
     // Obtenemos el id de las palabras que respondio
-    let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
+    let wort_ids: Vec<i32> = result_review.1.iter().map(|(id, _)| *id).collect();
 
     // Obtenemos si estas palabras ya tenian informacion hsitorica de revisiones anteriores
     let vec_worte_review = WorteReviewRepo::fetch_by_wort_id(&conn, &wort_ids)?;
@@ -102,7 +123,7 @@ pub fn run(
     let now = Utc::now();
 
     // Recorremos el arreglo de palabras que respondio el usuario
-    for wort in r.1 {
+    for wort in result_review.1 {
         let wort_id = wort.0;
         let quality = wort.1;
 
@@ -130,7 +151,7 @@ pub fn run(
     // guardamos en db la info de las revisiones
     WorteReviewRepo::bulk_upsert(&mut conn, &vec_new_worte_review)?;
 
-    if r.0 == 1 {
+    if result_review.0 == 1 {
         return Ok(());
     }
 
