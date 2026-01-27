@@ -172,7 +172,7 @@ impl WorteRepo {
             }
         }
 
-        // WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
+        WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
 
         Ok(vec_out)
     }
