@@ -83,16 +83,16 @@ pub fn init_data(conn: &mut Connection) -> Result<()> {
     let tx = conn.transaction()?;
 
     // GenderWorte
-    let data = WorteGenderRepo::bulk_insert_tx(&tx, &SEED_WORTE_GENDER_LISTE)?;
-    WorteGenderSchema::init_data(&data)?;
+    let data = WorteGenderRepo::bulk_upsert_tx(&tx, &SEED_WORTE_GENDER_LISTE)?;
+    WorteGenderSchema::init_data(&data);
 
     // NiveauWorte
-    let data = NiveauListeRepo::bulk_insert_tx(&tx, &SEED_NIVEAU_LISTE)?;
-    NiveauListeSchema::init_data(&data)?;
+    let data = NiveauListeRepo::bulk_upsert_tx(&tx, &SEED_NIVEAU_LISTE)?;
+    NiveauListeSchema::init_data(&data);
 
     // GramType
-    let data = GramTypeRepo::bulk_insert_tx(&tx, &SEED_GRAM_TYPE_LISTE)?;
-    GramTypeSchema::init_data(&data)?;
+    let data = GramTypeRepo::bulk_upsert_tx(&tx, &SEED_GRAM_TYPE_LISTE)?;
+    GramTypeSchema::init_data(&data);
 
     tx.commit()?;
 

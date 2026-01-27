@@ -1,6 +1,6 @@
-use std::{collections::HashMap, env, path::Path};
+use std::{env, path::Path};
 
-use color_eyre::eyre::{Context, OptionExt, Result, bail};
+use color_eyre::eyre::{Context, OptionExt, Result};
 
 use crate::{
     console::cli::TypeFile,
@@ -389,7 +389,7 @@ where
     // update words
     for (id, new_worte) in vec_update_worte {
         let tx = conn.transaction()?;
-        WorteGramTypeRepo::delete_by_id_tx(&tx, &[id])?;
+        WorteGramTypeRepo::delete_by_wort_id_tx(&tx, &[id])?;
         WorteRepo::bulk_update_tx(&tx, &[(id, new_worte)])?;
         tx.commit()?;
     }
@@ -405,6 +405,7 @@ where
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
 
     println!("The Worte are added/updated, audio download starts");
@@ -416,7 +417,7 @@ where
             continue;
         }
 
-        WorteAudioRepo::bulk_insert(
+        WorteAudioRepo::bulk_upsert(
             &mut conn,
             &[NewWorteAudioSchema {
                 wort_id: wort.id,

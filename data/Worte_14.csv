@@ -1,0 +1,96 @@
+iveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,problemlos,sin problemas,,A2,"Das Treffen verlief problemlos.","La reunión salió sin problemas.",,,
+noun_common,Maskuline,Fleck,mancha,Flecken,A1,"Da ist ein Fleck auf deinem Shirt.","Hay una mancha en tu camisa.",,,
+noun_common,Femenin,Reinigung,limpieza,Reinigungen,A2,"Die Reinigung dauert nicht lange.","La limpieza no tarda mucho.",,,
+noun_common,Neutrum,Tuch,paño,tücher,A1,"Nimm ein Tuch und wisch den Tisch ab.","Toma un paño y limpia la mesa.",,,
+noun_common,Femenin,Waschmaschine,lavadora,Waschmaschinen,A1,"Die Waschmaschine ist kaputt.","La lavadora está descompuesta.",,,
+verb_main,,übersetzen,traducir,,A1,"Kannst du diesen Satz übersetzen?","¿Puedes traducir esta frase?",haben,No,No
+noun_common,Maskuline,Bauernhof,granja,Bauernhöfe,A1,"Er wohnt auf einem Bauernhof.","Él vive en una granja.",,,
+adjective,,günstig,barato/favorable,,A1,"Das Angebot ist sehr günstig.","La oferta es muy barata.",,,
+verb_main,,besitzen,poseer,,A2,"Er besitzt kein Auto.","Él no posee coche.",haben,No,No
+adjective,,berühmt,famoso,,A1,"Die Serie ist sehr berühmt.","La serie es muy famosa.",,,
+adverb_degree,,genug,suficiente,,A1,"Ich habe genug Geld.","Tengo suficiente dinero.",,,
+noun_common,Femenin,Veranda,veranda,Veranden,A2,"Wir sitzen auf der Veranda.","Estamos sentados en la veranda.",,,
+noun_common,Neutrum,Lächeln,sonrisa,Lächeln,A1,"Sein Lächeln wirkt ehrlich.","Su sonrisa parece sincera.",,,
+verb_main,,lächeln,sonreír,,A1,"Sie lächelt ihn an.","Ella le sonríe.",haben,No,No
+adjective,,schlecht,malo,,A1,"Das ist eine schlechte Idee.","Esa es una mala idea.",,,
+noun_common,Maskuline,Rabe,cuervo,Raben,A1,"Ein Rabe sitzt auf dem Dach.","Un cuervo está en el techo.",,,
+noun_common,Maskuline,Fuchs,zorro,Füchse,A1,"Der Fuchs ist sehr schlau.","El zorro es muy astuto.",,,
+noun_common,Maskuline,Schnabel,pico,Schnäbel,A1,"Der Vogel hat einen langen Schnabel.","El ave tiene un pico largo.",,,
+noun_common,Neutrum,Stück,parte/pedazo,Stücke,A1,"Ich nehme ein Stück Kuchen.","Tomo un pedazo de pastel.",,,
+noun_common,Maskuline,Teil,parte,Teile,A1,"Das ist nur ein Teil des Plans.","Eso es solo una parte del plan.",,,
+verb_separable,,wegnehmen,quitar,,A2,"Er nimmt mir das Handy weg.","Él me quita el celular.","haben","Si","No"
+noun_common,Maskuline,Hunger,hambre,,A1,"Ich habe großen Hunger.","Tengo mucha hambre.",,,
+verb_main,,hungern,pasar hambre,,A2,"Viele Menschen hungern.","Muchas personas pasan hambre.",haben,No,No
+noun_common,Neutrum,Gefieder,plumaje,,A2,"Das Gefieder glänzt in der Sonne.","El plumaje brilla al sol.",,,
+verb_main,,glänzen,brillar,,A1,"Das Auto glänzt.","El coche brilla.",haben,No,No
+fixed_phrase,,Stimmt das?,¿Es correcto?,,A1,"Stimmt das, was du sagst?","¿Es correcto lo que dices?",,,
+adjective,,traurig,triste,,A1,"Sie ist traurig wegen der Nachricht.","Ella está triste por la noticia.",,,
+noun_common,Femenin,Eitelkeit,vanidad,,B1,"Seine Eitelkeit ist bekannt.","Su vanidad es conocida.",,,
+adjective,,gefährlich,peligroso,,A1,"Das ist sehr gefährlich.","Eso es muy peligroso.",,,
+noun_common,Femenin,Ameise,hormiga,Ameisen,A1,"Die Ameise trägt Essen.","La hormiga lleva comida.",,,
+noun_common,Femenin,Heuschrecke,saltamontes,Heuschrecken,A1,"Eine Heuschrecke springt hoch.","Un saltamontes salta alto.",,,
+noun_common,Neutrum,Lager,almacén/campamento,Lager,A2,"Die Ware liegt im Lager.","La mercancía está en el almacén.",,,
+verb_main,,springen,saltar,,A1,"Das Kind springt ins Wasser.","El niño salta al agua.",haben,No,No
+verb_separable,,anschauen,mirar,,A1,"Ich schaue mir den Film an.","Veo la película.","haben","Si","No"
+verb_main,,überlegen,pensar/reflexionar,,A2,"Ich muss kurz überlegen.","Tengo que pensarlo.",haben,No,No
+adjective,,dankbar,agradecido,,A1,"Ich bin dir sehr dankbar.","Estoy muy agradecido contigo.",,,
+verb_main,,nicken,asentir,,A1,"Er nickt leise.","Él asiente en silencio.",haben,No,No
+verb_main,,vorsorgen,prever,,B1,"Man sollte für die Zukunft vorsorgen.","Uno debe prever para el futuro.",haben,No,No
+noun_common,Neutrum,Alter,edad,,A1,"Das Alter spielt keine Rolle.","La edad no importa.",,,
+particle_focus,,dabei,ahí / mientras tanto,,A2,"Ich war dabei.","Yo estuve ahí.",,,
+adjective,,einfach,fácil/simple,,A1,"Das ist ganz einfach.","Eso es muy fácil.",,,
+verb_main,,nennen,llamar/nombrar,,A1,"Er nennt seinen Hund Max.","Él llama Max a su perro.",haben,No,No
+noun_common,Maskuline,Keller,sótano,Keller,A1,"Der Keller ist dunkel.","El sótano está oscuro.",,,
+noun_common,Femenin,Tafel,pizarra/mesa, Tafeln,A1,"Der Lehrer schreibt an die Tafel.","El profesor escribe en la pizarra.",,,
+fixed_phrase,,Bitte sehr,de nada/adelante,,A1,"Bitte sehr, kein Problem.","De nada, no hay problema.",,,
+noun_common,Maskuline,Lebenstraum,sueño de vida,Lebensträume,B1,"Das ist mein Lebenstraum.","Ese es mi sueño de vida.",,,
+verb_main,,erfüllen,cumplir/realizar,,A2,"Er erfüllt sich seinen Traum.","Él cumple su sueño.",haben,No,No
+adjective,,unordentlich,desordenado,,A2,"Mein Zimmer ist heute unordentlich.","Mi cuarto está desordenado hoy.",,,
+adjective,,ordentlich,ordenado,,A2,"Bitte halte dein Zimmer ordentlich.","Por favor mantén tu cuarto ordenado.",,,
+noun_common,Plural,Flipflops,sandalias,Flipflops,A1,"Ich habe meine Flipflops am Strand getragen.","Usé mis sandalias en la playa.",,,
+noun_common,Maskuline,Socken,calcetín,Socken,A1,"Ich finde meinen Socken nicht.","No encuentro mi calcetín.",,,
+adverb_sentence_connector,,allerdings,sin embargo / eso sí,,B1,"Ich komme, allerdings etwas später.","Voy, aunque un poco más tarde.",,,
+adjective,,unanwesend,ausente,,B1,"Heute ist der Chef unanwesend.","Hoy el jefe está ausente.",,,
+noun_common,Plural,Schwiegereltern,suegros,,A2,"Meine Schwiegereltern kommen am Wochenende.","Mis suegros vienen el fin de semana.",,,
+noun_common,Femenin,Schwiegermutter,suegra,Schwiegermütter,A2,"Meine Schwiegermutter ist sehr nett.","Mi suegra es muy amable.",,,
+noun_common,Maskuline,Schwiegervater,suegro,Schwiegerväter,A2,"Mein Schwiegervater kocht gern.","A mi suegro le gusta cocinar.",,,
+noun_common,Maskuline,Karton,caja de cartón,Kartons,A2,"Der Karton ist schwer.","La caja de cartón está pesada.",,,
+noun_common,Femenin,Apotheke,farmacia,Apotheken,A1,"Ich gehe in die Apotheke und kaufe Medizin.","Voy a la farmacia y compro medicina.",,,
+adverb_place,,drin,adentro,,A1,"Die Schlüssel sind drin.","Las llaves están adentro.",,,
+adjective,,langweilig,aburrido,,A1,"Der Film war langweilig.","La película estuvo aburrida.",,,
+verb_main,,krümeln,hacer migas,,A2,"Bitte krümele nicht auf dem Sofa.","Por favor no hagas migas en el sofá.",haben,No,No
+noun_common,Femenin,Erdbeere,fresa,Erdbeeren,A1,"Ich esse gern Erdbeeren.","Me gusta comer fresas.",,,
+verb_separable,,aufheben,levantar/guardar,,A2,"Heb bitte den Müll auf.","Por favor levanta la basura.","haben","Si","No"
+noun_common,Maskuline,Teppich,alfombra,Teppiche,A1,"Der Teppich ist neu.","La alfombra es nueva.",,,
+adjective,,dreckig,sucio,,A1,"Deine Schuhe sind dreckig.","Tus zapatos están sucios.",,,
+noun_common,Femenin,Zigarre,cigarro puro,Zigarren,A2,"Er raucht manchmal eine Zigarre.","Él a veces fuma un puro.",,,
+verb_main,,rauchen,fumar,,A1,"In der Wohnung darf man nicht rauchen.","En el departamento no se permite fumar.",haben,No,No
+verb_main,,verreisen,viajar (salir de viaje),,A2,"Wir verreisen im Sommer.","Viajamos en verano.",sein,No,No
+verb_main,,zerren,jalar con fuerza,,B1,"Er zerrt an der Tür.","Él jala la puerta con fuerza.",haben,No,No
+adjective,,unfreundlich,antipático/grosero,,A2,"Der Verkäufer war unfreundlich.","El vendedor fue grosero.",,,
+noun_common,Maskuline,Grund,motivo/razón,Gründe,A2,"Was ist der Grund dafür?","¿Cuál es la razón de eso?",,,
+noun_common,Femenin,Praxis,consultorio (médico)/práctica,Praxen,B1,"Die Praxis ist heute geschlossen.","El consultorio está cerrado hoy.",,,
+noun_common,Femenin,Anmeldung,recepción/registro,Anmeldungen,A2,"Geh bitte zuerst zur Anmeldung.","Por favor ve primero al registro.",,,
+noun_common,Femenin,Rezeption,recepción (hotel/consultorio),Rezeptionen,B1,"An der Rezeption bekommst du den Schlüssel.","En la recepción te dan la llave.",,,
+noun_common,Neutrum,Apfelmus,puré de manzana,,A1,"Ich esse Apfelmus mit Joghurt.","Como puré de manzana con yogur.",,,
+adjective,,beißend,penetrante (olor)/mordaz,,B2,"Der Geruch ist beißend.","El olor es penetrante.",,,
+verb_separable,,runterrutschen,resbalarse hacia abajo,,B1,"Das Handy ist mir vom Tisch runtergerutscht.","El celular se me resbaló de la mesa.","sein","Si","Si"
+noun_common,Femenin,Insel,isla,Inseln,A1,"Wir fahren im Urlaub auf eine Insel.","En vacaciones vamos a una isla.",,,
+noun_common,Femenin,Sicherheit,seguridad,,A2,"Sicherheit ist wichtig.","La seguridad es importante.",,,
+noun_proper,,Russland,Rusia,,A1,"Russland ist sehr groß.","Rusia es muy grande.",,,
+adjective,,verschieden,diferente/variado,,A2,"Wir haben verschiedene Meinungen.","Tenemos opiniones diferentes.",,,
+noun_common,Femenin,Übung,ejercicio/práctica,Übungen,A1,"Diese Übung ist leicht.","Este ejercicio es fácil.",,,
+verb_main,,dauern,durar,,A2,"Der Film dauert zwei Stunden.","La película dura dos horas.",haben,No,No
+noun_common,Plural,Sorgen,preocupaciones,,A2,"Ich mache mir Sorgen.","Me preocupo.",,,
+noun_common,Femenin,Führung,tour/guía/visita guiada,Führungen,B1,"Wir machen eine Führung durch das Museum.","Hacemos una visita guiada por el museo.",,,
+noun_common,Maskuline,Bundestag,Bundestag (Parlamento alemán),Bundestage,B2,"Der Bundestag stimmt über das Gesetz ab.","El Bundestag vota sobre la ley.",,,
+verb_main,,straffen,ajustar/tensar,,B2,"Er strafft den Riemen.","Él ajusta la correa.",haben,No,No
+verb_main,,ablehnen,rechazar,,B1,"Sie hat das Angebot abgelehnt.","Ella rechazó la oferta.",haben,No,No
+noun_common,Femenin,Wolke,nube,Wolken,A1,"Am Himmel ist eine dunkle Wolke.","En el cielo hay una nube oscura.",,,
+noun_common,Neutrum,Gebiet,zona/región,Gebiete,B1,"Das Gebiet ist sehr ruhig.","La zona es muy tranquila.",,,
+noun_common,Maskuline,Nebel,niebla,Nebel,A1,"Heute Morgen gibt es viel Nebel.","Hoy en la mañana hay mucha niebla.",,,
+noun_common,Femenin,Nadel,aguja,Nadeln,A2,"Die Nadel ist sehr dünn.","La aguja es muy delgada.",,,
+verb_main,,verlangen,exigir/pedir,,B1,"Er verlangt eine Erklärung.","Él exige una explicación.",haben,No,No
+noun_common,Maskuline,Geruch,olor,Gerüche,A2,"Der Geruch von Kaffee ist angenehm.","El olor a café es agradable.",,,
+

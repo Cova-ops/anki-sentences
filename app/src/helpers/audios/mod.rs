@@ -4,9 +4,12 @@ use std::{
     path::PathBuf,
 };
 
-use color_eyre::eyre::{Context, OptionExt, Result};
+use color_eyre::eyre::{self, Context, OptionExt, Result};
 
-use crate::services::tts::eleven_labs::LanguageVoice;
+use crate::{
+    db::schemas::worte_gender::GenderGermanListe,
+    services::{self, tts::eleven_labs::LanguageVoice},
+};
 
 pub mod audio_player;
 
@@ -19,16 +22,58 @@ pub enum AudioKind {
 pub struct ManageAudios {
     path_audios_worte: PathBuf,
     path_audios_setze: PathBuf,
+    path_audios_artikel: PathBuf,
 }
 
 impl ManageAudios {
-    pub fn new<S>(path_audios_worte: S, path_audios_setze: S) -> Self
+    pub fn new<S>(path_audios_worte: S, path_audios_setze: S, path_audios_artikel: S) -> Self
     where
         S: Into<PathBuf>,
     {
         Self {
             path_audios_setze: path_audios_setze.into(),
             path_audios_worte: path_audios_worte.into(),
+            path_audios_artikel: path_audios_artikel.into(),
+        }
+    }
+
+    pub fn check_audios_artikel(&self) -> Result<()> {
+        let text = "der";
+        let path = self.path_audios_artikel.join(format!("{text}.mp3"));
+        if !path.exists() {
+            let bytes = services::tts::eleven_labs::generate_tts(text, LanguageVoice::Deutsch)?;
+            fs::write(&path, bytes)?;
+        }
+
+        let text = "die";
+        let path = self.path_audios_artikel.join(format!("{text}.mp3"));
+        if !path.exists() {
+            let bytes = services::tts::eleven_labs::generate_tts(text, LanguageVoice::Deutsch)?;
+            fs::write(&path, bytes)?;
+        }
+
+        let text = "das";
+        let path = self.path_audios_artikel.join(format!("{text}.mp3"));
+        if !path.exists() {
+            let bytes = services::tts::eleven_labs::generate_tts(text, LanguageVoice::Deutsch)?;
+            fs::write(&path, bytes)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn get_audio_artikel(&self, gender: GenderGermanListe) -> Result<File> {
+        let path = self
+            .path_audios_artikel
+            .join(format!("{}.mp3", gender.to_string()));
+
+        let file = File::open(path);
+        match file {
+            Ok(s) => Ok(s),
+            _ => eyre::bail!(format!(
+                "No artikel audio founded for {}",
+                gender.to_string()
+            )),
         }
     }
 

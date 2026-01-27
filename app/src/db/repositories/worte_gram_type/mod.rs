@@ -12,6 +12,7 @@ mod worte_gram_type_test;
 pub struct WorteGramTypeRepo;
 
 impl WorteGramTypeRepo {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -19,6 +20,7 @@ impl WorteGramTypeRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -42,7 +44,7 @@ impl WorteGramTypeRepo {
         Ok(vec_out)
     }
 
-    // TODO: HAcer el test
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_by_wort_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);
@@ -76,7 +78,8 @@ impl WorteGramTypeRepo {
         Ok(out)
     }
 
-    pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn fetch_all_worte_id(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
         let sql = r#"
             SELECT id_worte
             FROM worte_gram_type wgt
@@ -94,14 +97,16 @@ impl WorteGramTypeRepo {
         Ok(vec_ids)
     }
 
-    pub fn delete_by_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn delete_by_wort_id(conn: &mut Connection, ids: &[i32]) -> Result<usize> {
         let tx = conn.transaction()?;
-        let out = Self::delete_by_id_tx(&tx, ids)?;
+        let out = Self::delete_by_wort_id_tx(&tx, ids)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn delete_by_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn delete_by_wort_id_tx(tx: &Transaction, ids: &[i32]) -> Result<usize> {
         if ids.is_empty() {
             return Ok(0);
         }

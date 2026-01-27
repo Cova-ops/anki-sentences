@@ -211,7 +211,7 @@ mod test_setze_repo {
 
             insta::assert_debug_snapshot!(res);
 
-            SetzeReviewRepo::bulk_insert(
+            SetzeReviewRepo::bulk_upsert(
                 &mut conn,
                 &[NewSetzeReviewSchema {
                     satz_id: 1,

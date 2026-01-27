@@ -45,6 +45,7 @@ pub fn run(
     let manage_audio = helpers::audios::ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
     let r = helpers::console::make_setze_exercise_repeat(
         &conn,
@@ -94,7 +95,7 @@ pub fn run(
     }
 
     // guardamos en db la info de las revisiones
-    SetzeReviewRepo::bulk_insert(&mut conn, &vec_new_setze_review)?;
+    SetzeReviewRepo::bulk_upsert(&mut conn, &vec_new_setze_review)?;
 
     if r.0 == 1 {
         return Ok(());

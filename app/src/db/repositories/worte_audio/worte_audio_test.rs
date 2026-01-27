@@ -142,8 +142,8 @@ mod test_worte_audio_repo {
                 },
             ];
             run_bulk_insert_update_scenario(
-                |conn| WorteAudioRepo::bulk_insert(conn, &data_1),
-                |conn| WorteAudioRepo::bulk_insert(conn, &data_2),
+                |conn| WorteAudioRepo::bulk_upsert(conn, &data_1),
+                |conn| WorteAudioRepo::bulk_upsert(conn, &data_2),
             );
         }
 
@@ -176,13 +176,13 @@ mod test_worte_audio_repo {
             run_bulk_insert_update_scenario(
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = WorteAudioRepo::bulk_insert_tx(&tx, &data_1)?;
+                    let out = WorteAudioRepo::bulk_upsert_tx(&tx, &data_1)?;
                     tx.commit()?;
                     Ok(out)
                 },
                 |conn| {
                     let tx = conn.transaction()?;
-                    let out = WorteAudioRepo::bulk_insert_tx(&tx, &data_2)?;
+                    let out = WorteAudioRepo::bulk_upsert_tx(&tx, &data_2)?;
                     tx.commit()?;
                     Ok(out)
                 },

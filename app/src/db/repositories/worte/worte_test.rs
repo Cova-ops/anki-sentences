@@ -1,283 +1,179 @@
-use crate::db::setup_test_db;
-
 #[cfg(test)]
 mod test_worte_repo {
 
-    use crate::db::{
-        schemas::worte::{NewWorteSchema as New, WorteSchema as Schema},
-        worte::WorteRepo,
-    };
+    use color_eyre::eyre::Result;
+    use rusqlite::Connection;
 
-    use super::*;
+    use crate::test_utils::prelude::*;
 
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct Snapshot {
-        id: i32,
-        gender_id: Option<GenderWorteSnapshot>,
-        worte_de: String,
-        worte_es: String,
-        plural: Option<String>,
-        niveau_id: NiveauSnapshot,
-        example_de: String,
-        example_es: String,
+    fn data_minimun(conn: &mut Connection) -> Result<()> {
+        let sc = scenario_worte_gender();
+        let data = WorteGenderRepo::bulk_upsert(conn, &sc.initial)?;
+        WorteGenderSchema::init_data(&data);
 
-        // nur verben
-        verb_aux: Option<String>,
-        trennbar: Option<bool>,
-        reflexiv: Option<bool>,
+        let sc = scenario_gram_type();
+        let data = GramTypeRepo::bulk_upsert(conn, &sc.initial)?;
+        GramTypeSchema::init_data(&data);
 
-        created_at: String,
-        deleted_at: String,
+        let sc = scenario_niveau_liste();
+        let data = NiveauListeRepo::bulk_upsert(conn, &sc.initial)?;
+        NiveauListeSchema::init_data(&data);
+
+        Ok(())
     }
 
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct NiveauSnapshot {
-        id: i32,
-        niveau: String,
-        created_at: String,
-        deleted_at: String,
-    }
-
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct GenderWorteSnapshot {
-        id: i32,
-        gender: String,
-        artikel: String,
-        created_at: String,
-        deleted_at: String,
-    }
-
-    fn placeholder_dates(data: Vec<Schema>) -> Vec<Snapshot> {
-        data.into_iter()
-            .map(|d| Snapshot {
-                id: d.id,
-                gender_id: if let Some(gender) = d.gender_id {
-                    Some(GenderWorteSnapshot {
-                        id: gender.id,
-                        gender: gender.gender,
-                        artikel: gender.artikel,
-                        created_at: "<created_at>".into(),
-                        deleted_at: "<deleted_at>".into(),
-                    })
-                } else {
-                    None
-                },
-                worte_de: d.worte_de,
-                worte_es: d.worte_es,
-                plural: d.plural,
-                niveau_id: NiveauSnapshot {
-                    id: d.niveau_id.id,
-                    niveau: d.niveau_id.niveau,
-                    created_at: "<created_at>".into(),
-                    deleted_at: "<deleted_at>".into(),
-                },
-                example_de: d.example_de,
-                example_es: d.example_es,
-
-                // nur verben
-                verb_aux: d.verb_aux,
-                trennbar: d.trennbar,
-                reflexiv: d.reflexiv,
-
-                created_at: "<created_at>".into(),
-                deleted_at: "<deleted_at>".into(),
-            })
-            .collect()
-    }
-
-    mod bulk_insert {
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
-
-        use crate::db::seeders::init_data;
-
+    mod insert {
         use super::*;
 
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            Ok(())
-        }
-
-        fn run_bulk_insert_update_scenario<F>(c1: F)
-        where
-            F: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-        {
+        #[test]
+        fn test_bulk_insert() -> Result<()> {
             let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
+            data_minimun(&mut conn)?;
 
-            let res_1 = c1(&mut conn).expect("La inserción no debe fallar");
+            let sc = scenario_worte();
 
-            assert_eq!(res_1.len(), 2);
+            let res = WorteRepo::bulk_insert(&mut conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[Worte::bulk_insert] - empty", res.snapshot());
 
-            assert_eq!(res_1[0].id, 1);
-            assert_eq!(res_1[0].gram_type_id[0].id, 1);
-            assert_eq!(res_1[0].gender_id.as_ref().unwrap().id, 1);
-            assert_eq!(res_1[0].worte_de, "Hund");
-            assert_eq!(res_1[0].worte_es, "Perro");
-            assert_eq!(res_1[0].plural, Some("Hunde".into()));
-            assert_eq!(res_1[0].niveau_id.id, 1);
-            assert_eq!(res_1[0].example_de, "Beispiel");
-            assert_eq!(res_1[0].example_es, "Ejemplo");
-            assert_eq!(res_1[0].verb_aux, None);
-            assert_eq!(res_1[0].trennbar, None);
-            assert_eq!(res_1[0].reflexiv, None);
+            let res = WorteRepo::bulk_insert(&mut conn, &sc.initial)?;
+            res.assert_eq_fields(&sc.initial);
+            insta::assert_debug_snapshot!("[Worte::bulk_insert] - insert", res.snapshot());
 
-            assert_eq!(res_1[1].id, 2);
-            assert_eq!(res_1[1].gram_type_id[0].id, 2);
-            assert_eq!(res_1[1].gram_type_id[1].id, 3);
-            assert_eq!(res_1[1].gender_id, None);
-            assert_eq!(res_1[1].worte_de, "laufen");
-            assert_eq!(res_1[1].worte_es, "correr");
-            assert_eq!(res_1[1].plural, None);
-            assert_eq!(res_1[1].niveau_id.id, 2);
-            assert_eq!(res_1[1].example_de, "Beispiel");
-            assert_eq!(res_1[1].example_es, "Ejemplo");
-            assert_eq!(res_1[1].verb_aux, Some("sein".into()));
-            assert_eq!(res_1[1].trennbar, Some(false));
-            assert_eq!(res_1[1].reflexiv, Some(false));
-
-            let res_1 = placeholder_dates(res_1);
-            insta::assert_debug_snapshot!(res_1);
-        }
-
-        #[test]
-        fn test_bulk_insert() {
-            let data_1 = vec![
-                New {
-                    gram_type: vec![1],
-                    gender_id: Some(1),
-                    worte_de: "Hund".into(),
-                    worte_es: "Perro".into(),
-                    plural: Some("Hunde".into()),
-                    niveau_id: 1,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: None,
-                    trennbar: None,
-                    reflexiv: None,
-                },
-                New {
-                    gram_type: vec![2, 3],
-                    gender_id: None,
-                    worte_de: "laufen".into(),
-                    worte_es: "correr".into(),
-                    plural: None,
-                    niveau_id: 2,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: Some("sein".into()),
-                    trennbar: Some(false),
-                    reflexiv: Some(false),
-                },
-            ];
-            run_bulk_insert_update_scenario(|conn| WorteRepo::bulk_insert(conn, &data_1));
-        }
-
-        #[test]
-        fn test_bulk_insert_and_update_tx() {
-            let data_1 = vec![
-                New {
-                    gram_type: vec![1],
-                    gender_id: Some(1),
-                    worte_de: "Hund".into(),
-                    worte_es: "Perro".into(),
-                    plural: Some("Hunde".into()),
-                    niveau_id: 1,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: None,
-                    trennbar: None,
-                    reflexiv: None,
-                },
-                New {
-                    gram_type: vec![2, 3],
-                    gender_id: None,
-                    worte_de: "laufen".into(),
-                    worte_es: "correr".into(),
-                    plural: None,
-                    niveau_id: 2,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: Some("sein".into()),
-                    trennbar: Some(false),
-                    reflexiv: Some(false),
-                },
-            ];
-
-            run_bulk_insert_update_scenario(|conn| {
-                let tx = conn.transaction()?;
-                let out = WorteRepo::bulk_insert_tx(&tx, &data_1)?;
-                tx.commit()?;
-                Ok(out)
-            });
+            Ok(())
         }
     }
 
     mod fetch {
-
         use super::*;
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
 
-        use crate::{
-            db::{
-                schemas::worte_review::NewWorteReviewSchema, seeders::init_data, setup_test_db,
-                worte_review::WorteReviewRepo,
-            },
-            helpers::time::fixed_date,
-        };
+        fn init_data_local(conn: &mut Connection, sc: &Scenario<NewWorteSchema>) -> Result<()> {
+            data_minimun(conn)?;
 
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            let data = [
-                New {
-                    gram_type: vec![1],
-                    gender_id: Some(1),
-                    worte_de: "Hund".into(),
-                    worte_es: "Perro".into(),
-                    plural: Some("Hunde".into()),
-                    niveau_id: 1,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: None,
-                    trennbar: None,
-                    reflexiv: None,
-                },
-                New {
-                    gram_type: vec![2, 3],
-                    gender_id: None,
-                    worte_de: "laufen".into(),
-                    worte_es: "correr".into(),
-                    plural: None,
-                    niveau_id: 2,
-                    example_de: "Beispiel".into(),
-                    example_es: "Ejemplo".into(),
-                    verb_aux: Some("sein".into()),
-                    trennbar: Some(false),
-                    reflexiv: Some(false),
-                },
-            ];
-            WorteRepo::bulk_insert(conn, &data)?;
+            WorteRepo::bulk_insert(conn, &sc.initial)?;
+
             Ok(())
         }
 
         #[test]
-        fn test_fetch_by_id() {
+        fn test_fetch_by_id() -> Result<()> {
+            let mut conn = setup_test_db()?;
+
+            let sc = scenario_worte();
+            init_data_local(&mut conn, &sc)?;
+
+            let res = WorteRepo::fetch_by_id(&conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[Worte::fetch_by_id] - empty", res.snapshot());
+
+            let res = WorteRepo::fetch_by_id(&conn, &[1, 2, 3])?;
+
+            // We take only the three first of the array
+            let data_compare: Vec<NewWorteSchema> = sc.initial.into_iter().take(3).collect();
+            res.assert_eq_fields(&data_compare);
+            insta::assert_debug_snapshot!("[Worte::fetch_by_id] - fetch", res.snapshot());
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_all_ids() -> Result<()> {
+            let mut conn = setup_test_db()?;
+
+            let sc = scenario_worte();
+            init_data_local(&mut conn, &sc)?;
+
+            let limit = 2;
+            let mut last_id = 0;
+
+            let mut res: Vec<i32> = vec![];
+            loop {
+                let mut a = WorteRepo::fetch_all_ids(&conn, limit, last_id)?;
+                if a.is_empty() {
+                    break;
+                }
+
+                last_id = a.last().unwrap().clone();
+                res.append(&mut a);
+            }
+
+            let len_compare: usize = sc.initial.len();
+            assert_eq!(res.len(), len_compare);
+
+            let vec_compare: Vec<i32> = (1..=len_compare as i32).collect();
+            assert_eq!(res, vec_compare);
+
+            insta::assert_debug_snapshot!("[Worte::fetch_all_ids] - fetch", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_fetch_by_wort() -> Result<()> {
+            let mut conn = setup_test_db()?;
+
+            let sc = scenario_worte();
+            init_data_local(&mut conn, &sc)?;
+
+            let res = WorteRepo::fetch_by_wort(&conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[Wort::fetch_by_wort] - empty", res.snapshot());
+
+            let mut worte_fetched: Vec<(String, String)> = sc
+                .initial
+                .iter()
+                .take(5)
+                .map(|w| (w.worte_es.clone(), w.worte_de.clone()))
+                .collect();
+
+            let last = worte_fetched.last_mut();
+            *last.unwrap() = ("Test test tes".to_owned(), "1234567890".to_owned());
+
+            let res = WorteRepo::fetch_by_wort(&conn, &worte_fetched)?;
+
+            let data_compare: Vec<NewWorteSchema> = sc.initial.into_iter().take(4).collect();
+            res.assert_eq_fields(&data_compare);
+
+            insta::assert_debug_snapshot!("[Wort::fetch_by_wort] - fetch", res.snapshot());
+
+            Ok(())
+        }
+    }
+
+    mod update {
+        use super::*;
+
+        fn init_data_local(conn: &mut Connection, sc: &Scenario<NewWorteSchema>) -> Result<()> {
+            data_minimun(conn)?;
+
+            WorteRepo::bulk_insert(conn, &sc.initial)?;
+
+            Ok(())
+        }
+
+        #[test]
+        fn test_bulk_update() -> Result<()> {
             let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
 
-            let res_1 = WorteRepo::fetch_by_id(&conn, &[1, 2]).expect("Error al hacer el fetch");
+            let sc = scenario_worte();
+            init_data_local(&mut conn, &sc)?;
 
-            assert_eq!(res_1.len(), 2);
-            assert_eq!(res_1[0].worte_de, "Hund");
-            assert_eq!(res_1[0].gram_type_id.len(), 1);
-            assert_eq!(res_1[1].worte_de, "laufen");
+            let res = WorteRepo::bulk_update(&mut conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[Wort::bulk_update] - empty", res.snapshot());
 
-            let res_1 = placeholder_dates(res_1);
-            insta::assert_debug_snapshot!(res_1);
+            let data_update: Vec<(i32, NewWorteSchema)> = sc
+                .update
+                .iter()
+                .enumerate()
+                .map(|(i, w)| ((i + 1) as i32, w.clone()))
+                .collect();
+
+            let res = WorteRepo::bulk_update(&mut conn, &data_update)?;
+            res.assert_eq_fields(&sc.update);
+            insta::assert_debug_snapshot!("[Wort::bulk_update] - update", res.snapshot());
+
+            Ok(())
         }
     }
 }

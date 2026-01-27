@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use color_eyre::eyre;
 use sql_model::SqlModel;
 
 pub const CREATE_STR_TABLE_WORTE_GENDER: &str = "
@@ -16,6 +17,36 @@ pub const CREATE_STR_TABLE_WORTE_GENDER: &str = "
 pub const CREATE_STR_INDEX_WORTE_GENDER: &str = "
     CREATE INDEX IF NOT EXISTS idx_worte_gender_created_at ON worte_gender(created_at);
 ";
+
+pub enum GenderGermanListe {
+    Der,
+    Das,
+    Die,
+}
+
+impl GenderGermanListe {
+    pub fn to_string(&self) -> String {
+        match self {
+            GenderGermanListe::Der => "der".to_owned(),
+            GenderGermanListe::Das => "das".to_owned(),
+            GenderGermanListe::Die => "die".to_owned(),
+        }
+    }
+}
+
+impl TryFrom<&str> for GenderGermanListe {
+    type Error = eyre::Report;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "der" => Ok(GenderGermanListe::Der),
+            "das" => Ok(GenderGermanListe::Das),
+            "die" => Ok(GenderGermanListe::Die),
+
+            _ => eyre::bail!("Gender not founded for: {}", s),
+        }
+    }
+}
 
 // 0 - Maskuline - der
 // 1 - Femenin - die

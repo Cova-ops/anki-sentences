@@ -1,7 +1,7 @@
 use color_eyre::Result;
 
 use crate::{
-    console::cli::{ExportImportCmd, ReviewCmd},
+    console::cli::ExportImportCmd,
     helpers::toml::AppConfig,
 };
 

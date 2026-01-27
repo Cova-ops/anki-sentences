@@ -1,0 +1,5 @@
+---
+source: app/src/db/repositories/niveau_liste/niveau_liste_test.rs
+expression: res.snapshot()
+---
+[]

@@ -1,10 +1,9 @@
-use std::{collections::HashSet, fs::remove_file};
+use std::collections::HashSet;
 
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
 use crate::{
-    console::cli::TypeFile,
     db::{
         get_conn, worte::WorteRepo, worte_audio::WorteAudioRepo,
         worte_gram_type::WorteGramTypeRepo, worte_review::WorteReviewRepo,
@@ -13,7 +12,6 @@ use crate::{
         audios::{AudioKind, ManageAudios},
         toml::AppConfig,
     },
-    services::tts::eleven_labs::LanguageVoice,
 };
 
 fn collect_orphans<F>(
@@ -86,7 +84,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
         limit,
         &hash_ids,
         &mut hash_ids_remove,
-        WorteGramTypeRepo::fetch_all_ids,
+        WorteGramTypeRepo::fetch_all_worte_id,
     )?;
 
     let ids_remove: Vec<i32> = hash_ids_remove.into_iter().collect();
@@ -97,7 +95,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let rows_affected = WorteReviewRepo::delete_by_id(&conn, &ids_remove)?;
     println!("Rows affected on table worte_review: {}", rows_affected);
 
-    let rows_affected = WorteGramTypeRepo::delete_by_id(&mut conn, &ids_remove)?;
+    let rows_affected = WorteGramTypeRepo::delete_by_wort_id(&mut conn, &ids_remove)?;
     println!("Rows affected on table worte_gram_type: {}", rows_affected);
 
     // TODO: tambien valdiar los audios locales
@@ -105,6 +103,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
     let (mut hash_mp3_worte, _) = manage_audios.get_all_ids_files()?;
 

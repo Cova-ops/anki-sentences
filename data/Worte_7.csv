@@ -1,0 +1,90 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adverb_degree,,völlig,totalmente,,A2,"Ich bin völlig fertig.","Estoy totalmente agotado.",,,
+noun_common,Femenin,Regel,regla,Regeln,A1,"Das ist eine wichtige Regel.","Esa es una regla importante.",,,
+noun_common,Femenin,Feuerwehr,bomberos,,A2,"Die Feuerwehr ist schnell gekommen.","Los bomberos llegaron rápido.",,,
+particle_focus,,drauf,encima / con ganas,,B1,"Hast du drauf Lust?","¿Te dan ganas de eso?",,,
+verb_main,,benutzen,usar,,A2,"Kann ich deinen Laptop kurz benutzen?","¿Puedo usar tu laptop un momento?","haben","No","No"
+noun_common,Neutrum,Stöhnen,gemido,,B1,"Ich höre ein Stöhnen aus dem Zimmer.","Escucho un gemido desde el cuarto.",,,
+verb_reflexive,,"sich melden",reportarse / avisar,,A2,"Melde dich, wenn du zu Hause bist.","Avísame cuando estés en casa.","haben","No","Si"
+noun_common,Femenin,Schuld,culpa,,A2,"Das ist nicht meine Schuld.","No es mi culpa.",,,
+adverb_time,,jederzeit,en cualquier momento,,B1,"Du kannst mich jederzeit anrufen.","Puedes llamarme en cualquier momento.",,,
+noun_common,Femenin,Umwelt,medio ambiente,,A2,"Wir müssen die Umwelt schützen.","Tenemos que proteger el medio ambiente.",,,
+noun_common,Neutrum,Treibhausgas,gas de efecto invernadero,Treibhausgase,B1,"CO₂ ist ein Treibhausgas.","El CO₂ es un gas de efecto invernadero.",,,
+noun_common,Neutrum,Stofftier,peluche,Stofftiere,A2,"Das Kind schläft mit einem Stofftier.","El niño duerme con un peluche.",,,
+noun_common,Maskuline,Stoff,tela / material,Stoffe,B1,"Der Stoff fühlt sich weich an.","La tela se siente suave.",,,
+adverb_place,,irgendwo,en algún lugar,,A2,"Mein Handy liegt irgendwo hier.","Mi celular está en algún lugar por aquí.",,,
+verb_separable,,rausholen,sacar,,A2,"Ich hole das Paket gleich raus.","Saco el paquete en un momento.","haben","Si","No"
+verb_main,,entdecken,descubrir,,A2,"Wir haben einen Fehler entdeckt.","Descubrimos un error.","haben","No","No"
+noun_common,Femenin,Entdeckung,descubrimiento,Entdeckungen,B1,"Die Entdeckung war überraschend.","El descubrimiento fue sorprendente.",,,
+fixed_phrase,,ich bin raus,yo me salgo / estoy fuera,,B1,"Sorry, ich bin raus.","Perdón, yo me salgo.",,,
+noun_common,Femenin,Unterschrift,firma,Unterschriften,A2,"Hier fehlt deine Unterschrift.","Aquí falta tu firma.",,,
+verb_main,,quietschen,chillar / rechinar,,B1,"Die Tür quietscht.","La puerta rechina.","haben","No","No"
+noun_common,Femenin,Sorge,preocupación,Sorgen,B1,"Ich habe Sorgen wegen der Prüfung.","Tengo preocupaciones por el examen.",,,
+noun_common,Maskuline,Hof,patio, Höfe,B1,"Im Hof ist es ruhig.","En el patio está tranquilo.",,,
+noun_common,Neutrum,Nutztier,animal de granja,Nutztiere,B1,"Ein Nutztier braucht viel Pflege.","Un animal de granja necesita mucho cuidado.",,,
+verb_main,,wackeln,temblar / tambalearse,,A2,"Der Tisch wackelt.","La mesa se tambalea.","haben","No","No"
+verb_separable,,anzünden,encender (fuego),,A2,"Er zündet eine Kerze an.","Él enciende una vela.","haben","Si","No"
+verb_separable,,anfangen,empezar,,A1,"Wir fangen jetzt an.","Empezamos ahora.","haben","Si","No"
+adjective,,besonders,especial / particularmente,,B1,"Das ist etwas besonders Wichtiges.","Eso es algo especialmente importante.",,,
+conjunction_subordinating,,solange,mientras (que),,A2,"Solange du lernst, klappt es.","Mientras estudies, va a funcionar.",,,
+verb_main,,pissen,orinar (vulgar),,B1,"Er musste dringend pissen.","Tenía que orinar urgentemente.","haben","No","No"
+fixed_phrase,,im Sinne von,en el sentido de,,B1,"Im Sinne von: Wir machen das später.","En el sentido de: lo hacemos después.",,,
+verb_main,,wissen,saber,,A1,"Ich weiß das nicht.","No lo sé.","haben","No","No"
+adverb_sentence_connector,,übrigens,por cierto,,A2,"Übrigens, ich komme später.","Por cierto, llego más tarde.",,,
+noun_common,Maskuline,Film,película,Filme,A1,"Der Film war echt gut.","La película estuvo realmente buena.",,,
+noun_common,Neutrum,Auffliegen,que se descubra (un plan),,B2,"Das Auffliegen des Plans war schlimm.","Que se descubriera el plan fue terrible.",,,
+noun_common,Maskuline,Durchfall,diarrea,Durchfälle,B1,"Ich habe seit gestern Durchfall.","Tengo diarrea desde ayer.",,,
+noun_common,Maskuline,Schlitten,trineo,Schlitten,A2,"Wir fahren mit dem Schlitten.","Vamos en trineo.",,,
+verb_main,,kümmern,cuidarse / encargarse,,A2,"Ich kümmere mich darum.","Yo me encargo de eso.","haben","No","No"
+verb_main,,bekommen,recibir / conseguir,,A1,"Ich habe eine Nachricht bekommen.","Recibí un mensaje.","haben","No","No"
+noun_common,Maskuline,Hut,sombrero,Hüte,A1,"Er trägt einen Hut.","Él lleva un sombrero.",,,
+noun_common,Femenin,Hut,guardia / estar alerta,,B2,"Sei auf der Hut!","¡Mantente alerta!",,,
+adjective,,einzig,único,,B1,"Das ist das einzig Richtige.","Eso es lo único correcto.",,,
+verb_main,,gehören,pertenecer,,A2,"Das gehört mir.","Eso me pertenece.","haben","No","No"
+verb_separable,,mitbekommen,darse cuenta / enterarse,,B1,"Ich habe nichts mitbekommen.","No me enteré de nada.","haben","Si","No"
+adverb_degree,,sogar,incluso,,A2,"Sogar er hat gelacht.","Incluso él se rió.",,,
+verb_main,,reden,hablar,,A1,"Wir müssen reden.","Tenemos que hablar.","haben","No","No"
+verb_main,,gucken,mirar (coloq.),,A2,"Guck mal!","¡Mira!","haben","No","No"
+verb_main,,retten,salvar,,A2,"Wir müssen ihn retten.","Tenemos que salvarlo.","haben","No","No"
+adjective,,geil,genial / sexy (coloq.),,B1,"Das ist geil!","¡Eso está genial!",,,
+preposition_genitive,,wegen,por / debido a,,A2,"Wegen des Regens bleiben wir zu Hause.","Por la lluvia nos quedamos en casa.",,,
+adverb_time,,rechtzeitig,a tiempo,,A2,"Komm bitte rechtzeitig.","Por favor ven a tiempo.",,,
+verb_main,,schaffen,lograr / conseguir,,B1,"Ich schaffe das.","Lo logro.","haben","No","No"
+adjective,,schlecht,malo,,A1,"Mir geht's schlecht.","Me siento mal.",,,
+noun_common,Maskuline,Alte,el viejo / mi papá (coloq.),Alte,B1,"Mein Alter kommt später.","Mi papá llega más tarde.",,,
+noun_common,Femenin,Alte,la vieja / mi mamá (coloq.),Alte,B1,"Meine Alte hat angerufen.","Mi mamá llamó.",,,
+adverb_sentence_connector,,wenigstens,por lo menos,,A2,"Wenigstens sind wir sicher.","Por lo menos estamos seguros.",,,
+noun_common,Maskuline,Vogel,pájaro,Vögel,A1,"Der Vogel singt.","El pájaro canta.",,,
+verb_main,,zuhören,escuchar,,A2,"Hör mir bitte zu.","Por favor escúchame.","haben","No","No"
+verb_separable,,kippen,tirar / volcar,,B1,"Kipp das Wasser nicht um!","¡No tires el agua!","haben","Si","No"
+noun_common,Femenin,Wahrheit,verdad,Wahrheiten,A2,"Sag mir die Wahrheit.","Dime la verdad.",,,
+adverb_sentence_connector,,sonst,si no / de lo contrario,,A2,"Beeil dich, sonst ist es zu spät.","Apúrate, si no es demasiado tarde.",,,
+noun_common,Neutrum,Genie,genio,Genies,B1,"Er ist ein Genie.","Él es un genio.",,,
+noun_common,Maskuline,Spacken,idiota (vulgar),Spacken,B2,"Sei kein Spacken.","No seas idiota.",,,
+adjective,,bescheuert,estúpido (coloq.),,B1,"Das ist total bescheuert.","Eso es totalmente estúpido.",,,
+adverb_degree,,echt,de verdad / realmente,,A2,"Das ist echt passiert.","Eso pasó de verdad.",,,
+adjective,,ewig,eterno / muchísimo tiempo,,B1,"Das dauert ewig.","Eso tarda muchísimo.",,,
+adverb_time,,irgendwann,algún día / en algún momento,,A2,"Irgendwann klappt es.","Algún día funcionará.",,,
+verb_main,,zwingen,obligar,,B1,"Du kannst mich nicht zwingen.","No puedes obligarme.","haben","No","No"
+verb_main,,ertrinken,ahogarse,,B1,"Er ist fast ertrunken.","Casi se ahogó.","sein","No","No"
+verb_main,,schlucken,tragar,,A2,"Schluck das bitte runter.","Trágalo por favor.","haben","No","No"
+verb_separable,,abbrechen,interrumpir / cancelar,,B1,"Wir müssen die Mission abbrechen.","Tenemos que cancelar la misión.","haben","Si","No"
+verb_separable,,eingeben,introducir (datos),,A2,"Bitte gib dein Passwort ein.","Por favor introduce tu contraseña.","haben","Si","No"
+adjective,,niedlich,tierno,,A2,"Der Hund ist niedlich.","El perro es tierno.",,,
+verb_main,,begreifen,entender (captar),,B1,"Ich begreife das nicht.","No entiendo eso.","haben","No","No"
+noun_common,Femenin,Gegend,zona / barrio,Gegenden,A2,"In dieser Gegend ist es ruhig.","En esta zona es tranquilo.",,,
+verb_main,,anfassen,tocar,,A2,"Fass das nicht an!","¡No toques eso!","haben","No","No"
+noun_common,Neutrum,Treppenhaus,caja de escaleras,Treppenhäuser,B1,"Im Treppenhaus war es dunkel.","En la caja de escaleras estaba oscuro.",,,
+noun_common,Femenin,Bedingung,condición,Bedingungen,B1,"Unter einer Bedingung mache ich mit.","Bajo una condición participo.",,,
+verb_separable,,ausdenken,inventar / idear,,B1,"Ich denke mir eine Geschichte aus.","Me invento una historia.","haben","Si","No"
+verb_separable,,ausgeben,gastar,,A2,"Ich gebe zu viel Geld aus.","Gasto demasiado dinero.","haben","Si","No"
+noun_common,Maskuline,Stecken,palo / bastón,Stecken,B2,"Er trägt einen Stecken in der Hand.","Él lleva un palo en la mano.",,,
+verb_main,,stecken,estar metido / insertar,,B1,"Steck den Schlüssel ins Schloss.","Mete la llave en la cerradura.","haben","No","No"
+noun_common,Neutrum,Anstoßen,brindis / chocar copas,,B1,"Beim Anstoßen hat er gelächelt.","Al brindar, él sonrió.",,,
+noun_common,Maskuline,Feigling,cobarde,Feiglinge,B1,"Er ist ein Feigling.","Él es un cobarde.",,,
+noun_common,Femenin,Lüge,mentira,Lügen,A2,"Das war eine Lüge.","Eso fue una mentira.",,,
+verb_main,,lügen,mentir,,A2,"Warum lügst du mich an?","¿Por qué me mientes?","haben","No","No"
+verb_separable,,abhauen,huir / largarse,,B2,"Wir müssen abhauen!","¡Tenemos que largarnos!","sein","Si","No"
+fixed_phrase,,auf jeden Fall,de todas formas / definitivamente,,A2,"Auf jeden Fall komme ich.","De todas formas voy a ir.",,,
+noun_common,Maskuline,Lebenslauf,CV / currículum,Lebensläufe,B1,"Ich habe meinen Lebenslauf aktualisiert.","Actualicé mi currículum.",,,
+noun_common,Femenin,Waage,báscula,Waagen,A2,"Die Waage ist im Badezimmer.","La báscula está en el baño.",,,

@@ -1,0 +1,53 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+noun_common,Maskuline,Bericht,reporte,Berichte,A2,"Ich muss den Bericht heute noch fertig machen.","Tengo que terminar el reporte hoy.",,,
+verb_separable,,abschicken,enviar,,A2,"Ich schicke die E-Mail jetzt ab.","Envío el correo ahora.","haben","Si","No"
+particle_focus,,auch,también,,A1,"Ich komme auch mit.","Yo también voy.",,,
+verb_main,,streiten,discutir,,A2,"Wir streiten uns wegen einer Kleinigkeit.","Discutimos por una tontería.","haben","No","No"
+adjective,,still,silencioso,,A2,"Es ist hier ganz still.","Aquí está completamente silencioso.",,,
+adjective,,einverstanden,de acuerdo,,A2,"Ich bin damit einverstanden.","Estoy de acuerdo con eso.",,,
+fixed_phrase,,nicht einverstanden sein,no estar de acuerdo,,A2,"Ich bin damit nicht einverstanden.","No estoy de acuerdo con eso.",,,
+noun_common,Maskuline,Anruf,llamada,Anrufe,A2,"Ich habe einen Anruf von meiner Mutter bekommen.","Recibí una llamada de mi mamá.",,,
+verb_auxiliary,,hätte,hubiera / tuviera,,A2,"Wenn ich mehr Zeit hätte, würde ich helfen.","Si tuviera más tiempo, ayudaría.",,"No","No"
+verb_separable,,ankommen,llegar,,A1,"Der Zug kommt um acht Uhr an.","El tren llega a las ocho.","sein","Si","No"
+noun_common,Femenin,Kirsche,cereza,Kirschen,A1,"Ich esse eine Kirsche.","Me como una cereza.",,,
+noun_common,Neutrum,Knie,rodilla,Knie,A2,"Mein Knie tut weh.","Me duele la rodilla.",,,
+noun_common,Maskuline,Montag,lunes,,A1,"Am Montag habe ich viel Arbeit.","El lunes tengo mucho trabajo.",,,
+noun_common,Maskuline,Dienstag,martes,,A1,"Am Dienstag gehe ich ins Fitnessstudio.","El martes voy al gimnasio.",,,
+noun_common,Maskuline,Mittwoch,miércoles,,A1,"Am Mittwoch lerne ich Deutsch.","El miércoles estudio alemán.",,,
+noun_common,Maskuline,Donnerstag,jueves,,A1,"Am Donnerstag habe ich einen Termin.","El jueves tengo una cita.",,,
+noun_common,Maskuline,Samstag,sábado,,A1,"Am Samstag schlafe ich länger.","El sábado duermo más.",,,
+noun_common,Maskuline,Sonntag,domingo,,A1,"Am Sonntag ruhe ich mich aus.","El domingo descanso.",,,
+noun_common,Femenin,Angst,miedo,Ängste,A2,"Ich habe Angst, dass es schiefgeht.","Tengo miedo de que salga mal.",,,
+adjective,,abhängig,dependiente / adicto,,B1,"Er ist von seinem Handy abhängig.","Él es adicto a su celular.",,,
+noun_common,Femenin,Stärkung,recarga / snack,Stärkungen,B1,"Ich brauche eine kleine Stärkung.","Necesito una pequeña recarga (un snack).",,,
+noun_common,Femenin,Höhle,cueva,Höhlen,A2,"Wir haben eine Höhle im Wald gefunden.","Encontramos una cueva en el bosque.",,,
+noun_common,Femenin,Ruhe,calma,,A2,"Ich brauche jetzt Ruhe.","Ahora necesito calma.",,,
+adverb_sentence_connector,,nämlich,es que / porque,,B1,"Ich kann nicht kommen, ich bin nämlich krank.","No puedo ir, es que estoy enfermo.",,,
+adjective,,vernünftig,razonable / sensato,,B1,"Das ist eine vernünftige Idee.","Esa es una idea sensata.",,,
+verb_main,,trennen,separar,,A2,"Wir müssen Arbeit und Freizeit trennen.","Tenemos que separar trabajo y tiempo libre.","haben","No","No"
+noun_common,Maskuline,Benutzer,usuario,Benutzer,A2,"Der Benutzer hat sein Passwort vergessen.","El usuario olvidó su contraseña.",,,
+noun_common,Femenin,Benutzerin,usuaria,Benutzerinnen,A2,"Die Benutzerin hat sich neu registriert.","La usuaria se registró de nuevo.",,,
+verb_reflexive,,sich auskennen,saber / conocer bien,,B1,"Ich kenne mich mit der App gut aus.","Me manejo bien con la app.","haben","No","Si"
+noun_common,Maskuline,Auftrag,encargo / pedido,Aufträge,B1,"Wir haben einen neuen Auftrag bekommen.","Recibimos un nuevo encargo.",,,
+adjective,,leer,vacío,,A1,"Die Flasche ist leer.","La botella está vacía.",,,
+adjective,,hart,duro,,A2,"Das war eine harte Woche.","Fue una semana dura.",,,
+verb_separable,,weglegen,guardar / apartar,,A2,"Leg das Handy weg.","Guarda el celular.","haben","Si","No"
+noun_common,Maskuline,Unsinn,tontería / estupidez,,B1,"Das ist doch Unsinn!","¡Eso es una tontería!",,,
+adverb_time,,mittlerweile,ya / mientras tanto,,B1,"Mittlerweile ist es spät geworden.","Mientras tanto ya se hizo tarde.",,,
+preposition_akkusative,,durch,a través de / por,,A2,"Ich gehe durch den Park.","Camino por el parque.",,,
+adjective,,wertlos,sin valor,,B1,"Ohne Beweise ist das Dokument wertlos.","Sin pruebas, el documento no vale nada.",,,
+noun_common,Femenin,Umsetzung,implementación,Umsetzungen,B2,"Die Umsetzung des Plans dauert länger.","La implementación del plan tarda más.",,,
+verb_separable,,umsetzen,implementar / llevar a cabo,,B2,"Wir setzen den Plan Schritt für Schritt um.","Implementamos el plan paso a paso.","haben","Si","No"
+noun_common,Maskuline,Husten,tos,,A2,"Der Husten wird nicht besser.","La tos no mejora.",,,
+noun_common,Neutrum,Fieber,fiebre,,A2,"Ich habe Fieber.","Tengo fiebre.",,,
+adjective,,betroffen,afectado / impactado,,B2,"Viele Menschen sind davon betroffen.","Muchas personas están afectadas por eso.",,,
+verb_main,,polieren,pulir,,B1,"Ich poliere meine Schuhe.","Pulo mis zapatos.","haben","No","No"
+noun_common,Femenin,Fresse,boca / hocico (vulgar),Fressen,B2,"Halt die Fresse!","¡Cierra la boca! (vulgar)",,,
+verb_main,,lecken,lamer,,A2,"Der Hund leckt meine Hand.","El perro lame mi mano.","haben","No","No"
+noun_common,Femenin,Hoffnung,esperanza,Hoffnungen,A2,"Ich habe noch Hoffnung.","Todavía tengo esperanza.",,,
+verb_main,,umbringen,matar,,B2,"Er will ihn umbringen.","Él quiere matarlo.","haben","No","No"
+noun_common,Femenin,Krise,crisis,Krisen,B2,"Die Firma steckt in einer Krise.","La empresa está en una crisis.",,,
+verb_main,,kotzen,vomitar,,B2,"Mir ist so schlecht, ich könnte kotzen.","Me siento tan mal que podría vomitar.","haben","No","No"
+verb_reflexive,,sich verpissen,largarse (vulgar),,B2,"Verpiss dich!","¡Lárgate! (vulgar)","haben","No","Si"
+noun_common,Maskuline,Lügner,mentiroso,Lügner,B1,"Er ist ein Lügner.","Él es un mentiroso.",,,
+noun_common,Femenin,Lügnerin,mentirosa,Lügnerinnen,B1,"Sie ist eine Lügnerin.","Ella es una mentirosa.",,,

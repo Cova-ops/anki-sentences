@@ -1,0 +1,69 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,erfolgreich,exitoso,,A2,"Er ist mit seinem Geschäft sehr erfolgreich.","Él es muy exitoso con su negocio.",,,
+noun_common,Neutrum,Geschäft,negocio,Geschäfte,A1,"Das Geschäft läuft gut.","El negocio va bien.",,,
+adverb_sentence_connector,,zum Schluss,al final,,A2,"Zum Schluss sagt er die Wahrheit.","Al final dice la verdad.",,,
+verb_main,,lauten,sonar,,B1,"Die Nachricht lautet anders als erwartet.","El mensaje suena diferente a lo esperado.","haben","No","No"
+noun_common,Maskuline,Tierarzt,veterinario,Tierärzte,A1,"Der Tierarzt untersucht den Hund.","El veterinario examina al perro.",,,
+noun_common,Femenin,Tierärztin,veterinaria,Tierärztinnen,A1,"Die Tierärztin hilft der Katze.","La veterinaria ayuda a la gata.",,,
+verb_main,,vermissen,extrañar,,A1,"Ich vermisse meine Familie.","Extraño a mi familia.","haben","No","No"
+verb_main,,lösen,resolver,,A2,"Er versucht das Problem zu lösen.","Él intenta resolver el problema.","haben","No","No"
+adjective,,geschieden,divorciado,,A1,"Er ist seit zwei Jahren geschieden.","Él está divorciado desde hace dos años.",,,
+adjective,,verwitwet,viudo,,A1,"Sie ist seit kurzem verwitwet.","Ella quedó viuda recientemente.",,,
+adjective,,ledig,soltero,,A1,"Er ist noch ledig.","Él sigue soltero.",,,
+noun_common,Maskuline,Leiter,director,Leiter,A2,"Der Leiter der Firma ist streng.","El director de la empresa es estricto.",,,
+noun_common,Femenin,Leiterin,directora,Leiterinnen,A2,"Die Leiterin entscheidet alles.","La directora decide todo.",,,
+adverb_time,,zurzeit,actualmente,,A1,"Ich arbeite zurzeit von zu Hause.","Actualmente trabajo desde casa.",,,
+noun_common,Femenin,Programmiersprache,lenguaje de programación,Programmiersprachen,A1,"Python ist eine bekannte Programmiersprache.","Python es un lenguaje de programación conocido.",,,
+verb_main,,verbringen,pasar (tiempo),,A1,"Er verbringt viel Zeit am Computer.","Él pasa mucho tiempo en la computadora.","haben","No","No"
+noun_common,Maskuline,Ort,lugar,Orte,A1,"Das ist ein guter Ort.","Es un buen lugar.",,,
+noun_common,Femenin,Beziehung,relación,Beziehungen,A1,"Die Beziehung ist kompliziert.","La relación es complicada.",,,
+noun_common,Neutrum,Treffen,encuentro,Treffen,A1,"Das Treffen ist geheim.","El encuentro es secreto.",,,
+adjective,,unbekannt,desconocido,,A1,"Die Person ist mir unbekannt.","La persona me es desconocida.",,,
+noun_common,Maskuline,Entzug,abstinencia,Entzüge,B1,"Der Entzug ist sehr schwer.","La abstinencia es muy difícil.",,,
+verb_main,,sterben,morir,,A1,"Viele Menschen sterben jedes Jahr.","Muchas personas mueren cada año.","sein","No","No"
+noun_common,Neutrum,Fach,materia,Fächer,A1,"Mathe ist mein Lieblingsfach.","Mate es mi materia favorita.",,,
+adjective,,ober,superior,,A2,"Die obere Etage ist gesperrt.","El piso superior está cerrado.",,,
+verb_main,,tarnen,disfrazar,,B1,"Er tarnt seine Identität.","Él disfraza su identidad.","haben","No","No"
+adverb_degree,,eher,más bien,,A2,"Ich bleibe eher zu Hause.","Prefiero quedarme en casa.",,,
+adjective,,smart,inteligente,,A2,"Das ist eine smarte Idee.","Es una idea inteligente.",,,
+verb_main,,wirken,parecer,,A2,"Er wirkt nervös.","Él parece nervioso.","haben","No","No"
+noun_common,Femenin,Ernährung,alimentación,Ernährungen,A2,"Eine gute Ernährung ist wichtig.","Una buena alimentación es importante.",,,
+adjective,,unfassbar,increíble,,A2,"Das ist unfassbar!","¡Eso es increíble!",,,
+verb_reflexive,,sich entspannen,relajarse,,A1,"Ich entspanne mich am Wochenende.","Me relajo el fin de semana.","haben","No","Si"
+noun_common,Femenin,Autorität,autoridad,Autoritäten,A2,"Er hat viel Autorität.","Él tiene mucha autoridad.",,,
+verb_main,,untergraben,socavar,,B2,"Er untergräbt ihre Autorität.","Él socava su autoridad.","haben","No","No"
+noun_common,Femenin,Sache,cosa,Sachen,A1,"Das ist eine ernste Sache.","Es un asunto serio.",,,
+verb_main,,merken,darse cuenta,,A1,"Ich merke den Unterschied.","Me doy cuenta de la diferencia.","haben","No","No"
+adjective,,tot,muerto,,A1,"Der Akku ist tot.","La batería está muerta.",,,
+adjective,,blind,ciego,,A1,"Er ist auf einem Auge blind.","Es ciego de un ojo.",,,
+verb_main,,einsetzen,utilizar,,A2,"Er setzt seine Fähigkeiten ein.","Él usa sus habilidades.","haben","Si","No"
+adjective,,nachlässig,descuidado,,B1,"Er ist bei der Arbeit nachlässig.","Es descuidado en el trabajo.",,,
+adjective,,wahnsinnig,loco,,A2,"Das ist wahnsinnig!","¡Eso es una locura!",,,
+noun_common,Maskuline,Zahn,diente,Zähne,A1,"Der Zahn tut weh.","El diente duele.",,,
+noun_common,Femenin,Scheide,vagina,Scheiden,B2,"Die Scheide ist ein medizinischer Begriff.","Vagina es un término médico.",,,
+noun_common,Maskuline,Abstand,distancia,Abstände,A1,"Halte Abstand.","Mantén distancia.",,,
+verb_main,,behalten,conservar,,A1,"Ich behalte das Geheimnis.","Guardo el secreto.","haben","No","No"
+adjective,,nett,amable,,A1,"Sie ist sehr nett.","Ella es muy amable.",,,
+adjective,,ehrlich,honesto,,A1,"Er ist ehrlich.","Él es honesto.",,,
+adjective,,ganz,entero,,A1,"Den ganzen Tag.","Todo el día.",,,
+adverb_time,,vorbei,terminado,,A1,"Die Zeit ist vorbei.","El tiempo se acabó.",,,
+verb_main,,spinnen,estar loco,,A2,"Du spinnst!","¡Estás loco!",,,
+noun_common,Neutrum,Riesenrad,rueda de la fortuna,Riesenräder,A1,"Das Riesenrad ist sehr hoch.","La rueda de la fortuna es muy alta.",,,
+verb_main,,hinzufügen,agregar,,A1,"Ich füge einen Namen hinzu.","Agrego un nombre.","haben","Si","No"
+adjective,,männlich,masculino,,A1,"Die Stimme ist männlich.","La voz es masculina.",,,
+adjective,,weiblich,femenino,,A1,"Der Name klingt weiblich.","El nombre suena femenino.",,,
+noun_common,Neutrum,Brettspiel,juego de mesa,Brettspiele,A1,"Wir spielen ein Brettspiel.","Jugamos un juego de mesa.",,,
+noun_common,Maskuline,Onkel,tío,Onkel,A1,"Mein Onkel lebt hier.","Mi tío vive aquí.",,,
+noun_common,Femenin,Tante,tía,Tanten,A1,"Meine Tante arbeitet dort.","Mi tía trabaja ahí.",,,
+noun_common,Maskuline,Cousin,primo,Cousins,A1,"Mein Cousin ist alt.","Mi primo es mayor.",,,
+noun_common,Femenin,Cousine,prima,Cousinen,A1,"Meine Cousine studiert.","Mi prima estudia.",,,
+noun_common,Femenin,Freundschaft,amistad,Freundschaften,A1,"Die Freundschaft ist wichtig.","La amistad es importante.",,,
+adverb_sentence_connector,,auch,también,,A1,"Ich komme auch.","Yo también voy.",,,
+adjective,,entfernt,lejano,,A2,"Ein entfernter Verwandter.","Un pariente lejano.",,,
+fixed_phrase,,unter der Woche,entre semana,,A1,"Ich arbeite unter der Woche.","Trabajo entre semana.",,,
+adverb_degree,,wenig,poco,,A1,"Ich habe wenig Zeit.","Tengo poco tiempo.",,,
+noun_common,Neutrum,Spiel,juego,Spiele,A1,"Das Spiel macht Spaß.","El juego es divertido.",,,
+verb_main,,erzählen,contar,,A1,"Er erzählt eine Geschichte.","Cuenta una historia.","haben","No","No"
+verb_main,,abzählen,contar uno por uno,,A2,"Sie zählt die Karten ab.","Cuenta las cartas una por una.","haben","Si","No"
+noun_common,Femenin,Schule,escuela,Schulen,A1,"Die Schule ist groß.","La escuela es grande.",,,
+pronoun_indefinite,,niemand,nadie,,A1,"Niemand weiß es.","Nadie lo sabe.",,,

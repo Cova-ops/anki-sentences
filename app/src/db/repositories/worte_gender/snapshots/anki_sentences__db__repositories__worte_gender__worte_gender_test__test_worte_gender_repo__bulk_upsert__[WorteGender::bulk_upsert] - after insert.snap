@@ -1,0 +1,34 @@
+---
+source: app/src/db/repositories/worte_gender/worte_gender_test.rs
+expression: res.snapshot()
+---
+[
+    WorteGenderSnapshot {
+        id: 0,
+        gender: "Maskuline",
+        artikel: "der",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteGenderSnapshot {
+        id: 1,
+        gender: "Femenin",
+        artikel: "die",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteGenderSnapshot {
+        id: 2,
+        gender: "Neutrum",
+        artikel: "das",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+    WorteGenderSnapshot {
+        id: 3,
+        gender: "Plural",
+        artikel: "die",
+        created_at: "<created_at>",
+        deleted_at: "<deleted_at>",
+    },
+]

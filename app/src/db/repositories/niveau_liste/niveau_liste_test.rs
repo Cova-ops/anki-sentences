@@ -1,135 +1,38 @@
-use crate::db::setup_test_db;
-
 #[cfg(test)]
 mod test_niveau_liste_repo {
+    use color_eyre::eyre::Result;
 
-    use crate::db::{
-        niveau_liste::NiveauListeRepo,
-        schemas::niveau_liste::{NewNiveauListeSchema as New, NiveauListeSchema as Schema},
-    };
+    use crate::test_utils::prelude::*;
 
-    use super::*;
-
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct Snapshot {
-        id: i32,
-        niveau: String,
-        created_at: String,
-        deleted_at: String,
-    }
-
-    fn placeholder_dates(data: Vec<Schema>) -> Vec<Snapshot> {
-        data.into_iter()
-            .map(|d| Snapshot {
-                id: d.id,
-                niveau: d.niveau,
-                created_at: "<created_at>".into(),
-                deleted_at: "<deleted_at>".into(),
-            })
-            .collect()
-    }
-
-    mod bulk_insert {
-        use std::{thread, time::Duration};
-
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
+    mod bulk_upsert {
 
         use super::*;
 
-        fn run_bulk_insert_update_scenario<F1, F2>(c1: F1, c2: F2)
-        where
-            F1: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-            F2: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-        {
-            let mut conn = setup_test_db().unwrap();
-
-            let res_1 = c1(&mut conn).expect("La inserción no debe fallar");
-
-            assert_eq!(res_1.len(), 2);
-            assert_eq!(res_1[0].id, 1);
-            assert_eq!(res_1[0].niveau, "A1");
-
-            let res_1 = placeholder_dates(res_1);
-            insta::assert_debug_snapshot!(res_1);
-
-            thread::sleep(Duration::from_millis(100));
-
-            let res_2 = c2(&mut conn).expect("La actualización no debe fallar");
-
-            assert_eq!(res_2.len(), 2);
-            assert_eq!(res_2[1].id, 2);
-            assert_eq!(res_2[1].niveau, "C2");
-
-            let res_2 = placeholder_dates(res_2);
-            insta::assert_debug_snapshot!(res_2);
-        }
-
         #[test]
-        fn test_bulk_insert_and_update() {
-            let data_1 = vec![
-                New {
-                    id: 1,
-                    niveau: "A1".into(),
-                },
-                New {
-                    id: 2,
-                    niveau: "A2".into(),
-                },
-            ];
-            let data_2 = vec![
-                New {
-                    id: 1,
-                    niveau: "C1".into(),
-                },
-                New {
-                    id: 2,
-                    niveau: "C2".into(),
-                },
-            ];
-            run_bulk_insert_update_scenario(
-                |conn| NiveauListeRepo::bulk_insert(conn, &data_1),
-                |conn| NiveauListeRepo::bulk_insert(conn, &data_2),
-            );
-        }
+        fn test_bulk_upsert() -> Result<()> {
+            let mut conn = setup_test_db()?;
 
-        #[test]
-        fn test_bulk_insert_and_update_tx() {
-            let data_1 = vec![
-                New {
-                    id: 1,
-                    niveau: "A1".into(),
-                },
-                New {
-                    id: 2,
-                    niveau: "A2".into(),
-                },
-            ];
-            let data_2 = vec![
-                New {
-                    id: 1,
-                    niveau: "C1".into(),
-                },
-                New {
-                    id: 2,
-                    niveau: "C2".into(),
-                },
-            ];
-            run_bulk_insert_update_scenario(
-                |conn| {
-                    let tx = conn.transaction()?;
-                    let out = NiveauListeRepo::bulk_insert_tx(&tx, &data_1)?;
-                    tx.commit()?;
-                    Ok(out)
-                },
-                |conn| {
-                    let tx = conn.transaction()?;
-                    let out = NiveauListeRepo::bulk_insert_tx(&tx, &data_2)?;
-                    tx.commit()?;
-                    Ok(out)
-                },
+            let res = NiveauListeRepo::bulk_upsert(&mut conn, &[])?;
+            res.assert_eq_fields(&vec![]);
+            insta::assert_debug_snapshot!("[NiveauListe::bulk_upsert] - empty", res.snapshot());
+
+            let sc = scenario_niveau_liste();
+
+            let res = NiveauListeRepo::bulk_upsert(&mut conn, &sc.initial)?;
+            res.assert_eq_fields(&sc.initial);
+            insta::assert_debug_snapshot!(
+                "[NiveauListe::bulk_upsert] - after insert",
+                res.snapshot()
             );
+
+            let res = NiveauListeRepo::bulk_upsert(&mut conn, &sc.update)?;
+            res.assert_eq_fields(&sc.update);
+            insta::assert_debug_snapshot!(
+                "[NiveauListe::bulk_upsert] - after update",
+                res.snapshot()
+            );
+
+            Ok(())
         }
     }
 }

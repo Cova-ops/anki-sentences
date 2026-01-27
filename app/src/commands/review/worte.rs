@@ -18,6 +18,11 @@ use color_eyre::Result;
 use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
+enum TypeExercise {
+    Write,
+    Speak,
+}
+
 fn get_review_new_ids(
     conn: &Connection,
     date_review: String,
@@ -46,14 +51,22 @@ pub fn run(
 ) -> Result<()> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
+    let today = time::today_local_string(1);
+    let review_direction = ReviewDirection::from_lang(lang);
     let mut ids_worte: Vec<i32> = match section {
-        ReviewWorteSection::NewAndReview => {
-            get_review_new_ids(&conn, time::today_local_string(1), lang.clone())?
-        }
+        ReviewWorteSection::NewAndReview => get_review_new_ids(&conn, today, lang)?,
         ReviewWorteSection::OnlyNew => {
-            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, ReviewDirection::from_lang(lang))?
+            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, review_direction)?
+        }
+        ReviewWorteSection::OnlyReview => {
+            WorteReviewRepo::fetch_review_wort_id_by_day(&conn, today, review_direction)?
         }
         _ => todo!("Aguantame papito"),
+    };
+
+    let type_exercise = match lang {
+        LanguageVoice::Deutsch => TypeExercise::Speak,
+        LanguageVoice::Spanisch => TypeExercise::Write,
     };
 
     let ids_audios = if config.is_audio_enable()? {
@@ -71,25 +84,38 @@ pub fn run(
     let manage_audio = helpers::audios::ManageAudios::new(
         config.get_path_audios_worte()?,
         config.get_path_audios_setze()?,
+        config.get_path_audios_artikel()?,
     );
-    let r = helpers::console::make_worte_exercise_repeat(
-        &conn,
-        ids_worte,
-        hash_audios,
-        &manage_audio,
-        batch,
-        no_shuffle,
-        lang,
-    )?;
 
+    let result_review = match type_exercise {
+        TypeExercise::Write => helpers::console::make_worte_exercise_write(
+            &conn,
+            ids_worte,
+            hash_audios,
+            &manage_audio,
+            batch,
+            no_shuffle,
+            lang,
+        )?,
+        TypeExercise::Speak => helpers::console::make_worte_exercise_speak(
+            &conn,
+            ids_worte,
+            hash_audios,
+            &manage_audio,
+            batch,
+            no_shuffle,
+            lang,
+        )?,
+    };
     // Obtenemos el id de las palabras que respondio
-    let wort_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
+    let wort_ids: Vec<i32> = result_review.1.iter().map(|(id, _)| *id).collect();
 
     // Obtenemos si estas palabras ya tenian informacion hsitorica de revisiones anteriores
     let vec_worte_review = WorteReviewRepo::fetch_by_wort_id(&conn, &wort_ids)?;
 
     let hash_worte_review: HashMap<i32, WorteReviewSchema> = vec_worte_review
         .into_iter()
+        .filter(|f| f.direction == ReviewDirection::from_lang(lang))
         .map(|wr| (wr.wort_id, wr))
         .collect();
 
@@ -97,7 +123,7 @@ pub fn run(
     let now = Utc::now();
 
     // Recorremos el arreglo de palabras que respondio el usuario
-    for wort in r.1 {
+    for wort in result_review.1 {
         let wort_id = wort.0;
         let quality = wort.1;
 
@@ -123,9 +149,9 @@ pub fn run(
     }
 
     // guardamos en db la info de las revisiones
-    WorteReviewRepo::bulk_insert(&mut conn, &vec_new_worte_review)?;
+    WorteReviewRepo::bulk_upsert(&mut conn, &vec_new_worte_review)?;
 
-    if r.0 == 1 {
+    if result_review.0 == 1 {
         return Ok(());
     }
 

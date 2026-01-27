@@ -1,0 +1,50 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adjective,,schwer,pesado/a,,A2,"Der Rucksack ist heute wirklich schwer.","La mochila está hoy realmente pesada.",,,
+noun_common,Maskuline,Wasserfall,cascada,Wasserfälle,A2,"Wir machen ein Foto am Wasserfall.","Tomamos una foto en la cascada.",,,
+noun_common,Femenin,Postleitzahl,código postal,Postleitzahlen,A2,"Wie lautet deine Postleitzahl?","¿Cuál es tu código postal?",,,
+verb_main,,fehlen,faltar,,A2,"Du fehlst mir.","Me haces falta.","haben","No","No"
+adverb_degree,,circa,aproximadamente,,A2,"Es dauert circa zehn Minuten.","Tarda aproximadamente diez minutos.",,,
+noun_common,Maskuline,Fall,caso,,B1,"Das ist ein schwieriger Fall.","Ese es un caso difícil.",,,
+verb_main,,fallen,caer,,A2,"Das Glas fällt vom Tisch.","El vaso se cae de la mesa.","sein","No","No"
+noun_common,Maskuline,Handel,comercio,,B1,"Der Handel mit Elektronik ist sehr groß.","El comercio de electrónicos es muy grande.",,,
+noun_common,Femenin,Halle,salón / nave,HallEN,B1,"Wir treffen uns in der großen Halle.","Nos encontramos en el salón grande.",,,
+noun_common,Maskuline,Berg,montaña, Berge,A2,"Wir wandern morgen auf den Berg.","Mañana caminamos a la montaña.",,,
+pronoun_interrogative,,wofür,para qué,,A2,"Wofür brauchst du das Geld?","¿Para qué necesitas el dinero?",,,
+verb_separable,,aufhören,parar / dejar de,,A2,"Hör bitte auf!","¡Por favor, para!","haben","Si","No"
+verb_main,,bumsen,tener sexo (vulgar),,B2,"Er redet ständig darüber, dass er bumsen will.","Él habla todo el tiempo de que quiere tener sexo.","haben","No","No"
+interjection,,na endlich,¡por fin!,,A2,"Na endlich! Du bist da.","¡Por fin! Ya estás aquí.",,,
+noun_common,Femenin,Stelle,puesto / lugar,Stellen,B1,"Ich suche eine neue Stelle.","Busco un nuevo puesto.",,,
+noun_common,Neutrum,Auge,ojo,Augen,A1,"Ich habe blaue Augen.","Tengo ojos azules.",,,
+noun_common,Neutrum,Ohr,oreja / oído,Ohren,A1,"Mein Ohr tut weh.","Me duele el oído.","haben","No","No"
+verb_separable,,weiterführen,continuar (algo),,B1,"Wir führen das Projekt nächste Woche weiter.","Continuamos el proyecto la próxima semana.","haben","Si","No"
+noun_common,Maskuline,Deckname,nombre clave,Decknamen,B1,"Er benutzt einen Decknamen im Chat.","Él usa un nombre clave en el chat.",,,
+verb_main,,decken,cubrir,,A2,"Kannst du den Tisch decken?","¿Puedes poner la mesa?","haben","No","No"
+adjective,,egal,igual / no importa,,A2,"Mir ist das egal.","Me da igual.",,,
+adverb_degree,,wirklich,realmente,,A2,"Meinst du das wirklich?","¿De verdad lo dices?",,,
+noun_common,Neutrum,Märchen,cuento de hadas,Märchen,A2,"Als Kind mochte ich Märchen.","De niño me gustaban los cuentos de hadas.",,,
+adjective,,dumm,tonto/a,,A2,"Das war eine dumme Idee.","Esa fue una idea tonta.",,,
+adverb_place,,woanders,en otro lugar,,A2,"Wir können woanders hingehen.","Podemos ir a otro lugar.",,,
+adjective,,riesig,enorme / gigantesco/a,,B1,"Die Wohnung ist riesig.","El departamento es enorme.",,,
+noun_common,Femenin,Lust,ganas / deseo,,A2,"Ich habe keine Lust heute auszugehen.","No tengo ganas de salir hoy.",,,
+verb_separable,,weitermachen,seguir / continuar,,A2,"Mach bitte weiter!","¡Sigue, por favor!","haben","Si","No"
+verb_separable,,aussteigen,bajarse / salir (de un vehículo),,A2,"Steig an der nächsten Station aus.","Bájate en la próxima estación.","sein","Si","No"
+noun_common,Maskuline,Termin,cita / turno,Termine,A2,"Ich habe morgen einen Termin beim Arzt.","Mañana tengo una cita con el doctor.",,,
+noun_common,Neutrum,Hemd,camisa,Hemden,A1,"Er trägt heute ein weißes Hemd.","Hoy él lleva una camisa blanca.",,,
+verb_separable,,reinfallen,caer en la trampa / dejarse engañar,,B1,"Ich bin auf den Trick reingefallen.","Caí en el truco.","sein","Si","No"
+adjective,,nervös,nervioso/a,,A2,"Vor dem Test bin ich nervös.","Antes del examen estoy nervioso.",,,
+adjective,,eilig,con prisa,,B1,"Ich habe es eilig.","Tengo prisa.",,,
+pronoun_indefinite,,etwas,algo,,A1,"Ich brauche etwas Wasser.","Necesito algo de agua.",,,
+verb_separable,,rausnehmen,sacar / quitar,,A2,"Nimm bitte das Handy raus.","Saca el celular, por favor.","haben","Si","No"
+noun_common,Femenin,Küche,cocina,Küchen,A1,"Die Küche ist sauber.","La cocina está limpia.",,,
+verb_main,,bestätigen,confirmar,,B1,"Kannst du den Termin bestätigen?","¿Puedes confirmar la cita?","haben","No","No"
+verb_separable,,zurückhalten,retener / contener,,B2,"Er hält Informationen zurück.","Él retiene información.","haben","Si","No"
+particle_modal,,doch,pero / sí que / ya (énfasis),,B1,"Komm doch mit!","¡Pero ven conmigo!",,,
+noun_common,Maskuline,Knoten,nudo, Knoten,A2,"Ich kann den Knoten nicht lösen.","No puedo deshacer el nudo.",,,
+noun_common,Femenin,Scheidung,divorcio,Scheidungen,B1,"Nach der Scheidung wohnt er allein.","Después del divorcio vive solo.",,,
+adjective,,verheiratet,casado/a,,A2,"Sie sind seit fünf Jahren verheiratet.","Ellos están casados desde hace cinco años.",,,
+verb_separable,,umsetzen,implementar / llevar a cabo,,B2,"Wir setzen den Plan sofort um.","Implementamos el plan de inmediato.","haben","Si","No"
+noun_common,Femenin,Zukunft,futuro,,A2,"Ich denke oft an die Zukunft.","A menudo pienso en el futuro.",,,
+verb_separable,,eingehen auf,abordar / responder a (un tema),,B2,"Ich gehe später auf deine Frage ein.","Más tarde abordaré tu pregunta.","sein","Si","No"
+fixed_phrase,,sprechen über,hablar sobre,,A2,"Wir sprechen über das Problem.","Hablamos sobre el problema.",,,
+noun_common,Maskuline,Lehrer,maestro,Lehrer,A2,"Der Lehrer erklärt die Aufgabe.","El maestro explica la tarea.",,,
+noun_common,Femenin,Lehrerin,maestra,Lehrerinnen,A2,"Die Lehrerin erklärt die Aufgabe.","La maestra explica la tarea.",,,

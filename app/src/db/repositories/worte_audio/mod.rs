@@ -3,11 +3,8 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
-    schemas::{
-        worte::{RawWorteSchema, WorteSchema},
-        worte_audio::{
-            NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
-        },
+    schemas::worte_audio::{
+        NewWorteAudioSchema as New, RawWorteAudioSchema as Raw, WorteAudioSchema as Schema,
     },
     view::worte_audio_missing::{RawWorteAudioMissingSchema, WorteAudioMissingSchema},
 };
@@ -19,15 +16,15 @@ pub struct WorteAudioRepo;
 
 impl WorteAudioRepo {
     #[cfg_attr(feature = "tested", doc = "v0.2.1")]
-    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
-        let out = Self::bulk_insert_tx(&tx, data)?;
+        let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
     #[cfg_attr(feature = "tested", doc = "v0.2.1")]
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
         }

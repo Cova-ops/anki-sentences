@@ -5,10 +5,11 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
+    gram_type::GramTypeRepo,
     schemas::{
         gram_type::GramTypeSchema,
         worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},
-        worte_gram_type::{NewWorteGramTypeSchema, WorteGramTypeSchema},
+        worte_gram_type::NewWorteGramTypeSchema,
     },
     worte_gram_type::WorteGramTypeRepo,
 };
@@ -19,6 +20,35 @@ mod worte_test;
 pub struct WorteRepo;
 
 impl WorteRepo {
+    fn hydrate_gram_types(conn: &Connection, worte: &mut [Schema]) -> Result<()> {
+        if worte.is_empty() {
+            return Ok(());
+        }
+
+        let ids: Vec<i32> = worte.iter().map(|w| w.id).collect();
+
+        let worte_gram_type = WorteGramTypeRepo::fetch_by_wort_id(conn, &ids)?;
+
+        let mut map: HashMap<i32, Vec<i32>> = HashMap::new();
+        for wgt in worte_gram_type {
+            map.entry(wgt.id_worte).or_default().push(wgt.id_gram_type);
+        }
+
+        for w in worte.iter_mut() {
+            if let Some(gt_ids) = map.get(&w.id) {
+                // si NO quieres cache estático, aquí en vez de from_id()
+                // harías un fetch a gram_type por ids y lo mapearías.
+                w.gram_type_id = gt_ids
+                    .iter()
+                    .map(|id| GramTypeSchema::from_id(*id)) // o fetch_by_ids(...)
+                    .collect::<Result<Vec<_>>>()?;
+            }
+        }
+
+        Ok(())
+    }
+
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_insert_tx(&tx, data)?;
@@ -27,6 +57,7 @@ impl WorteRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -69,6 +100,7 @@ impl WorteRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_update(conn: &mut Connection, data: &[(i32, New)]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_update_tx(&tx, data)?;
@@ -76,6 +108,7 @@ impl WorteRepo {
         Ok(out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_update_tx(tx: &Transaction, data: &[(i32, New)]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -100,9 +133,9 @@ impl WorteRepo {
                 trennbar, reflexiv, created_at, deleted_at;
         "#;
 
-        let mut stmt = tx.prepare_cached(sql)?;
+        let mut stmt = tx.prepare(sql)?;
 
-        let mut vec_out = Vec::with_capacity(data.len());
+        let mut vec_out: Vec<Schema> = Vec::with_capacity(data.len());
         for d in data {
             let params = params![
                 d.0,
@@ -119,8 +152,9 @@ impl WorteRepo {
             ];
 
             let raw = stmt
-                .query_one(params, Raw::from_sql)
-                .context(format!("sql: {}, params: {:#?}", sql, d))?;
+                .query_row(params, Raw::from_sql)
+                .with_context(|| format!("sql: {sql}\nupdate_id: {}\nnew_data: {:#?}", d.0, d.1))?;
+
             vec_out.push(Schema::from_raw(raw)?);
         }
 
@@ -139,11 +173,14 @@ impl WorteRepo {
             }
         }
 
+        let vec_remove_id_worte: Vec<i32> = vec_mn.iter().map(|x| x.id_worte).collect();
+        WorteGramTypeRepo::delete_by_wort_id_tx(tx, &vec_remove_id_worte)?;
         WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
 
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         if ids.is_empty() {
             return Ok(vec![]);
@@ -169,34 +206,13 @@ impl WorteRepo {
             .mapped(Raw::from_sql)
             .collect::<Result<Vec<Raw>, _>>()?;
 
-        // Tenemos que consultar de la tabla WorteGramType cuales le corresponde a cada palabra
-        let worte_gram_type = WorteGramTypeRepo::fetch_by_wort_id(conn, ids)?;
-        let hash_worte_gram_type = {
-            let mut hash: HashMap<i32, Vec<WorteGramTypeSchema>> = HashMap::new();
-
-            for wgt in worte_gram_type {
-                hash.entry(wgt.id_worte).or_default().push(wgt);
-            }
-
-            hash
-        };
-
         let mut vec_out = Schema::from_vec_raw(raw)?;
-
-        // Llenamos el schema de Worte con la info de GramType
-        for wort in vec_out.iter_mut() {
-            if let Some(vec_wgt) = hash_worte_gram_type.get(&wort.id) {
-                for wgt in vec_wgt {
-                    // Llenamos arreglo para la información del Schema para el regreso
-                    wort.gram_type_id
-                        .push(GramTypeSchema::from_id(wgt.id_gram_type)?);
-                }
-            };
-        }
+        Self::hydrate_gram_types(conn, &mut vec_out)?;
 
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_all_ids(conn: &Connection, limit: usize, last_id: i32) -> Result<Vec<i32>> {
         let sql = r#"
             SELECT id
@@ -215,15 +231,14 @@ impl WorteRepo {
         Ok(vec_ids)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_by_wort(conn: &Connection, worte: &[(String, String)]) -> Result<Vec<Schema>> {
         if worte.is_empty() {
             return Ok(vec![]);
         }
 
-        let mut vec_out: Vec<Schema> = vec![];
-        for w in worte {
-            let sql = format!(
-                r#"
+        let sql = format!(
+            r#"
                     SELECT 
                         id, gender_id, wort_de, wort_es, plural, niveau_id, example_de,
                         example_es, verb_aux, trennbar, reflexiv, created_at, deleted_at
@@ -234,17 +249,21 @@ impl WorteRepo {
                         AND wort_de = ?2 COLLATE BINARY
                     ORDER BY w.id;
                 "#
-            );
+        );
 
+        let mut vec_out: Vec<Schema> = vec![];
+        for w in worte {
             let mut stmt = conn.prepare(&sql)?;
             let vec_raw = stmt
                 .query(params![w.0, w.1])?
                 .mapped(Raw::from_sql)
                 .collect::<Result<Vec<Raw>, _>>()?;
 
-            let mut vec_worte = Schema::from_vec_raw(vec_raw)?;
-            vec_out.append(&mut vec_worte);
+            let mut vec_schema = Schema::from_vec_raw(vec_raw)?;
+            vec_out.append(&mut vec_schema);
         }
+
+        Self::hydrate_gram_types(conn, &mut vec_out)?;
 
         Ok(vec_out)
     }

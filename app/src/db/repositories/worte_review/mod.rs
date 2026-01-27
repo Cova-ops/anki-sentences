@@ -13,14 +13,16 @@ mod worte_review_test;
 pub struct WorteReviewRepo;
 
 impl WorteReviewRepo {
-    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
-        let out = Self::bulk_insert_tx(&tx, data)?;
+        let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
+    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
         }
@@ -70,6 +72,7 @@ impl WorteReviewRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_by_wort_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
         let placeholders = std::iter::repeat_n("?", ids.len())
             .collect::<Vec<_>>()
@@ -111,6 +114,7 @@ impl WorteReviewRepo {
         Ok(vec_out)
     }
 
+    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn fetch_new_wort_id_4_review(
         conn: &Connection,
         lang: ReviewDirection,

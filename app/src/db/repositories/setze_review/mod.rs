@@ -12,14 +12,14 @@ mod setze_review_test;
 pub struct SetzeReviewRepo;
 
 impl SetzeReviewRepo {
-    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
-        let out = Self::bulk_insert_tx(&tx, data)?;
+        let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);
         }
