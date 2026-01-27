@@ -2,13 +2,14 @@ use color_eyre::eyre::Result;
 use reqwest::blocking::Client;
 use serde::Serialize;
 
-static VOICE_ID_DE_MASC: &str = "g1jpii0iyvtRs8fqXsd1";
-static VOICE_ID_ES_FEME: &str = "zl1Ut8dvwcVSuQSB9XkG";
+static VOICE_ID_DE_MASC: &str = "TX3LPaxmHKxFdv7VOQHJ";
+static VOICE_ID_ES_FEME: &str = "EXAVITQu4vr4xnSDxMaL";
 
 #[derive(Serialize)]
 struct ElevenRequest<'a> {
     text: &'a str,
     model_id: &'a str,
+    language_code: &'a str,
     voice_settings: VoiceSettings,
 }
 
@@ -49,8 +50,9 @@ pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> 
     let client = Client::new();
 
     let body = ElevenRequest {
-        text,
+        text: &format!("{}.", text),
         model_id: "eleven_flash_v2_5",
+        language_code: &voice_choice.get_posfix(),
         voice_settings: VoiceSettings {
             stability: 0.6,
             similarity_boost: 0.8,
