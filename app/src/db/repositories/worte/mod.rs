@@ -5,6 +5,7 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
+    gram_type::GramTypeRepo,
     schemas::{
         gram_type::GramTypeSchema,
         worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},
@@ -172,6 +173,8 @@ impl WorteRepo {
             }
         }
 
+        let vec_remove_id_worte: Vec<i32> = vec_mn.iter().map(|x| x.id_worte).collect();
+        WorteGramTypeRepo::delete_by_wort_id_tx(tx, &vec_remove_id_worte)?;
         WorteGramTypeRepo::bulk_insert_tx(tx, &vec_mn)?;
 
         Ok(vec_out)
