@@ -1,0 +1,57 @@
+gram_type,gender_id,worte_de,worte_es,plural,niveau_id,example_de,example_es,verb_aux,trennbar,reflexiv
+adverb_time,,immer wieder,una y otra vez,,A2,"Er macht immer wieder denselben Fehler.","Él comete una y otra vez el mismo error.",,,
+noun_common,Maskuline,Raum,cuarto/sala,Räume,A1,"Der Raum ist hell und groß.","El cuarto es luminoso y grande.",,,
+verb_main,,ausruhen,descansar,,A2,"Ich will mich heute Abend ausruhen.","Quiero descansar hoy en la noche.",haben,No,Si
+adverb_place,,draußen,afuera,,A1,"Draußen ist es kalt.","Afuera hace frío.",,,
+noun_common,Neutrum,Wetter,clima,,A1,"Das Wetter ist heute schön.","El clima está bonito hoy.",,,
+noun_common,Neutrum,Büro,oficina,Büros,A1,"Ich arbeite im Büro.","Trabajo en la oficina.",,,
+verb_main,,ankommen,llegar,,A1,"Der Bus kommt um acht Uhr an.","El autobús llega a las ocho.",sein,Si,No
+verb_main,,verstehen,entender,,A1,"Ich verstehe dich nicht.","No te entiendo.",haben,No,No
+fixed_phrase,,Verstanden?,¿entendido?,,A1,"Verstanden? Dann können wir anfangen.","¿Entendido? Entonces podemos empezar.",,,
+fixed_phrase,,fertig sein,terminar (estar listo),,A2,"Ich bin mit der Arbeit fertig.","Ya terminé el trabajo.",,,
+adverb_time,,früher,antes/anteriormente,,A2,"Früher habe ich hier gewohnt.","Antes vivía aquí.",,,
+adverb_degree,,stundenlang,por horas,,B1,"Er hat stundenlang gelernt.","Él estudió por horas.",,,
+adverb_manner,,unaufhörlich,sin parar,,B2,"Es hat unaufhörlich geregnet.","Llovió sin parar.",,,
+verb_main,,erledigen,resolver/hacer (una tarea),,B1,"Ich muss heute noch ein paar Sachen erledigen.","Hoy todavía tengo que hacer unas cosas.",haben,No,No
+verb_main,,glauben,creer,,A2,"Ich glaube dir.","Te creo.",haben,No,No
+adjective,,nötig,necesario,,B1,"Das ist nicht nötig.","Eso no es necesario.",,,
+verb_main,,unterbrechen,interrumpir,,B1,"Bitte unterbrich mich nicht.","Por favor no me interrumpas.",haben,No,No
+fixed_phrase,,so lange,por tanto tiempo,,A2,"Ich warte nicht so lange.","No voy a esperar tanto tiempo.",,,
+fixed_phrase,,so lange … wie,tanto tiempo como,,B1,"Ich bleibe so lange, wie du mich brauchst.","Me quedo tanto tiempo como me necesites.",,,
+noun_common,Maskuline,Teil,parte,Teile,A2,"Dieser Teil ist schwierig.","Esta parte es difícil.",,,
+verb_main,,aufgeben,rendirse/dejar algo,,B1,"Gib nicht auf!","¡No te rindas!",haben,Si,No
+adverb_time,,zuerst,primero,,A1,"Zuerst trinken wir Kaffee, dann gehen wir los.","Primero tomamos café y luego salimos.",,,
+fixed_phrase,,an einer Besprechung teilnehmen,participar en una reunión,,B1,"Ich nehme um zehn Uhr an einer Besprechung teil.","Participo en una reunión a las diez.",haben,Si,No
+verb_main,,sprechen,hablar,,A1,"Kannst du langsam sprechen?","¿Puedes hablar despacio?",haben,No,No
+noun_common,Maskuline,Friseur,peluquero/salón,Friseure,A2,"Ich gehe heute zum Friseur.","Hoy voy a la peluquería.",,,
+noun_common,Femenin,Friseurin,peluquera,Friseurinnen,A2,"Die Friseurin schneidet meine Haare.","La peluquera me corta el cabello.",,,
+noun_common,Maskuline,Haarschnitt,corte de pelo,Haarschnitte,A2,"Ich möchte einen kurzen Haarschnitt.","Quiero un corte de pelo corto.",,,
+adjective,,verschieden,diferente/distinto,,A2,"Wir haben verschiedene Meinungen.","Tenemos opiniones diferentes.",,,
+verb_main,,schneiden,cortar,,A2,"Kannst du das Brot schneiden?","¿Puedes cortar el pan?",haben,No,No
+verb_main,,waschen,lavar,,A1,"Ich wasche mir die Hände.","Me lavo las manos.",haben,No,Si
+verb_main,,rasieren,afeitar,,A2,"Er rasiert sich jeden Morgen.","Él se afeita cada mañana.",haben,No,Si
+verb_main,,föhnen,secador (secar con secador),,B1,"Ich föhne mir die Haare.","Me seco el cabello con secador.",haben,No,Si
+verb_main,,stylen,peinar/dar estilo,,B1,"Sie stylt ihre Haare vor dem Spiegel.","Ella se arregla el cabello frente al espejo.",haben,No,Si
+noun_common,Maskuline,Faden,hilo,Fäden,A2,"Am Hemd hängt ein Faden.","En la camisa cuelga un hilo.",,,
+verb_main,,zupfen,depilar (arrancar),,B1,"Sie zupft sich die Augenbrauen.","Ella se depila las cejas.",haben,No,Si
+noun_common,Femenin,Augenbraue,ceja,Augenbrauen,A2,"Meine Augenbraue juckt.","Me pica la ceja.",,,
+verb_main,,stutzen,recortar,,B2,"Der Friseur stutzt den Bart.","El barbero recorta la barba.",haben,No,No
+noun_common,Neutrum,Gesicht,cara/rostro,Gesichter,A1,"Er wäscht sich das Gesicht.","Él se lava la cara.",,,
+verb_main,,genießen,disfrutar,,B1,"Ich genieße den freien Tag.","Disfruto el día libre.",haben,No,No
+noun_common,Femenin,Freiheit,libertad,Freiheiten,B1,"Freiheit ist mir wichtig.","La libertad es importante para mí.",,,
+adverb_manner,,meistens,la mayoría de las veces,,A2,"Meistens bin ich um acht Uhr im Büro.","La mayoría de las veces estoy en la oficina a las ocho.",,,
+noun_common,Femenin,Anmeldung,registro/inscripción,Anmeldungen,B1,"Die Anmeldung ist online möglich.","La inscripción se puede hacer en línea.",,,
+noun_common,Femenin,Schere,tijera,Scheren,A2,"Wo ist die Schere?","¿Dónde está la tijera?",,,
+noun_common,Femenin,Bürste,cepillo,Bürsten,A2,"Ich brauche eine Bürste für meine Haare.","Necesito un cepillo para mi cabello.",,,
+noun_common,Femenin,Rasierklinge,cuchilla de afeitar,Rasierklingen,B2,"Die Rasierklinge ist sehr scharf.","La cuchilla de afeitar está muy afilada.",,,
+noun_common,Maskuline,Stuhl,silla,S̈tuhle,A1,"Der Stuhl ist bequem.","La silla es cómoda.",,,
+noun_common,Neutrum,Handtuch,toalla,Handtücher,A1,"Gib mir bitte ein Handtuch.","Dame por favor una toalla.",,,
+fixed_phrase,,Das reicht schon,con eso basta,,A2,"Danke, das reicht schon.","Gracias, con eso basta.",,,
+noun_common,Neutrum,Mittel,medio/recurso,,B1,"Wir finden ein Mittel gegen den Stress.","Encontramos un medio contra el estrés.",,,
+noun_common,Femenin,Stirn,frente,Stirnen,B1,"Er hat sich an der Stirn verletzt.","Se lastimó la frente.",,,
+adjective,,schmerzhaft,doloroso,,B2,"Das war sehr schmerzhaft.","Eso fue muy doloroso.",,,
+adjective,,bereit,listo/preparado,,A2,"Bist du bereit?","¿Estás listo?",,,
+noun_common,Maskuline,Keks,galleta,Kekse,A1,"Ich esse einen Keks zum Kaffee.","Me como una galleta con el café.",,,
+noun_common,Neutrum,Trinkgeld,propina,Trinkgelder,B1,"Das Trinkgeld ist schon inbegriffen.","La propina ya está incluida.",,,
+noun_common,Neutrum,Geld,dinero,,A1,"Ich habe kein Geld dabei.","No traigo dinero.",,,
+
