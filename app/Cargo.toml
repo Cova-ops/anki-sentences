@@ -21,7 +21,6 @@ rodio = "0.21.1"
 dotenvy = "0.15.7"
 toml = "0.9.9+spec-1.0.0"
 
-sql_model = { path = "../sql_model" }
 
 [features]
 tested = []

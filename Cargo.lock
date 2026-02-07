@@ -67,7 +67,6 @@ dependencies = [
  "rustyline",
  "serde",
  "serde_json",
- "sql_model",
  "toml",
 ]
 

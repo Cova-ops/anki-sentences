@@ -5,7 +5,6 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use sql_model::{FromRaw, SqlNew, SqlRaw};
 
 use crate::db::{
-    gram_type::GramTypeRepo,
     schemas::{
         gram_type::GramTypeSchema,
         worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},

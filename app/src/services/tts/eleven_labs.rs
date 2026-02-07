@@ -1,9 +1,43 @@
+use std::str::FromStr;
+
 use color_eyre::eyre::Result;
 use reqwest::blocking::Client;
 use serde::Serialize;
 
-static VOICE_ID_DE_MASC: &str = "TX3LPaxmHKxFdv7VOQHJ";
-static VOICE_ID_ES_FEME: &str = "EXAVITQu4vr4xnSDxMaL";
+use crate::helpers::error_handler::InvalidValueError;
+
+pub enum EnumVoiceIDElevenLabs {
+    GermanMan,
+    SpanishWoman,
+}
+
+impl EnumVoiceIDElevenLabs {
+    pub fn get_key(&self) -> &'static str {
+        match self {
+            Self::GermanMan => "TX3LPaxmHKxFdv7VOQHJ",
+            Self::SpanishWoman => "EXAVITQu4vr4xnSDxMaL",
+        }
+    }
+}
+
+impl FromStr for EnumVoiceIDElevenLabs {
+    type Err = InvalidValueError;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "TX3LPaxmHKxFdv7VOQHJ" => Self::GermanMan,
+            "EXAVITQu4vr4xnSDxMaL" => Self::SpanishWoman,
+
+            _ => {
+                return Err(InvalidValueError {
+                    field: "VoiceId",
+                    message: format!("{s} cannot be convert to VoiceId"),
+                    valid_options: None, // We don't show the valid keys for security
+                });
+            }
+        }
+    }
+}
 
 #[derive(Serialize)]
 struct ElevenRequest<'a> {
@@ -38,8 +72,8 @@ impl LanguageVoice {
 
 pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> {
     let voice = match voice_choice {
-        LanguageVoice::Deutsch => VOICE_ID_DE_MASC,
-        LanguageVoice::Spanisch => VOICE_ID_ES_FEME,
+        LanguageVoice::Deutsch => EnumVoiceIDElevenLabs::GermanMan.get_key(),
+        LanguageVoice::Spanisch => EnumVoiceIDElevenLabs::SpanishWoman.get_key(),
     };
 
     let url = format!(

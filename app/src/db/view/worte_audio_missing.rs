@@ -1,5 +1,7 @@
-use color_eyre::eyre::Result;
-use sql_model::FromRaw;
+use crate::{
+    db::traits::from_raw::{FromRaw, FromSql},
+    helpers::error_handler::{DbError, ValidationError},
+};
 
 #[derive(Debug, Clone)]
 pub struct WorteAudioMissingSchema {
@@ -11,18 +13,23 @@ pub struct WorteAudioMissingSchema {
 }
 
 impl FromRaw<RawWorteAudioMissingSchema> for WorteAudioMissingSchema {
-    fn from_raw(r: RawWorteAudioMissingSchema) -> Result<Self> {
+    type Error = ValidationError;
+
+    fn from_raw<'a>(r: &'a RawWorteAudioMissingSchema) -> Result<Self, Self::Error> {
         Ok(WorteAudioMissingSchema {
             id: r.id,
-            wort_es: r.wort_es,
-            wort_de: r.wort_de,
-            audio_name_es: r.audio_name_es,
-            audio_name_de: r.audio_name_de,
+            wort_es: r.wort_es.clone(),
+            wort_de: r.wort_de.clone(),
+            audio_name_es: r.audio_name_es.clone(),
+            audio_name_de: r.audio_name_de.clone(),
         })
     }
 
-    fn from_vec_raw(data: Vec<RawWorteAudioMissingSchema>) -> Result<Vec<Self>> {
-        data.into_iter().map(Self::from_raw).collect()
+    fn from_vec_raw<'a, I>(data: I) -> Result<Vec<Self>, Self::Error>
+    where
+        I: IntoIterator<Item = &'a RawWorteAudioMissingSchema>,
+    {
+        data.iter().map(Self::from_raw).collect()
     }
 }
 
@@ -34,8 +41,8 @@ pub struct RawWorteAudioMissingSchema {
     pub audio_name_de: Option<String>,
 }
 
-impl RawWorteAudioMissingSchema {
-    pub fn from_sql(r: &rusqlite::Row<'_>) -> rusqlite::Result<Self> {
+impl FromSql for RawWorteAudioMissingSchema {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, DbError> {
         Ok(Self {
             id: r.get(0)?,
             wort_es: r.get(1)?,
