@@ -12,7 +12,6 @@ mod niveau_liste_test;
 pub struct NiveauListeRepo;
 
 impl NiveauListeRepo {
-    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
         let tx = conn.transaction()?;
         let out = Self::bulk_upsert_tx(&tx, data)?;
@@ -20,7 +19,6 @@ impl NiveauListeRepo {
         Ok(out)
     }
 
-    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
         if data.is_empty() {
             return Ok(vec![]);

@@ -4,3 +4,13 @@ pub(in crate::db) trait FromSql {
     where
         Self: Sized;
 }
+
+// Input
+pub trait SqlNew {
+    // GAT: el tipo de parámetros depende del lifetime
+    type Params<'a>: rusqlite::Params
+    where
+        Self: 'a;
+
+    fn to_params<'a>(&'a self) -> Self::Params<'a>;
+}

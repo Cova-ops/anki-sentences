@@ -1,9 +1,9 @@
 pub mod gram_type;
 pub mod niveau_liste;
-pub mod worte;
-pub mod worte_gender;
-pub mod worte_gram_type;
-pub mod worte_review;
+pub mod wort;
+pub mod wort_gender;
+pub mod wort_gram_type;
+pub mod wort_review;
 
 #[derive(Clone)]
 pub struct Scenario<T> {

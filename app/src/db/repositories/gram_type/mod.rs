@@ -1,7 +1,11 @@
 use rusqlite::{Connection, Transaction};
 
 use crate::{
-    db::schemas::gram_type::{InsertGramType, SchemaGramType},
+    db::{
+        queries::DbQuery,
+        schemas::gram_type::{InputGramType, SchemaGramType, SqlGramType},
+        traits::{FromSql, SqlNew},
+    },
     helpers::error_handler::DbError,
 };
 
@@ -11,10 +15,9 @@ mod gram_type_test;
 pub struct GramTypeRepo;
 
 impl GramTypeRepo {
-    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_upsert(
         conn: &mut Connection,
-        data: &[InsertGramType],
+        data: &[InputGramType],
     ) -> Result<Vec<SchemaGramType>, DbError> {
         let tx = conn.transaction()?;
         let out = Self::bulk_upsert_tx(&tx, data)?;
@@ -22,10 +25,9 @@ impl GramTypeRepo {
         Ok(out)
     }
 
-    #[cfg_attr(feature = "tested", doc = "v0.2")]
     pub fn bulk_upsert_tx(
         tx: &Transaction,
-        data: &[InsertGramType],
+        data: &[InputGramType],
     ) -> Result<Vec<SchemaGramType>, DbError> {
         if data.is_empty() {
             return Ok(vec![]);
@@ -43,8 +45,11 @@ impl GramTypeRepo {
         let mut vec_out = Vec::with_capacity(data.len());
 
         for d in data {
-            let raw = stmt.query_one(d.to_params(), SchemaGramType::from_sql)?;
-            vec_out.push(d);
+            let sql_params: SqlGramType = d.to_owned().into();
+            let raw = DbQuery::query_one(&tx, sql, sql_params.to_params(), |r| {
+                SchemaGramType::from_sql(r)
+            })?;
+            vec_out.push(raw);
         }
 
         Ok(vec_out)
