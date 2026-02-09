@@ -40,8 +40,8 @@ impl TryFrom<(SchemaWort, Vec<SchemaGramType>)> for ModelWort {
 
         // gram types
         let mut gram_type: Vec<EnumGramType> = Vec::with_capacity(grams.len());
-        for g in &grams {
-            match EnumGramType::try_from(g.clone()) {
+        for g in grams.into_iter() {
+            match EnumGramType::try_from(g) {
                 Ok(v) => gram_type.push(v),
                 Err(e) => errs.push(e),
             }

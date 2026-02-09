@@ -35,22 +35,15 @@ impl FromSql for SchemaWortReview {
 
 #[cfg(test)]
 mod tests_schema_wort_review_from_sql {
-    use super::*;
-    use color_eyre::Result;
-    use rusqlite::{Connection, Row};
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
 
-    fn query_one_row<T, F>(conn: &Connection, sql: &str, map: F) -> Result<T>
-    where
-        F: FnOnce(&Row<'_>) -> Result<T, rusqlite::Error>,
-    {
-        let mut stmt = conn.prepare(sql)?;
-        let v = stmt.query_row([], map)?;
-        Ok(v)
-    }
+    use super::*;
+    use rusqlite::Connection;
 
     #[test]
-    fn from_sql_ok_deleted_at_null() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn from_sql_ok_deleted_at_null() -> Result<(), DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
         let sql = r#"
             SELECT
@@ -66,7 +59,10 @@ mod tests_schema_wort_review_from_sql {
                 NULL            -- deleted_at (Option<String>)
         "#;
 
-        let schema = query_one_row(&conn, sql, |row| SchemaWortReview::from_sql(row))?;
+        let schema: SchemaWortReview =
+            DbQuery::query_one(&tx, sql, [], SchemaWortReview::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.wort_id, 188);
@@ -83,8 +79,9 @@ mod tests_schema_wort_review_from_sql {
     }
 
     #[test]
-    fn from_sql_ok_deleted_at_some() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn from_sql_ok_deleted_at_some() -> Result<(), DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
         let sql = r#"
             SELECT
@@ -100,7 +97,10 @@ mod tests_schema_wort_review_from_sql {
                 '2025-12-31 23:59:59'
         "#;
 
-        let schema = query_one_row(&conn, sql, |row| SchemaWortReview::from_sql(row))?;
+        let schema: SchemaWortReview =
+            DbQuery::query_one(&tx, sql, [], SchemaWortReview::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.id, 2);
         assert_eq!(schema.wort_id, 189);
@@ -117,10 +117,11 @@ mod tests_schema_wort_review_from_sql {
     }
 
     #[test]
-    fn from_sql_err_type_mismatch() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn from_sql_err_type_mismatch() -> Result<(), DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        // interval debería ser número, pero metemos texto para forzar rusqlite::Error
+        // interval debería ser número, pero metemos texto para forzar error
         let sql = r#"
             SELECT
                 1,
@@ -135,10 +136,11 @@ mod tests_schema_wort_review_from_sql {
                 NULL
         "#;
 
-        let mut stmt = conn.prepare(sql)?;
-        let res = stmt.query_row([], |row| SchemaWortReview::from_sql(row));
+        let res: Result<SchemaWortReview, DbError> =
+            DbQuery::query_one(&tx, sql, [], SchemaWortReview::from_sql);
 
         assert!(res.is_err(), "should fail due to type mismatch");
+
         Ok(())
     }
 }

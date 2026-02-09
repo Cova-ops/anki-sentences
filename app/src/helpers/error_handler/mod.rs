@@ -1,7 +1,10 @@
-use std::path::PathBuf;
+use std::{
+pub mod queries;
+    fmt::{self, Display},
+    path::PathBuf,
+};
 
-pub mod result;
-
+pub mod resul
 #[derive(Debug)]
 pub struct AppError {
     pub kind: AppErrorKind,
@@ -89,12 +92,30 @@ pub struct DbError {
     pub source: Option<rusqlite::Error>,
 }
 
-impl From<rusqlite::Error> for DbError {
-    fn from(err: rusqlite::Error) -> Self {
-        Self {
-            sql: None,
-            message: err.to_string(),
-            source: Some(err),
+// impl From<rusqlite::Error> for DbError {
+//     fn from(err: rusqlite::Error) -> Self {
+//         Self {
+//             sql: None,
+//             message: err.to_string(),
+//             source: Some(err),
+//         }
+//     }
+// }
+
+impl fmt::Display for DbError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Database error: {}", self.message)?;
+
+        if let Some(sql) = self.sql {
+            writeln!(f, "SQL: {}", sql)?;
         }
+
+        if let Some(source) = &self.source {
+            writeln!(f, "Source: {}", source)?;
+        }
+
+        Ok(())
     }
 }
+
+impl std::error::Error for DbError {}

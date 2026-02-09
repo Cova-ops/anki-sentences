@@ -25,14 +25,17 @@ impl FromSql for SchemaSetzeAudio {
 
 #[cfg(test)]
 mod tests {
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+
     use super::*;
     use rusqlite::{Connection, params};
 
-    #[test]
-    fn from_sql_maps_row_correctly() {
-        let conn = Connection::open_in_memory().unwrap();
+    fn setup_conn() -> Result<Connection, DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE setze_audio (
                 satz_id     INTEGER NOT NULL,
@@ -43,10 +46,19 @@ mod tests {
             );
             "#,
             [],
-        )
-        .unwrap();
+        )?;
 
-        conn.execute(
+        tx.commit()?;
+        Ok(conn)
+    }
+
+    #[test]
+    fn from_sql_maps_row_correctly() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
+
+        DbQuery::execute(
+            &tx,
             r#"
             INSERT INTO setze_audio
                 (satz_id, file_path, voice_id, created_at, deleted_at)
@@ -60,53 +72,39 @@ mod tests {
                 "2025-01-01 12:00:00",
                 Option::<String>::None
             ],
-        )
-        .unwrap();
+        )?;
 
-        let mut stmt = conn
-            .prepare(
-                r#"
-                SELECT
-                    satz_id,
-                    file_path,
-                    voice_id,
-                    created_at,
-                    deleted_at
-                FROM setze_audio;
-                "#,
-            )
-            .unwrap();
+        let sql = r#"
+            SELECT
+                satz_id,
+                file_path,
+                voice_id,
+                created_at,
+                deleted_at
+            FROM setze_audio;
+        "#;
 
-        let schema = stmt
-            .query_row([], |row| SchemaSetzeAudio::from_sql(row))
-            .unwrap();
+        let schema: SchemaSetzeAudio =
+            DbQuery::query_one(&tx, sql, [], SchemaSetzeAudio::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.satz_id, 10);
         assert_eq!(schema.file_path, "audios/setze/10.mp3");
         assert_eq!(schema.voice_id, "voice_de");
         assert_eq!(schema.created_at, "2025-01-01 12:00:00");
         assert_eq!(schema.deleted_at, None);
+
+        Ok(())
     }
 
     #[test]
-    fn from_sql_with_deleted_at() {
-        let conn = Connection::open_in_memory().unwrap();
+    fn from_sql_with_deleted_at() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
-            r#"
-            CREATE TABLE setze_audio (
-                satz_id     INTEGER NOT NULL,
-                file_path   TEXT NOT NULL,
-                voice_id    TEXT NOT NULL,
-                created_at  TEXT NOT NULL,
-                deleted_at  TEXT
-            );
-            "#,
-            [],
-        )
-        .unwrap();
-
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             r#"
             INSERT INTO setze_audio
                 (satz_id, file_path, voice_id, created_at, deleted_at)
@@ -120,31 +118,29 @@ mod tests {
                 "2025-01-02 10:00:00",
                 "2025-01-10 00:00:00"
             ],
-        )
-        .unwrap();
+        )?;
 
-        let mut stmt = conn
-            .prepare(
-                r#"
-                SELECT
-                    satz_id,
-                    file_path,
-                    voice_id,
-                    created_at,
-                    deleted_at
-                FROM setze_audio;
-                "#,
-            )
-            .unwrap();
+        let sql = r#"
+            SELECT
+                satz_id,
+                file_path,
+                voice_id,
+                created_at,
+                deleted_at
+            FROM setze_audio;
+        "#;
 
-        let schema = stmt
-            .query_row([], |row| SchemaSetzeAudio::from_sql(row))
-            .unwrap();
+        let schema: SchemaSetzeAudio =
+            DbQuery::query_one(&tx, sql, [], SchemaSetzeAudio::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.satz_id, 11);
         assert_eq!(schema.file_path, "audios/setze/11.mp3");
         assert_eq!(schema.voice_id, "voice_es");
         assert_eq!(schema.created_at, "2025-01-02 10:00:00");
-        assert_eq!(schema.deleted_at, Some("2025-01-10 00:00:00".to_string()));
+        assert_eq!(schema.deleted_at.as_deref(), Some("2025-01-10 00:00:00"));
+
+        Ok(())
     }
 }

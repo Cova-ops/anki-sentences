@@ -29,14 +29,17 @@ impl FromSql for SchemaSetze {
 
 #[cfg(test)]
 mod tests_schema_setze {
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+
     use super::*;
     use rusqlite::{Connection, params};
 
-    #[test]
-    fn from_sql_maps_all_fields_correctly() {
-        let conn = Connection::open_in_memory().unwrap();
+    fn setup_conn() -> Result<Connection, DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        conn.execute_batch(
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE setze (
                 id INTEGER,
@@ -48,10 +51,20 @@ mod tests_schema_setze {
                 deleted_at TEXT
             );
             "#,
-        )
-        .unwrap();
+            [],
+        )?;
 
-        conn.execute(
+        tx.commit()?;
+        Ok(conn)
+    }
+
+    #[test]
+    fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
+
+        DbQuery::execute(
+            &tx,
             r#"
             INSERT INTO setze (
                 id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
@@ -66,28 +79,23 @@ mod tests_schema_setze {
                 "2025-01-01 10:00:00",
                 Option::<String>::None
             ],
-        )
-        .unwrap();
+        )?;
 
-        let mut stmt = conn
-            .prepare(
-                r#"
-                SELECT
-                    id,
-                    setze_spanisch,
-                    setze_deutsch,
-                    niveau_id,
-                    thema,
-                    created_at,
-                    deleted_at
-                FROM setze
-                "#,
-            )
-            .unwrap();
+        let sql = r#"
+            SELECT
+                id,
+                setze_spanisch,
+                setze_deutsch,
+                niveau_id,
+                thema,
+                created_at,
+                deleted_at
+            FROM setze
+        "#;
 
-        let schema = stmt
-            .query_row([], |row| SchemaSetze::from_sql(row))
-            .unwrap();
+        let schema: SchemaSetze = DbQuery::query_one(&tx, sql, [], SchemaSetze::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.setze_spanisch, "Estoy aprendiendo alemán.");
@@ -96,30 +104,21 @@ mod tests_schema_setze {
         assert_eq!(schema.thema, "learning");
         assert_eq!(schema.created_at, "2025-01-01 10:00:00");
         assert_eq!(schema.deleted_at, None);
+
+        Ok(())
     }
 
     #[test]
-    fn from_sql_with_deleted_at() {
-        let conn = Connection::open_in_memory().unwrap();
+    fn from_sql_with_deleted_at() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
-        conn.execute_batch(
+        DbQuery::execute(
+            &tx,
             r#"
-            CREATE TABLE setze (
-                id INTEGER,
-                setze_spanisch TEXT,
-                setze_deutsch TEXT,
-                niveau_id INTEGER,
-                thema TEXT,
-                created_at TEXT,
-                deleted_at TEXT
-            );
-            "#,
-        )
-        .unwrap();
-
-        conn.execute(
-            r#"
-            INSERT INTO setze VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            INSERT INTO setze (
+                id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
             "#,
             params![
                 2,
@@ -130,14 +129,16 @@ mod tests_schema_setze {
                 "2025-01-02 12:00:00",
                 "2025-02-01 00:00:00"
             ],
-        )
-        .unwrap();
+        )?;
 
-        let schema: SchemaSetze = conn
-            .query_row("SELECT * FROM setze", [], |row| SchemaSetze::from_sql(row))
-            .unwrap();
+        let schema: SchemaSetze =
+            DbQuery::query_one(&tx, "SELECT * FROM setze", [], SchemaSetze::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.id, 2);
-        assert_eq!(schema.deleted_at, Some("2025-02-01 00:00:00".into()));
+        assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-01 00:00:00"));
+
+        Ok(())
     }
 }

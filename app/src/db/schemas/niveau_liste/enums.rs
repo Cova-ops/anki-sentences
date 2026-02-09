@@ -4,6 +4,7 @@ use crate::{
     db::schemas::niveau_liste::InputNiveauListe, helpers::error_handler::InvalidValueError,
 };
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EnumNiveauListe {
     A1,
     A2,
@@ -28,7 +29,9 @@ impl EnumNiveauListe {
     }
 
     pub fn to_new(&self) -> InputNiveauListe {
-        InputNiveauListe { niveau: self }
+        InputNiveauListe {
+            niveau: self.clone(),
+        }
     }
 
     pub fn as_str(&self) -> &'static str {
@@ -58,7 +61,7 @@ impl FromStr for EnumNiveauListe {
             _ => Err(InvalidValueError {
                 field: "NiveauListe",
                 message: format!("{s} is not a NiveauListe valid"),
-                valid_options: Some(Self::ALL.iter().map(|d| d.to_string()).collect()),
+                valid_options: Some(Self::ALL.iter().map(|d| d.as_str()).collect()),
             }),
         }
     }

@@ -33,13 +33,17 @@ impl FromSql for SchemaSetzeReview {
 
 #[cfg(test)]
 mod tests_schema_setze_review {
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+
     use super::*;
-    use rusqlite::{Connection, Result};
+    use rusqlite::Connection;
 
-    fn setup_db() -> Result<Connection> {
-        let conn = Connection::open_in_memory()?;
+    fn setup_db() -> Result<Connection, DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        conn.execute_batch(
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE setze_review (
                 id INTEGER,
@@ -52,7 +56,13 @@ mod tests_schema_setze_review {
                 created_at TEXT,
                 deleted_at TEXT
             );
+            "#,
+            [],
+        )?;
 
+        DbQuery::execute(
+            &tx,
+            r#"
             INSERT INTO setze_review VALUES (
                 1,
                 42,
@@ -65,17 +75,19 @@ mod tests_schema_setze_review {
                 NULL
             );
             "#,
+            [],
         )?;
 
+        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
-    fn from_sql_maps_all_fields_correctly() -> Result<()> {
-        let conn = setup_db()?;
+    fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
+        let mut conn = setup_db()?;
+        let tx = conn.transaction()?;
 
-        let schema = conn.query_row(
-            r#"
+        let sql = r#"
             SELECT
                 id,
                 satz_id,
@@ -87,10 +99,12 @@ mod tests_schema_setze_review {
                 created_at,
                 deleted_at
             FROM setze_review
-            "#,
-            [],
-            SchemaSetzeReview::from_sql,
-        )?;
+        "#;
+
+        let schema: SchemaSetzeReview =
+            DbQuery::query_one(&tx, sql, [], SchemaSetzeReview::from_sql)?;
+
+        tx.commit()?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.satz_id, 42);
@@ -106,10 +120,12 @@ mod tests_schema_setze_review {
     }
 
     #[test]
-    fn from_sql_handles_deleted_at_present() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn from_sql_handles_deleted_at_present() -> Result<(), DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        conn.execute_batch(
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE setze_review (
                 id INTEGER,
@@ -122,7 +138,13 @@ mod tests_schema_setze_review {
                 created_at TEXT,
                 deleted_at TEXT
             );
+            "#,
+            [],
+        )?;
 
+        DbQuery::execute(
+            &tx,
+            r#"
             INSERT INTO setze_review VALUES (
                 2,
                 99,
@@ -135,16 +157,20 @@ mod tests_schema_setze_review {
                 '2025-02-10 00:00:00'
             );
             "#,
+            [],
         )?;
 
-        let schema = conn.query_row(
+        let schema: SchemaSetzeReview = DbQuery::query_one(
+            &tx,
             "SELECT * FROM setze_review",
             [],
             SchemaSetzeReview::from_sql,
         )?;
 
+        tx.commit()?;
+
         assert_eq!(schema.id, 2);
-        assert_eq!(schema.deleted_at, Some("2025-02-10 00:00:00".to_string()));
+        assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-10 00:00:00"));
 
         Ok(())
     }

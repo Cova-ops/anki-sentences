@@ -40,8 +40,14 @@ impl EnumWortGender {
         }
     }
 
+    pub fn get_all_genders() -> Vec<&'static str> {
+        Self::ALL.iter().map(|d| d.gender()).collect()
+    }
+
     pub fn to_new(&self) -> InputWortGender {
-        InputWortGender { gender: self }
+        InputWortGender {
+            gender: self.to_owned(),
+        }
     }
 }
 
@@ -58,7 +64,7 @@ impl FromStr for EnumWortGender {
             _ => Err(InvalidValueError {
                 field: "WortGender",
                 message: format!("{s} is not a WortGender valid"),
-                valid_options: Some(Self::get_all_codes()),
+                valid_options: Some(Self::get_all_genders()),
             }),
         }
     }
@@ -135,9 +141,9 @@ mod tests_enum_worte_gender {
         let g = EnumWortGender::Neutrum;
         let new = g.to_new();
 
-        assert_eq!(new.id, 2);
-        assert_eq!(new.gender, "Neutrum");
-        assert_eq!(new.artikel, "das");
+        assert_eq!(new.gender.id(), 2);
+        assert_eq!(new.gender.gender(), "Neutrum");
+        assert_eq!(new.gender.artikel(), "das");
     }
 
     #[test]

@@ -21,7 +21,7 @@ impl From<InputSetzeAudio> for SqlSetzeAudio {
         Self {
             satz_id: value.satz_id,
             file_path: value.file_path.to_string_lossy().into_owned(),
-            voice_id: value.voice_id.get_key(),
+            voice_id: value.voice_id.get_key().to_string(),
         }
     }
 }

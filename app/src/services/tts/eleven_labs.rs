@@ -6,6 +6,7 @@ use serde::Serialize;
 
 use crate::helpers::error_handler::InvalidValueError;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EnumVoiceIDElevenLabs {
     GermanMan,
     SpanishWoman,

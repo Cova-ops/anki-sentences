@@ -25,14 +25,17 @@ impl FromSql for SchemaWortAudio {
 
 #[cfg(test)]
 mod tests {
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+
     use super::*;
-    use rusqlite::{Connection, Result};
+    use rusqlite::Connection;
 
-    #[test]
-    fn from_sql_ok_with_all_fields() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn setup_db() -> Result<Connection, DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE worte_audio (
                 wort_id INTEGER NOT NULL,
@@ -45,7 +48,17 @@ mod tests {
             [],
         )?;
 
-        conn.execute(
+        tx.commit()?;
+        Ok(conn)
+    }
+
+    #[test]
+    fn from_sql_ok_with_all_fields() -> Result<(), DbError> {
+        let mut conn = setup_db()?;
+        let tx = conn.transaction()?;
+
+        DbQuery::execute(
+            &tx,
             r#"
             INSERT INTO worte_audio (
                 wort_id,
@@ -64,42 +77,34 @@ mod tests {
             ),
         )?;
 
-        let mut stmt = conn.prepare(
+        let schema: SchemaWortAudio = DbQuery::query_one(
+            &tx,
             r#"
             SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
             "#,
+            [],
+            SchemaWortAudio::from_sql,
         )?;
 
-        let schema = stmt.query_row([], |row| SchemaWortAudio::from_sql(row))?;
+        tx.commit()?;
 
         assert_eq!(schema.wort_id, 10);
-        assert_eq!(schema.audio_name_es, Some("audio_es.mp3".to_string()));
-        assert_eq!(schema.audio_name_de, Some("audio_de.mp3".to_string()));
+        assert_eq!(schema.audio_name_es.as_deref(), Some("audio_es.mp3"));
+        assert_eq!(schema.audio_name_de.as_deref(), Some("audio_de.mp3"));
         assert_eq!(schema.created_at, "2025-01-01 10:00:00".to_string());
-        assert_eq!(schema.deleted_at, Some("2025-01-02 10:00:00".to_string()));
+        assert_eq!(schema.deleted_at.as_deref(), Some("2025-01-02 10:00:00"));
 
         Ok(())
     }
 
     #[test]
-    fn from_sql_ok_with_null_optionals() -> Result<()> {
-        let conn = Connection::open_in_memory()?;
+    fn from_sql_ok_with_null_optionals() -> Result<(), DbError> {
+        let mut conn = setup_db()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
-            r#"
-            CREATE TABLE worte_audio (
-                wort_id INTEGER NOT NULL,
-                audio_name_es TEXT,
-                audio_name_de TEXT,
-                created_at TEXT NOT NULL,
-                deleted_at TEXT
-            );
-            "#,
-            [],
-        )?;
-
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             r#"
             INSERT INTO worte_audio (
                 wort_id,
@@ -118,14 +123,17 @@ mod tests {
             ),
         )?;
 
-        let mut stmt = conn.prepare(
+        let schema: SchemaWortAudio = DbQuery::query_one(
+            &tx,
             r#"
             SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
             "#,
+            [],
+            SchemaWortAudio::from_sql,
         )?;
 
-        let schema = stmt.query_row([], |row| SchemaWortAudio::from_sql(row))?;
+        tx.commit()?;
 
         assert_eq!(schema.wort_id, 5);
         assert_eq!(schema.audio_name_es, None);

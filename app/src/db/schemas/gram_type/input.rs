@@ -9,7 +9,7 @@ pub struct SqlGramType {
 
 #[derive(Debug, Clone)]
 pub struct InputGramType {
-    gram: EnumGramType,
+    pub gram: EnumGramType,
 }
 
 impl From<InputGramType> for SqlGramType {

@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn try_from_ok_without_deleted_at() -> Result<(), Vec<InvalidValueError>> {
         let raw = schema("noun_common", OK_DT, None);
-        let m = ModelGramType::try_from(&raw)?;
+        let m = ModelGramType::try_from(raw)?;
 
         assert_eq!(m.gram, EnumGramType::NounCommon);
         assert!(m.deleted_at.is_none());
@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn try_from_ok_with_deleted_at() -> Result<(), Vec<InvalidValueError>> {
         let raw = schema("verb_auxiliary", OK_DT, Some("2025-12-05 10:00:00"));
-        let m = ModelGramType::try_from(&raw)?;
+        let m = ModelGramType::try_from(raw)?;
 
         assert_eq!(m.gram, EnumGramType::VerbAuxiliary);
         assert!(m.deleted_at.is_some());
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn try_from_err_invalid_code_only() {
         let raw = schema("not_a_real_code", OK_DT, None);
-        let err = ModelGramType::try_from(&raw).unwrap_err();
+        let err = ModelGramType::try_from(raw).unwrap_err();
 
         assert_eq!(err.len(), 1);
     }
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn try_from_err_invalid_created_at_only() {
         let raw = schema("noun_common", "NOT_A_DATE", None);
-        let err = ModelGramType::try_from(&raw).unwrap_err();
+        let err = ModelGramType::try_from(raw).unwrap_err();
 
         assert_eq!(err.len(), 1);
     }
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn try_from_err_invalid_deleted_at_only() {
         let raw = schema("noun_common", OK_DT, Some("NOT_A_DATE"));
-        let err = ModelGramType::try_from(&raw).unwrap_err();
+        let err = ModelGramType::try_from(raw).unwrap_err();
 
         assert_eq!(err.len(), 1);
     }
@@ -142,7 +142,7 @@ mod tests {
     fn try_from_err_multiple_fields() {
         // code inválido + created_at inválido + deleted_at inválido
         let raw = schema("bad_code", "BAD_DATE", Some("BAD_DATE_TOO"));
-        let err = ModelGramType::try_from(&raw).unwrap_err();
+        let err = ModelGramType::try_from(raw).unwrap_err();
 
         assert_eq!(err.len(), 3);
     }
@@ -155,7 +155,7 @@ mod tests {
             schema("verb_main", OK_DT, None),
         ];
 
-        let out = ModelGramType::try_from_iter(data.iter())?;
+        let out = ModelGramType::try_from_iter(data.into_iter())?;
         assert_eq!(out.len(), 3);
 
         assert_eq!(out[0].gram, EnumGramType::NounCommon);
@@ -175,7 +175,7 @@ mod tests {
             schema("bad", "BAD", Some("BAD")),         // 3 err
         ];
 
-        let err = ModelGramType::try_from_iter(data.iter()).unwrap_err();
+        let err = ModelGramType::try_from_iter(data.into_iter()).unwrap_err();
 
         // 1 + 1 + 1 + 3 = 6 errores
         assert_eq!(err.len(), 6);
@@ -188,7 +188,7 @@ mod tests {
             schema("bad_code", OK_DT, None),
         ];
 
-        let res = ModelGramType::try_from_iter(data.iter());
+        let res = ModelGramType::try_from_iter(data.into_iter());
         assert!(res.is_err());
     }
 }

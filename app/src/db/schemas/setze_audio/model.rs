@@ -69,9 +69,9 @@ impl TryFrom<SchemaSetzeAudio> for ModelSetzeAudio {
 
         Ok(Self {
             satz_id,
-            file_path,
-            voice_id,
-            created_at,
+            file_path: file_path.unwrap(),
+            voice_id: voice_id.unwrap(),
+            created_at: created_at.unwrap(),
             deleted_at,
         })
     }

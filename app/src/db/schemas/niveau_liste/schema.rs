@@ -20,11 +20,16 @@ impl FromSql for SchemaNiveauListe {
 #[cfg(test)]
 mod tests_schema_niveau_liste_from_sql {
     use super::*;
-    use rusqlite::Connection;
 
-    fn setup_conn() -> Connection {
-        let conn = Connection::open_in_memory().unwrap();
-        conn.execute_batch(
+    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+    use rusqlite::{Connection, params};
+
+    fn setup_conn() -> Result<Connection, DbError> {
+        let mut conn = Connection::open_in_memory()?;
+        let tx = conn.transaction()?;
+
+        DbQuery::execute(
+            &tx,
             r#"
             CREATE TABLE niveau_liste (
                 niveau     TEXT NOT NULL,
@@ -32,107 +37,118 @@ mod tests_schema_niveau_liste_from_sql {
                 deleted_at TEXT
             );
             "#,
-        )
-        .unwrap();
-        conn
+            [],
+        )?;
+
+        tx.commit()?;
+        Ok(conn)
     }
 
     #[test]
-    fn from_sql_ok_with_null_deleted_at() {
-        let conn = setup_conn();
+    fn from_sql_ok_with_null_deleted_at() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, NULL)",
-            ("A2", "2025-12-04 18:07:37"),
-        )
-        .unwrap();
+            params!["A2", "2025-12-04 18:07:37"],
+        )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let mut stmt = conn.prepare(sql).unwrap();
+        let out: SchemaNiveauListe = DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql)?;
 
-        let out: SchemaNiveauListe = stmt
-            .query_row([], |row| SchemaNiveauListe::from_sql(row))
-            .unwrap();
+        tx.commit()?;
 
         assert_eq!(out.niveau, "A2");
         assert_eq!(out.created_at, "2025-12-04 18:07:37");
         assert_eq!(out.deleted_at, None);
+
+        Ok(())
     }
 
     #[test]
-    fn from_sql_ok_with_some_deleted_at() {
-        let conn = setup_conn();
+    fn from_sql_ok_with_some_deleted_at() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, ?3)",
-            ("B1", "2025-12-04 18:07:37", "2025-12-31 00:00:00"),
-        )
-        .unwrap();
+            params!["B1", "2025-12-04 18:07:37", "2025-12-31 00:00:00"],
+        )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let mut stmt = conn.prepare(sql).unwrap();
+        let out: SchemaNiveauListe = DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql)?;
 
-        let out: SchemaNiveauListe = stmt
-            .query_row([], |row| SchemaNiveauListe::from_sql(row))
-            .unwrap();
+        tx.commit()?;
 
         assert_eq!(out.niveau, "B1");
         assert_eq!(out.created_at, "2025-12-04 18:07:37");
         assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
+
+        Ok(())
     }
 
     #[test]
-    fn from_sql_err_when_type_mismatch() {
-        let conn = setup_conn();
+    fn from_sql_err_when_type_mismatch() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
         // nivel como INTEGER (mal) para forzar error al leer como String
-        conn.execute_batch(
+        DbQuery::execute(&tx, "DELETE FROM niveau_liste;", [])?;
+        DbQuery::execute(
+            &tx,
             r#"
-            DELETE FROM niveau_liste;
             INSERT INTO niveau_liste (niveau, created_at, deleted_at)
             VALUES (123, '2025-12-04 18:07:37', NULL);
             "#,
-        )
-        .unwrap();
+            [],
+        )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let mut stmt = conn.prepare(sql).unwrap();
+        let res: Result<SchemaNiveauListe, DbError> =
+            DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql);
 
-        let err = stmt
-            .query_row([], |row| SchemaNiveauListe::from_sql(row))
-            .unwrap_err();
+        // no commit: este test espera error
+        assert!(res.is_err());
+        let err = res.unwrap_err();
 
-        // depende de tu DbError, aquí solo validamos que el error exista
-        // y que venga de rusqlite (type mismatch)
+        // Validamos que exista error y que venga de algo de type mismatch
         let msg = format!("{err:?}");
         assert!(
             msg.contains("InvalidColumnType") || msg.contains("type") || msg.contains("column"),
             "Unexpected error: {msg}"
         );
+
+        Ok(())
     }
 
     #[test]
-    fn from_sql_err_when_missing_column() {
-        let conn = setup_conn();
+    fn from_sql_err_when_missing_column() -> Result<(), DbError> {
+        let mut conn = setup_conn()?;
+        let tx = conn.transaction()?;
 
-        conn.execute(
+        DbQuery::execute(
+            &tx,
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, NULL)",
-            ("C1", "2025-12-04 18:07:37"),
-        )
-        .unwrap();
+            params!["C1", "2025-12-04 18:07:37"],
+        )?;
 
         // OJO: aquí seleccionamos SOLO 2 columnas pero from_sql intenta get(2)
         let sql = "SELECT niveau, created_at FROM niveau_liste LIMIT 1";
-        let mut stmt = conn.prepare(sql).unwrap();
+        let res: Result<SchemaNiveauListe, DbError> =
+            DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql);
 
-        let err = stmt
-            .query_row([], |row| SchemaNiveauListe::from_sql(row))
-            .unwrap_err();
+        assert!(res.is_err());
+        let err = res.unwrap_err();
 
         let msg = format!("{err:?}");
         assert!(
             msg.contains("InvalidColumnIndex") || msg.contains("column") || msg.contains("index"),
             "Unexpected error: {msg}"
         );
+
+        Ok(())
     }
 }

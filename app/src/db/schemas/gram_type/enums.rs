@@ -273,11 +273,11 @@ impl EnumGramType {
     }
 
     pub fn to_new(self) -> InputGramType {
-        InputGramType::new(self.id(), self.to_code(), self.to_name())
+        InputGramType { gram: self }
     }
 
-    pub fn get_all_codes() -> Vec<String> {
-        Self::ALL.iter().map(|d| d.to_code().to_string()).collect()
+    pub fn get_all_codes() -> Vec<&'static str> {
+        Self::ALL.iter().map(|d| d.to_code()).collect()
     }
 }
 
@@ -438,9 +438,9 @@ mod tests {
         for g in EnumGramType::ALL {
             let new = g.to_new();
 
-            assert_eq!(new.id, g.id());
-            assert_eq!(new.code, g.to_code());
-            assert_eq!(new.name, g.to_name());
+            assert_eq!(new.gram.id(), g.id());
+            assert_eq!(new.gram.to_code(), g.to_code());
+            assert_eq!(new.gram.to_name(), g.to_name());
         }
     }
 
@@ -483,7 +483,7 @@ mod tests {
                 .as_ref()
                 .unwrap()
                 .iter()
-                .any(|s| s == "verb_modal")
+                .any(|s| *s == "verb_modal")
         );
     }
 }

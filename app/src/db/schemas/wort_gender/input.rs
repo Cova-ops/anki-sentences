@@ -15,8 +15,8 @@ impl From<InputWortGender> for SqlWortGender {
     fn from(value: InputWortGender) -> Self {
         Self {
             id: value.gender.id(),
-            gender: value.gender.gender(),
-            artikel: value.gender.artikel(),
+            gender: value.gender.gender().to_string(),
+            artikel: value.gender.artikel().to_string(),
         }
     }
 }
