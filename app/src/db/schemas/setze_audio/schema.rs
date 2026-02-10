@@ -12,7 +12,7 @@ pub struct SchemaSetzeAudio {
 }
 
 impl FromSql for SchemaSetzeAudio {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             satz_id: r.get(0)?,
             file_path: r.get(1)?,
@@ -25,17 +25,15 @@ impl FromSql for SchemaSetzeAudio {
 
 #[cfg(test)]
 mod tests {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+    use crate::helpers::error_handler::DbError;
 
     use super::*;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE setze_audio (
                 satz_id     INTEGER NOT NULL,
@@ -48,17 +46,14 @@ mod tests {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_maps_row_correctly() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze_audio
                 (satz_id, file_path, voice_id, created_at, deleted_at)
@@ -84,10 +79,7 @@ mod tests {
             FROM setze_audio;
         "#;
 
-        let schema: SchemaSetzeAudio =
-            DbQuery::query_one(&tx, sql, [], SchemaSetzeAudio::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaSetzeAudio = conn.query_one(sql, [], SchemaSetzeAudio::from_sql)?;
 
         assert_eq!(schema.satz_id, 10);
         assert_eq!(schema.file_path, "audios/setze/10.mp3");
@@ -100,11 +92,9 @@ mod tests {
 
     #[test]
     fn from_sql_with_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze_audio
                 (satz_id, file_path, voice_id, created_at, deleted_at)
@@ -130,10 +120,7 @@ mod tests {
             FROM setze_audio;
         "#;
 
-        let schema: SchemaSetzeAudio =
-            DbQuery::query_one(&tx, sql, [], SchemaSetzeAudio::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaSetzeAudio = conn.query_one(sql, [], SchemaSetzeAudio::from_sql)?;
 
         assert_eq!(schema.satz_id, 11);
         assert_eq!(schema.file_path, "audios/setze/11.mp3");

@@ -1,5 +1,4 @@
 mod connection;
-pub mod queries;
 mod repositories;
 pub mod schemas;
 pub mod seeders;

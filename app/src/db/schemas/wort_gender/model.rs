@@ -40,7 +40,10 @@ impl TryFrom<SchemaWortGender> for ModelWortGender {
         let deleted_at = if let Some(date) = value.deleted_at {
             match string_2_datetime(date) {
                 Ok(v) => Some(v.clone()),
-                Err(e) => errs.push(e),
+                Err(e) => {
+                    errs.push(e);
+                    None
+                }
             }
         } else {
             None

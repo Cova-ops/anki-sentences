@@ -5,6 +5,7 @@ mod snapshot;
 
 pub use input::*;
 pub use model::*;
+pub use schema::*;
 pub use snapshot::*;
 
 pub const CREATE_STR_TABLE_WORTE_TYPE_GRAM: &str = "

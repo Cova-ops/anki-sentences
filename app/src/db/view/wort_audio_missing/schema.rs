@@ -23,17 +23,13 @@ impl FromSql for SchemaWortAudioMissing {
 
 #[cfg(test)]
 mod tests_schema_wort_audio_missing {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
-
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE wort_audio_missing (
                 id              INTEGER NOT NULL,
@@ -46,17 +42,14 @@ mod tests_schema_wort_audio_missing {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_with_all_fields() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO wort_audio_missing
             (id, wort_es, wort_de, audio_name_es, audio_name_de)
@@ -65,8 +58,7 @@ mod tests_schema_wort_audio_missing {
             (1, "hola", "hallo", Some("hola.mp3"), Some("hallo.mp3")),
         )?;
 
-        let row: SchemaWortAudioMissing = DbQuery::query_one(
-            &tx,
+        let row: SchemaWortAudioMissing = conn.query_one(
             r#"
             SELECT id, wort_es, wort_de, audio_name_es, audio_name_de
             FROM wort_audio_missing
@@ -74,8 +66,6 @@ mod tests_schema_wort_audio_missing {
             [],
             SchemaWortAudioMissing::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(row.id, 1);
         assert_eq!(row.wort_es, "hola");
@@ -88,11 +78,9 @@ mod tests_schema_wort_audio_missing {
 
     #[test]
     fn from_sql_with_null_audio_fields() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO wort_audio_missing
             (id, wort_es, wort_de, audio_name_es, audio_name_de)
@@ -101,8 +89,7 @@ mod tests_schema_wort_audio_missing {
             (2, "gracias", "danke"),
         )?;
 
-        let row: SchemaWortAudioMissing = DbQuery::query_one(
-            &tx,
+        let row: SchemaWortAudioMissing = conn.query_one(
             r#"
             SELECT id, wort_es, wort_de, audio_name_es, audio_name_de
             FROM wort_audio_missing
@@ -110,8 +97,6 @@ mod tests_schema_wort_audio_missing {
             [],
             SchemaWortAudioMissing::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(row.id, 2);
         assert_eq!(row.wort_es, "gracias");

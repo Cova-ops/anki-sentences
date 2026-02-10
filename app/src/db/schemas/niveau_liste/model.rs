@@ -7,6 +7,7 @@ use crate::{
     helpers::{error_handler::InvalidValueError, time::string_2_datetime},
 };
 
+#[derive(Debug)]
 pub struct ModelNiveauListe {
     pub niveau: EnumNiveauListe,
 
@@ -40,7 +41,10 @@ impl TryFrom<SchemaNiveauListe> for ModelNiveauListe {
         let deleted_at = if let Some(date) = value.deleted_at {
             match string_2_datetime(date) {
                 Ok(v) => Some(v.clone()),
-                Err(e) => errs.push(e),
+                Err(e) => {
+                    errs.push(e);
+                    None
+                }
             }
         } else {
             None

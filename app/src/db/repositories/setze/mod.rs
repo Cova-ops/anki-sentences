@@ -1,11 +1,6 @@
-use color_eyre::eyre::{Context, Result};
 use rusqlite::{Connection, Transaction, params_from_iter};
-use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::{
-    db::schemas::setze::{NewSetzeSchema as New, RawSetzeSchema as Raw, SetzeSchema as Schema},
-    with_ctx,
-};
+use crate::with_ctx;
 
 #[cfg(test)]
 mod setze_test;

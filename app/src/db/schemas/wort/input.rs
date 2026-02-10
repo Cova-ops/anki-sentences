@@ -3,7 +3,7 @@ use crate::db::schemas::{
 };
 
 #[derive(Debug)]
-pub(in crate::db) struct SqlWort {
+pub struct SqlWort {
     pub gram_type_ids: Vec<i32>,
     pub gender_id: Option<i32>,
     pub worte_de: String,

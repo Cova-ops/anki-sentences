@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use crate::{db::schemas::wort_review::EnumReviewDirection, helpers::time::datetime_2_string};
 
 #[derive(Debug)]
-pub(in crate::db) struct SqlWortReview {
+pub struct SqlWortReview {
     pub wort_id: i32,
     pub direction: String,
     pub interval: u32,

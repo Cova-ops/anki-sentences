@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub(in crate::db) struct SqlWortAudio {
+pub struct SqlWortAudio {
     pub wort_id: i32,
     pub audio_name_es: Option<String>,
     pub audio_name_de: Option<String>,

@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use crate::helpers::time::datetime_2_string;
 
 #[derive(Debug)]
-pub(in crate::db) struct SqlSetzeReview {
+pub struct SqlSetzeReview {
     pub satz_id: i32,
     pub interval: u32,
     pub ease_factor: f32,
@@ -14,7 +14,7 @@ pub(in crate::db) struct SqlSetzeReview {
 
 #[derive(Debug)]
 pub struct InputSetzeReview {
-   pub satz_id: i32,
+    pub satz_id: i32,
     pub interval: u32,
     pub ease_factor: f32,
     pub repetitions: u32,

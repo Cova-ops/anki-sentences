@@ -1,7 +1,27 @@
 #[cfg(test)]
 mod tests_gram_type_repo_bulk_upsert {
-    use crate::test_utils::prelude::*; // setup_test_db(), snapshot/assert helpers, scenario, etc.
+    use crate::{db::schemas::gram_type::SnapshotGramType, test_utils::prelude::*};
     use rusqlite::params;
+
+    fn assert_matches_enum(rows: &[SnapshotGramType]) {
+        for r in rows {
+            let gram = EnumGramType::try_from(r.gram.id())
+                .unwrap_or_else(|_| panic!("unknown gram_type id in DB snapshot: {}", r.gram.id()));
+
+            assert_eq!(
+                r.gram.to_code(),
+                gram.to_code(),
+                "code mismatch for id={}",
+                r.gram.id()
+            );
+            assert_eq!(
+                r.gram.to_name(),
+                gram.to_name(),
+                "name mismatch for id={}",
+                r.gram.id()
+            );
+        }
+    }
 
     #[test]
     fn bulk_upsert_behaviour() -> Result<(), DbError> {
@@ -9,14 +29,19 @@ mod tests_gram_type_repo_bulk_upsert {
 
         // 1) Empty
         let res = GramTypeRepo::bulk_upsert(&mut conn, &[])?;
-        res.assert_eq_fields(&vec![]);
-        insta::assert_debug_snapshot!("[GramType::bulk_upsert] - empty", res.snapshot());
+        let snapshot: Vec<SnapshotGramType> = res.into_iter().map(Into::into).collect();
+
+        assert!(snapshot.is_empty());
+        insta::assert_debug_snapshot!("[GramType::bulk_upsert] - empty", snapshot);
 
         // 2) Normal insert
         let sc = scenario_gram_type();
         let res = GramTypeRepo::bulk_upsert(&mut conn, &sc.initial)?;
-        res.assert_eq_fields(&sc.initial);
-        insta::assert_debug_snapshot!("[GramType::bulk_upsert] - after insert", res.snapshot());
+        let snapshot: Vec<SnapshotGramType> = res.into_iter().map(Into::into).collect();
+
+        assert_eq!(snapshot.len(), sc.initial.len());
+        assert_matches_enum(&snapshot);
+        insta::assert_debug_snapshot!("[GramType::bulk_upsert] - after insert", snapshot);
 
         // 3) Force UPDATE via conflict(id): same id, wrong code/name
         {
@@ -35,15 +60,16 @@ mod tests_gram_type_repo_bulk_upsert {
 
         // calling upsert again should correct the row back to enum-derived code/name
         let res = GramTypeRepo::bulk_upsert(&mut conn, &sc.initial)?;
-        res.assert_eq_fields(&sc.initial);
+        let snapshot: Vec<SnapshotGramType> = res.into_iter().map(Into::into).collect();
+
+        assert_eq!(snapshot.len(), sc.initial.len());
+        assert_matches_enum(&snapshot);
         insta::assert_debug_snapshot!(
             "[GramType::bulk_upsert] - after conflict(id) repair",
-            res.snapshot()
+            snapshot
         );
 
         // 4) Force UPDATE via conflict(code): same code, wrong name (id can be different)
-        // Insert a row with the same code but wrong name. If code is UNIQUE in schema, this triggers conflict(code).
-        // If code is not UNIQUE, this test won't make sense; you need UNIQUE(code).
         {
             let tx = conn.transaction()?;
             DbQuery::execute(
@@ -58,9 +84,17 @@ mod tests_gram_type_repo_bulk_upsert {
         }
 
         let res = GramTypeRepo::bulk_upsert(&mut conn, &sc.initial)?;
+        let snapshot: Vec<SnapshotGramType> = res.into_iter().map(Into::into).collect();
+
+        assert_eq!(snapshot.len(), sc.initial.len());
+        assert_matches_enum(&snapshot);
+        assert!(
+            snapshot.iter().all(|r| r.gram.id() != 999),
+            "the injected row (id=999) should not survive after upsert"
+        );
         insta::assert_debug_snapshot!(
             "[GramType::bulk_upsert] - after conflict(code) repair",
-            res.snapshot()
+            snapshot
         );
 
         Ok(())

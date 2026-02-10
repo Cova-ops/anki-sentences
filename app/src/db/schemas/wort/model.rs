@@ -181,7 +181,7 @@ mod tests_model_wort {
         assert_eq!(model.gender, Some(EnumWortGender::Maskuline)); // id 0
         assert_eq!(model.niveau, EnumNiveauListe::A2); // id 1
         assert_eq!(model.gram_type.len(), 2);
-        assert_eq!(model.created_at.timezone(), &Utc);
+        assert_eq!(model.created_at.timezone(), Utc);
         assert!(model.deleted_at.is_none());
 
         Ok(())

@@ -16,7 +16,7 @@ pub struct SchemaSetzeReview {
 }
 
 impl FromSql for SchemaSetzeReview {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id: r.get(0)?,
             satz_id: r.get(1)?,
@@ -33,17 +33,13 @@ impl FromSql for SchemaSetzeReview {
 
 #[cfg(test)]
 mod tests_schema_setze_review {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
-
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE setze_review (
                 id INTEGER,
@@ -60,8 +56,7 @@ mod tests_schema_setze_review {
             [],
         )?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze_review VALUES (
                 1,
@@ -78,14 +73,12 @@ mod tests_schema_setze_review {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
         let sql = r#"
             SELECT
@@ -101,10 +94,7 @@ mod tests_schema_setze_review {
             FROM setze_review
         "#;
 
-        let schema: SchemaSetzeReview =
-            DbQuery::query_one(&tx, sql, [], SchemaSetzeReview::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaSetzeReview = conn.query_one(sql, [], SchemaSetzeReview::from_sql)?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.satz_id, 42);
@@ -121,11 +111,9 @@ mod tests_schema_setze_review {
 
     #[test]
     fn from_sql_handles_deleted_at_present() -> Result<(), DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE setze_review (
                 id INTEGER,
@@ -142,8 +130,7 @@ mod tests_schema_setze_review {
             [],
         )?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze_review VALUES (
                 2,
@@ -160,14 +147,11 @@ mod tests_schema_setze_review {
             [],
         )?;
 
-        let schema: SchemaSetzeReview = DbQuery::query_one(
-            &tx,
+        let schema: SchemaSetzeReview = conn.query_one(
             "SELECT * FROM setze_review",
             [],
             SchemaSetzeReview::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(schema.id, 2);
         assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-10 00:00:00"));

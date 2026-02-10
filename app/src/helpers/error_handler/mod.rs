@@ -1,10 +1,10 @@
 use std::{
-pub mod queries;
-    fmt::{self, Display},
+    fmt::{self},
     path::PathBuf,
 };
 
-pub mod resul
+pub mod result;
+
 #[derive(Debug)]
 pub struct AppError {
     pub kind: AppErrorKind,
@@ -92,15 +92,15 @@ pub struct DbError {
     pub source: Option<rusqlite::Error>,
 }
 
-// impl From<rusqlite::Error> for DbError {
-//     fn from(err: rusqlite::Error) -> Self {
-//         Self {
-//             sql: None,
-//             message: err.to_string(),
-//             source: Some(err),
-//         }
-//     }
-// }
+impl From<rusqlite::Error> for DbError {
+    fn from(err: rusqlite::Error) -> Self {
+        Self {
+            sql: None,
+            message: err.to_string(),
+            source: Some(err),
+        }
+    }
+}
 
 impl fmt::Display for DbError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -119,3 +119,13 @@ impl fmt::Display for DbError {
 }
 
 impl std::error::Error for DbError {}
+
+impl DbError {
+    pub fn with_sql(sql: &'static str, e: rusqlite::Error) -> Self {
+        Self {
+            sql: Some(sql),
+            message: e.to_string(),
+            source: Some(e),
+        }
+    }
+}

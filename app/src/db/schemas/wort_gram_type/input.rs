@@ -1,4 +1,4 @@
-pub(in crate::db) struct SqlWortGramType {
+pub struct SqlWortGramType {
     pub id_worte: i32,
     pub id_gram_type: i32,
 }

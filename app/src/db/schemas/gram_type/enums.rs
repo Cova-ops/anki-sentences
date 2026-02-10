@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use crate::{
     db::schemas::gram_type::{SchemaGramType, input::InputGramType},
@@ -358,132 +358,227 @@ impl TryFrom<SchemaGramType> for EnumGramType {
     }
 }
 
+impl TryFrom<i32> for EnumGramType {
+    type Error = InvalidValueError;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        let mut ids: HashMap<i32, Self> =
+            Self::ALL.iter().map(|d| (d.id(), d.to_owned())).collect();
+
+        match ids.remove(&value) {
+            Some(v) => Ok(v),
+            _ => Err(InvalidValueError {
+                field: "GramType",
+                message: format!("{value} is not a valid id for GramType"),
+                valid_options: None,
+            }),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::collections::HashSet;
     use std::str::FromStr;
 
-    #[test]
-    fn all_has_expected_len() {
-        assert_eq!(EnumGramType::ALL.len(), 41);
-    }
+    mod all {
+        use super::*;
 
-    #[test]
-    fn all_has_no_duplicates() {
-        let set: HashSet<EnumGramType> = EnumGramType::ALL.iter().copied().collect();
-        assert_eq!(set.len(), EnumGramType::ALL.len());
-    }
+        #[test]
+        fn all_has_expected_len() {
+            assert_eq!(EnumGramType::ALL.len(), 41);
+        }
 
-    #[test]
-    fn ids_cover_0_to_40_without_gaps() {
-        let mut ids: Vec<i32> = EnumGramType::ALL.iter().map(|g| g.id()).collect();
-        ids.sort_unstable();
-        ids.dedup();
+        #[test]
+        fn all_has_no_duplicates() {
+            let set: HashSet<EnumGramType> = EnumGramType::ALL.iter().copied().collect();
+            assert_eq!(set.len(), EnumGramType::ALL.len());
+        }
 
-        let expected: Vec<i32> = (0..=40).collect();
-        assert_eq!(ids, expected);
-    }
+        #[test]
+        fn ids_cover_0_to_40_without_gaps() {
+            let mut ids: Vec<i32> = EnumGramType::ALL.iter().map(|g| g.id()).collect();
+            ids.sort_unstable();
+            ids.dedup();
 
-    #[test]
-    fn to_code_is_unique() {
-        let mut codes: Vec<&'static str> = EnumGramType::ALL.iter().map(|g| g.to_code()).collect();
-        codes.sort_unstable();
-        codes.dedup();
-        assert_eq!(codes.len(), EnumGramType::ALL.len());
-    }
-
-    #[test]
-    fn to_code_and_from_str_round_trip_for_all() {
-        for g in EnumGramType::ALL {
-            let code = g.to_code();
-            let parsed = EnumGramType::from_str(code)
-                .unwrap_or_else(|_| panic!("failed parsing code={code}"));
-            assert_eq!(parsed, *g);
+            let expected: Vec<i32> = (0..=40).collect();
+            assert_eq!(ids, expected);
         }
     }
 
-    #[test]
-    fn from_str_and_to_code_round_trip_for_all_codes() {
-        for code in EnumGramType::get_all_codes() {
-            let parsed = EnumGramType::from_str(&code)
-                .unwrap_or_else(|_| panic!("failed parsing code={code}"));
-            assert_eq!(parsed.to_code(), code);
+    mod to_code {
+        use super::*;
+
+        #[test]
+        fn to_code_is_unique() {
+            let mut codes: Vec<&'static str> =
+                EnumGramType::ALL.iter().map(|g| g.to_code()).collect();
+            codes.sort_unstable();
+            codes.dedup();
+            assert_eq!(codes.len(), EnumGramType::ALL.len());
+        }
+
+        #[test]
+        fn to_code_and_from_str_round_trip_for_all() {
+            for g in EnumGramType::ALL {
+                let code = g.to_code();
+                let parsed = EnumGramType::from_str(code)
+                    .unwrap_or_else(|_| panic!("failed parsing code={code}"));
+                assert_eq!(parsed, *g);
+            }
         }
     }
 
-    #[test]
-    fn to_name_is_not_empty_for_all() {
-        for g in EnumGramType::ALL {
-            let name = g.to_name();
-            assert!(!name.trim().is_empty(), "empty name for {:?}", g);
+    mod to_name {
+        use super::*;
+
+        #[test]
+        fn to_name_is_not_empty_for_all() {
+            for g in EnumGramType::ALL {
+                let name = g.to_name();
+                assert!(!name.trim().is_empty(), "empty name for {:?}", g);
+            }
         }
     }
 
-    #[test]
-    fn get_all_codes_matches_all_iter() {
-        let mut a = EnumGramType::get_all_codes();
-        let mut b: Vec<String> = EnumGramType::ALL
-            .iter()
-            .map(|g| g.to_code().to_string())
-            .collect();
+    mod to_new {
+        use super::*;
 
-        a.sort();
-        b.sort();
-        assert_eq!(a, b);
-    }
+        #[test]
+        fn to_new_builds_insert_struct_correctly_for_all() {
+            for g in EnumGramType::ALL {
+                let new = g.to_new();
 
-    #[test]
-    fn to_new_builds_insert_struct_correctly_for_all() {
-        for g in EnumGramType::ALL {
-            let new = g.to_new();
-
-            assert_eq!(new.gram.id(), g.id());
-            assert_eq!(new.gram.to_code(), g.to_code());
-            assert_eq!(new.gram.to_name(), g.to_name());
+                assert_eq!(new.gram.id(), g.id());
+                assert_eq!(new.gram.to_code(), g.to_code());
+                assert_eq!(new.gram.to_name(), g.to_name());
+            }
         }
     }
 
-    #[test]
-    fn from_str_invalid_returns_err() {
-        let err = EnumGramType::from_str("not_a_real_gram_type").unwrap_err();
+    mod get_all_codes {
+        use super::*;
 
-        assert_eq!(err.field, "GramType");
-        assert!(err.message.contains("not_a_real_gram_type"));
-        assert!(err.valid_options.as_ref().unwrap().len() == EnumGramType::ALL.len());
-    }
-
-    #[test]
-    fn try_from_schema_ok() {
-        let raw = SchemaGramType {
-            code: "verb_modal".to_string(),
-            created_at: "2025-12-01 10:00:00".to_string(),
-            deleted_at: None,
-        };
-
-        let out = EnumGramType::try_from(raw).unwrap();
-        assert_eq!(out, EnumGramType::VerbModal);
-    }
-
-    #[test]
-    fn try_from_schema_err_invalid_code() {
-        let raw = SchemaGramType {
-            code: "no_existe".to_string(),
-            created_at: "2025-12-01 10:00:00".to_string(),
-            deleted_at: None,
-        };
-
-        let err: InvalidValueError = EnumGramType::try_from(raw).unwrap_err();
-
-        assert_eq!(err.field, "GramType");
-        assert_eq!(err.message, "no_existe is not a GramType valid");
-        assert!(err.valid_options.is_some());
-        assert!(
-            err.valid_options
-                .as_ref()
-                .unwrap()
+        #[test]
+        fn get_all_codes_matches_all_iter() {
+            let mut a = EnumGramType::get_all_codes();
+            let mut b: Vec<String> = EnumGramType::ALL
                 .iter()
-                .any(|s| *s == "verb_modal")
-        );
+                .map(|g| g.to_code().to_string())
+                .collect();
+
+            a.sort();
+            b.sort();
+            assert_eq!(a, b);
+        }
+    }
+
+    mod from_str {
+        use super::*;
+
+        #[test]
+        fn from_str_and_to_code_round_trip_for_all_codes() {
+            for code in EnumGramType::get_all_codes() {
+                let parsed = EnumGramType::from_str(&code)
+                    .unwrap_or_else(|_| panic!("failed parsing code={code}"));
+                assert_eq!(parsed.to_code(), code);
+            }
+        }
+
+        #[test]
+        fn from_str_invalid_returns_err() {
+            let err = EnumGramType::from_str("not_a_real_gram_type").unwrap_err();
+
+            assert_eq!(err.field, "GramType");
+            assert!(err.message.contains("not_a_real_gram_type"));
+            assert!(err.valid_options.as_ref().unwrap().len() == EnumGramType::ALL.len());
+        }
+    }
+
+    mod try_from_schema {
+        use super::*;
+
+        #[test]
+        fn try_from_schema_ok() {
+            let raw = SchemaGramType {
+                code: "verb_modal".to_string(),
+                created_at: "2025-12-01 10:00:00".to_string(),
+                deleted_at: None,
+            };
+
+            let out = EnumGramType::try_from(raw).unwrap();
+            assert_eq!(out, EnumGramType::VerbModal);
+        }
+
+        #[test]
+        fn try_from_schema_err_invalid_code() {
+            let raw = SchemaGramType {
+                code: "no_existe".to_string(),
+                created_at: "2025-12-01 10:00:00".to_string(),
+                deleted_at: None,
+            };
+
+            let err: InvalidValueError = EnumGramType::try_from(raw).unwrap_err();
+
+            assert_eq!(err.field, "GramType");
+            assert_eq!(err.message, "no_existe is not a GramType valid");
+            assert!(err.valid_options.is_some());
+            assert!(
+                err.valid_options
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .any(|s| *s == "verb_modal")
+            );
+        }
+    }
+
+    mod try_from_i32 {
+        use super::*;
+
+        #[test]
+        fn try_from_returns_ok_for_all_known_ids() {
+            for g in EnumGramType::ALL.iter() {
+                let id = g.id();
+                let out = EnumGramType::try_from(id)
+                    .unwrap_or_else(|e| panic!("expected Ok for id={id}, got Err: {e:?}"));
+
+                assert_eq!(
+                    out, *g,
+                    "EnumGramType::try_from(id) should return the exact variant for id={id}"
+                );
+            }
+        }
+
+        #[test]
+        fn try_from_returns_err_for_unknown_id() {
+            // pick an id that is guaranteed not to exist in ALL
+            let max_id = EnumGramType::ALL.iter().map(|g| g.id()).max().unwrap_or(0);
+
+            let invalid = max_id + 1;
+
+            let err = EnumGramType::try_from(invalid).unwrap_err();
+
+            assert_eq!(err.field, "GramType");
+            assert!(
+                err.message.contains("is not a valid id for GramType"),
+                "unexpected message: {}",
+                err.message
+            );
+            assert!(err.message.contains(&invalid.to_string()));
+            assert!(err.valid_options.is_none());
+        }
+
+        #[test]
+        fn try_from_is_deterministic() {
+            // same input should always map to same output
+            let sample = EnumGramType::ALL.first().unwrap().id();
+
+            let a = EnumGramType::try_from(sample).unwrap();
+            let b = EnumGramType::try_from(sample).unwrap();
+
+            assert_eq!(a, b);
+        }
     }
 }

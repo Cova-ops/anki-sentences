@@ -1,7 +1,7 @@
 use crate::db::schemas::niveau_liste::EnumNiveauListe;
 
 #[derive(Debug)]
-pub(in crate::db) struct SqlSetze {
+pub struct SqlSetze {
     pub setze_spanisch: String,
     pub setze_deutsch: String,
     pub niveau_id: i32,

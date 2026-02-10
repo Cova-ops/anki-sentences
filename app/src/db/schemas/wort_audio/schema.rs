@@ -12,7 +12,7 @@ pub struct SchemaWortAudio {
 }
 
 impl FromSql for SchemaWortAudio {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             wort_id: r.get(0)?,
             audio_name_es: r.get(1)?,
@@ -25,17 +25,13 @@ impl FromSql for SchemaWortAudio {
 
 #[cfg(test)]
 mod tests {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
-
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE worte_audio (
                 wort_id INTEGER NOT NULL,
@@ -48,17 +44,14 @@ mod tests {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_ok_with_all_fields() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO worte_audio (
                 wort_id,
@@ -77,8 +70,7 @@ mod tests {
             ),
         )?;
 
-        let schema: SchemaWortAudio = DbQuery::query_one(
-            &tx,
+        let schema: SchemaWortAudio = conn.query_one(
             r#"
             SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
@@ -86,8 +78,6 @@ mod tests {
             [],
             SchemaWortAudio::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(schema.wort_id, 10);
         assert_eq!(schema.audio_name_es.as_deref(), Some("audio_es.mp3"));
@@ -100,11 +90,9 @@ mod tests {
 
     #[test]
     fn from_sql_ok_with_null_optionals() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO worte_audio (
                 wort_id,
@@ -123,8 +111,7 @@ mod tests {
             ),
         )?;
 
-        let schema: SchemaWortAudio = DbQuery::query_one(
-            &tx,
+        let schema: SchemaWortAudio = conn.query_one(
             r#"
             SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM worte_audio
@@ -132,8 +119,6 @@ mod tests {
             [],
             SchemaWortAudio::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(schema.wort_id, 5);
         assert_eq!(schema.audio_name_es, None);

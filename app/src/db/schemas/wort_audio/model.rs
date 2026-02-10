@@ -37,7 +37,10 @@ impl TryFrom<SchemaWortAudio> for ModelWortAudio {
         let deleted_at = if let Some(date) = value.deleted_at {
             match string_2_datetime(date) {
                 Ok(v) => Some(v.clone()),
-                Err(e) => errs.push(e),
+                Err(e) => {
+                    errs.push(e);
+                    None
+                }
             }
         } else {
             None
@@ -130,7 +133,7 @@ mod tests {
 
     #[test]
     fn try_from_err_when_deleted_at_invalid() {
-        let mut s = schema_ok(Some("NOT_A_DATE"));
+        let s = schema_ok(Some("NOT_A_DATE"));
 
         let err = ModelWortAudio::try_from(s).expect_err("should fail");
         assert!(!err.is_empty(), "should return at least one error");
@@ -152,7 +155,7 @@ mod tests {
         let mut bad1 = schema_ok(None);
         bad1.created_at = "BAD_CREATED".to_string();
 
-        let mut bad2 = schema_ok(Some("BAD_DELETED"));
+        let bad2 = schema_ok(Some("BAD_DELETED"));
 
         let v = vec![schema_ok(None), bad1, bad2];
 

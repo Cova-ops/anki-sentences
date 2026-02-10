@@ -1,6 +1,6 @@
 use crate::db::schemas::wort_gender::EnumWortGender;
 
-pub(in crate::db) struct SqlWortGender {
+pub struct SqlWortGender {
     pub id: i32,
     pub gender: String,
     pub artikel: String,

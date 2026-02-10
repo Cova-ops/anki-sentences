@@ -72,17 +72,17 @@ impl TryFrom<i32> for EnumNiveauListe {
 
     fn try_from(id: i32) -> Result<Self, Self::Error> {
         match id {
-            0 => Self::A1,
-            1 => Self::A2,
-            2 => Self::B1,
-            3 => Self::B2,
-            4 => Self::C1,
-            5 => Self::C2,
+            0 => Ok(Self::A1),
+            1 => Ok(Self::A2),
+            2 => Ok(Self::B1),
+            3 => Ok(Self::B2),
+            4 => Ok(Self::C1),
+            5 => Ok(Self::C2),
 
             _ => Err(InvalidValueError {
                 field: "NiveauListe",
                 message: format!("{id} is not a valid id for NiveauListe"),
-                valid_options: Some(Self::ALL.iter().map(|d| d.id()).collect()),
+                valid_options: None,
             }),
         }
     }
@@ -153,7 +153,7 @@ mod tests {
         assert_eq!(err.message, format!("{invalid} is not a NiveauListe valid"));
 
         let opts = err.valid_options.expect("Debe incluir valid_options");
-        let opts: Vec<String> = opts.collect();
+        let opts: Vec<String> = opts.into_iter().map(|d| d.to_owned()).collect();
 
         assert_eq!(
             opts,
@@ -201,8 +201,7 @@ mod tests {
         assert_eq!(err.field, "NiveauListe");
         assert_eq!(err.message, "-1 is not a valid id for NiveauListe");
 
-        let opts = err.valid_options.unwrap();
-        assert_eq!(opts, vec![0, 1, 2, 3, 4, 5]);
+        assert_eq!(err.valid_options, None);
     }
 
     #[test]
@@ -212,7 +211,6 @@ mod tests {
         assert_eq!(err.field, "NiveauListe");
         assert_eq!(err.message, "6 is not a valid id for NiveauListe");
 
-        let opts = err.valid_options.unwrap();
-        assert_eq!(opts, vec![0, 1, 2, 3, 4, 5]);
+        assert_eq!(err.valid_options, None);
     }
 }

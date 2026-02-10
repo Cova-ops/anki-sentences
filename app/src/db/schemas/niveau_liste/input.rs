@@ -1,14 +1,14 @@
-use crate::db::schemas::niveau_liste::EnumNiveauListe;
-
-#[derive(Debug)]
-pub(in crate::db) struct SqlNiveauListe {
-    pub id: i32,
-    pub niveau: String,
-}
+use crate::db::{schemas::niveau_liste::EnumNiveauListe, traits::SqlNew};
 
 #[derive(Debug, Clone)]
 pub struct InputNiveauListe {
     pub niveau: EnumNiveauListe,
+}
+
+#[derive(Debug)]
+pub struct SqlNiveauListe {
+    pub id: i32,
+    pub niveau: String,
 }
 
 impl From<InputNiveauListe> for SqlNiveauListe {
@@ -17,6 +17,20 @@ impl From<InputNiveauListe> for SqlNiveauListe {
             id: value.niveau.id(),
             niveau: value.niveau.as_str().to_string(),
         }
+    }
+}
+
+impl SqlNew for SqlNiveauListe {
+    type Params<'a>
+        = (&'a dyn rusqlite::ToSql, &'a dyn rusqlite::ToSql)
+    where
+        Self: 'a;
+
+    /// This orden:
+    /// - id
+    /// - niveau
+    fn to_params<'a>(&'a self) -> Self::Params<'a> {
+        (&self.id, &self.niveau)
     }
 }
 

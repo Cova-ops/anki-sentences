@@ -8,7 +8,7 @@ pub struct SchemaWortGender {
 }
 
 impl FromSql for SchemaWortGender {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             gender: r.get(0)?,
             created_at: r.get(1)?,
@@ -19,24 +19,20 @@ impl FromSql for SchemaWortGender {
 
 #[cfg(test)]
 mod tests_schema_wort_gender {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
-
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db(sql_create: &'static str) -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(&tx, sql_create, [])?;
-        tx.commit()?;
+        conn.execute(sql_create, [])?;
 
         Ok(conn)
     }
 
     #[test]
     fn from_sql_ok_with_deleted_at_null() -> Result<(), DbError> {
-        let mut conn = setup_db(
+        let conn = setup_db(
             r#"
             CREATE TABLE test (
                 gender TEXT NOT NULL,
@@ -46,10 +42,7 @@ mod tests_schema_wort_gender {
             "#,
         )?;
 
-        let tx = conn.transaction()?;
-
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO test (gender, created_at, deleted_at)
             VALUES (?1, ?2, NULL);
@@ -57,14 +50,11 @@ mod tests_schema_wort_gender {
             ("Maskuline", "2025-01-01 10:00:00"),
         )?;
 
-        let schema: SchemaWortGender = DbQuery::query_one(
-            &tx,
+        let schema: SchemaWortGender = conn.query_one(
             "SELECT gender, created_at, deleted_at FROM test",
             [],
             SchemaWortGender::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(schema.gender, "Maskuline");
         assert_eq!(schema.created_at, "2025-01-01 10:00:00");
@@ -75,7 +65,7 @@ mod tests_schema_wort_gender {
 
     #[test]
     fn from_sql_ok_with_deleted_at_some() -> Result<(), DbError> {
-        let mut conn = setup_db(
+        let conn = setup_db(
             r#"
             CREATE TABLE test (
                 gender TEXT NOT NULL,
@@ -85,10 +75,7 @@ mod tests_schema_wort_gender {
             "#,
         )?;
 
-        let tx = conn.transaction()?;
-
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO test (gender, created_at, deleted_at)
             VALUES (?1, ?2, ?3);
@@ -96,14 +83,11 @@ mod tests_schema_wort_gender {
             ("Femenin", "2025-01-01 10:00:00", "2025-02-01 12:00:00"),
         )?;
 
-        let schema: SchemaWortGender = DbQuery::query_one(
-            &tx,
+        let schema: SchemaWortGender = conn.query_one(
             "SELECT gender, created_at, deleted_at FROM test",
             [],
             SchemaWortGender::from_sql,
         )?;
-
-        tx.commit()?;
 
         assert_eq!(schema.gender, "Femenin");
         assert_eq!(schema.created_at, "2025-01-01 10:00:00");
@@ -114,7 +98,7 @@ mod tests_schema_wort_gender {
 
     #[test]
     fn from_sql_fails_if_column_type_is_invalid() -> Result<(), DbError> {
-        let mut conn = setup_db(
+        let conn = setup_db(
             r#"
             CREATE TABLE test (
                 gender INTEGER,
@@ -124,10 +108,7 @@ mod tests_schema_wort_gender {
             "#,
         )?;
 
-        let tx = conn.transaction()?;
-
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO test (gender, created_at, deleted_at)
             VALUES (123, '2025-01-01', NULL);
@@ -135,17 +116,18 @@ mod tests_schema_wort_gender {
             [],
         )?;
 
-        let err = DbQuery::query_one(
-            &tx,
-            "SELECT gender, created_at, deleted_at FROM test",
-            [],
-            SchemaWortGender::from_sql,
-        )
-        .unwrap_err();
+        let err = conn
+            .query_one(
+                "SELECT gender, created_at, deleted_at FROM test",
+                [],
+                SchemaWortGender::from_sql,
+            )
+            .unwrap_err();
 
-        // No amarramos mensaje exacto por versiones; solo confirmamos "type" + que trae source
-        assert!(err.message.to_lowercase().contains("type"));
-        assert!(err.source.is_some());
+        match err {
+            rusqlite::Error::InvalidColumnType(_, _, _) => {}
+            _ => panic!("unexpected error"),
+        }
 
         Ok(())
     }

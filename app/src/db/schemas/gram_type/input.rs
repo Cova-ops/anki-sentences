@@ -32,6 +32,10 @@ impl SqlNew for SqlGramType {
     where
         Self: 'a;
 
+    /// This orden:
+    /// - id
+    /// - code
+    /// - name
     fn to_params<'a>(&'a self) -> Self::Params<'a> {
         (&self.id, &self.code, &self.name)
     }

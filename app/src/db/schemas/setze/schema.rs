@@ -14,7 +14,7 @@ pub struct SchemaSetze {
 }
 
 impl FromSql for SchemaSetze {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id: r.get(0)?,
             setze_spanisch: r.get(1)?,
@@ -29,17 +29,15 @@ impl FromSql for SchemaSetze {
 
 #[cfg(test)]
 mod tests_schema_setze {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+    use crate::helpers::error_handler::DbError;
 
     use super::*;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE setze (
                 id INTEGER,
@@ -54,17 +52,14 @@ mod tests_schema_setze {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze (
                 id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
@@ -93,9 +88,7 @@ mod tests_schema_setze {
             FROM setze
         "#;
 
-        let schema: SchemaSetze = DbQuery::query_one(&tx, sql, [], SchemaSetze::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaSetze = conn.query_one(sql, [], SchemaSetze::from_sql)?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.setze_spanisch, "Estoy aprendiendo alemán.");
@@ -111,10 +104,8 @@ mod tests_schema_setze {
     #[test]
     fn from_sql_with_deleted_at() -> Result<(), DbError> {
         let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO setze (
                 id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
@@ -132,9 +123,7 @@ mod tests_schema_setze {
         )?;
 
         let schema: SchemaSetze =
-            DbQuery::query_one(&tx, "SELECT * FROM setze", [], SchemaSetze::from_sql)?;
-
-        tx.commit()?;
+            conn.query_one("SELECT * FROM setze", [], SchemaSetze::from_sql)?;
 
         assert_eq!(schema.id, 2);
         assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-01 00:00:00"));

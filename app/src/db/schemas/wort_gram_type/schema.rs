@@ -10,7 +10,7 @@ pub struct SchemaWortGramType {
 }
 
 impl FromSql for SchemaWortGramType {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id_worte: r.get(0)?,
             id_gram_type: r.get(1)?,
@@ -23,9 +23,7 @@ impl FromSql for SchemaWortGramType {
 
 #[cfg(test)]
 mod tests_schema_wort_gram_type_from_sql {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
-
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {
@@ -34,11 +32,9 @@ mod tests_schema_wort_gram_type_from_sql {
 
     #[test]
     fn from_sql_ok_with_null_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        let out: SchemaWortGramType = DbQuery::query_one(
-            &tx,
+        let out: SchemaWortGramType = conn.query_one(
             r#"
             SELECT
                 ?1 as id_worte,
@@ -50,8 +46,6 @@ mod tests_schema_wort_gram_type_from_sql {
             SchemaWortGramType::from_sql,
         )?;
 
-        tx.commit()?;
-
         assert_eq!(out.id_worte, 10);
         assert_eq!(out.id_gram_type, 4);
         assert_eq!(out.created_at, "2025-12-01 00:00:00");
@@ -62,11 +56,9 @@ mod tests_schema_wort_gram_type_from_sql {
 
     #[test]
     fn from_sql_ok_with_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        let out: SchemaWortGramType = DbQuery::query_one(
-            &tx,
+        let out: SchemaWortGramType = conn.query_one(
             r#"
             SELECT
                 ?1 as id_worte,
@@ -78,8 +70,6 @@ mod tests_schema_wort_gram_type_from_sql {
             SchemaWortGramType::from_sql,
         )?;
 
-        tx.commit()?;
-
         assert_eq!(out.id_worte, 99);
         assert_eq!(out.id_gram_type, 12);
         assert_eq!(out.created_at, "2025-12-01 00:00:00");
@@ -90,48 +80,45 @@ mod tests_schema_wort_gram_type_from_sql {
 
     #[test]
     fn from_sql_err_when_missing_column() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
         // deleted_at no existe (solo 3 columnas)
-        let res: Result<SchemaWortGramType, DbError> = DbQuery::query_one(
-            &tx,
-            r#"
+        let res: Result<SchemaWortGramType, DbError> = conn
+            .query_one(
+                r#"
             SELECT
                 ?1 as id_worte,
                 ?2 as id_gram_type,
                 ?3 as created_at
             "#,
-            params![1i32, 2i32, "2025-12-01 00:00:00"],
-            SchemaWortGramType::from_sql,
-        );
+                params![1i32, 2i32, "2025-12-01 00:00:00"],
+                SchemaWortGramType::from_sql,
+            )
+            .map_err(Into::into);
 
         assert!(res.is_err(), "should fail due to missing column index 3");
-
-        // OJO: no commit si quieres, pero no pasa nada si lo haces
-        // tx.commit()?;
 
         Ok(())
     }
 
     #[test]
     fn from_sql_err_when_type_mismatch() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
         // id_worte viene como TEXT => r.get::<_, i32>(0) debe fallar
-        let res: Result<SchemaWortGramType, DbError> = DbQuery::query_one(
-            &tx,
-            r#"
+        let res: Result<SchemaWortGramType, DbError> = conn
+            .query_one(
+                r#"
             SELECT
                 'not-an-int' as id_worte,
                 ?1 as id_gram_type,
                 ?2 as created_at,
                 NULL as deleted_at
             "#,
-            params![2i32, "2025-12-01 00:00:00"],
-            SchemaWortGramType::from_sql,
-        );
+                params![2i32, "2025-12-01 00:00:00"],
+                SchemaWortGramType::from_sql,
+            )
+            .map_err(Into::into);
 
         assert!(res.is_err(), "should fail due to i32 conversion");
 

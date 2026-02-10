@@ -1,25 +1,33 @@
-use color_eyre::eyre::Result;
 use rusqlite::{Connection, Transaction};
-use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::db::schemas::niveau_liste::{
-    NewNiveauListeSchema as New, NiveauListeSchema as Schema, RawNiveauListeSchema as Raw,
+use crate::{
+    db::{
+        queries::DbQuery,
+        schemas::niveau_liste::{InputNiveauListe, SchemaNiveauListe, SqlNiveauListe},
+        traits::{FromSql, SqlNew},
+    },
+    helpers::error_handler::DbError,
 };
 
 #[cfg(test)]
 mod niveau_liste_test;
 
 pub struct NiveauListeRepo;
-
 impl NiveauListeRepo {
-    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
-        let tx = conn.transaction()?;
+    pub fn bulk_upsert(
+        conn: &mut Connection,
+        data: &[InputNiveauListe],
+    ) -> Result<Vec<SchemaNiveauListe>, DbError> {
+        let tx = conn.transaction().map_err(|e| DbE)?;
         let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert_tx(
+        tx: &Transaction,
+        data: &[InputNiveauListe],
+    ) -> Result<Vec<SchemaNiveauListe>, DbError> {
         if data.is_empty() {
             return Ok(vec![]);
         }
@@ -32,13 +40,39 @@ impl NiveauListeRepo {
         "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
-        let mut stmt = tx.prepare_cached(sql)?;
-
         for d in data {
-            let raw = stmt.query_one(d.to_params(), Raw::from_sql)?;
-            vec_out.push(Schema::from_raw(raw)?)
+            let params: SqlNiveauListe = d.to_owned().into();
+            let raw = DbQuery::query_one(tx, sql, params.to_params(), SchemaNiveauListe::from_sql)?;
+            vec_out.push(raw)
         }
 
         Ok(vec_out)
     }
 }
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

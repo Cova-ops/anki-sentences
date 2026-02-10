@@ -8,7 +8,7 @@ pub struct SchemaNiveauListe {
 }
 
 impl FromSql for SchemaNiveauListe {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             niveau: r.get(0)?,
             created_at: r.get(1)?,
@@ -21,15 +21,13 @@ impl FromSql for SchemaNiveauListe {
 mod tests_schema_niveau_liste_from_sql {
     use super::*;
 
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
+    use crate::helpers::error_handler::DbError;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE niveau_liste (
                 niveau     TEXT NOT NULL,
@@ -40,25 +38,20 @@ mod tests_schema_niveau_liste_from_sql {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn from_sql_ok_with_null_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, NULL)",
             params!["A2", "2025-12-04 18:07:37"],
         )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let out: SchemaNiveauListe = DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql)?;
-
-        tx.commit()?;
+        let out: SchemaNiveauListe = conn.query_one(sql, [], SchemaNiveauListe::from_sql)?;
 
         assert_eq!(out.niveau, "A2");
         assert_eq!(out.created_at, "2025-12-04 18:07:37");
@@ -69,19 +62,15 @@ mod tests_schema_niveau_liste_from_sql {
 
     #[test]
     fn from_sql_ok_with_some_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, ?3)",
             params!["B1", "2025-12-04 18:07:37", "2025-12-31 00:00:00"],
         )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let out: SchemaNiveauListe = DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql)?;
-
-        tx.commit()?;
+        let out: SchemaNiveauListe = conn.query_one(sql, [], SchemaNiveauListe::from_sql)?;
 
         assert_eq!(out.niveau, "B1");
         assert_eq!(out.created_at, "2025-12-04 18:07:37");
@@ -92,13 +81,11 @@ mod tests_schema_niveau_liste_from_sql {
 
     #[test]
     fn from_sql_err_when_type_mismatch() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
         // nivel como INTEGER (mal) para forzar error al leer como String
-        DbQuery::execute(&tx, "DELETE FROM niveau_liste;", [])?;
-        DbQuery::execute(
-            &tx,
+        conn.execute("DELETE FROM niveau_liste;", [])?;
+        conn.execute(
             r#"
             INSERT INTO niveau_liste (niveau, created_at, deleted_at)
             VALUES (123, '2025-12-04 18:07:37', NULL);
@@ -107,8 +94,8 @@ mod tests_schema_niveau_liste_from_sql {
         )?;
 
         let sql = "SELECT niveau, created_at, deleted_at FROM niveau_liste LIMIT 1";
-        let res: Result<SchemaNiveauListe, DbError> =
-            DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql);
+        let res: Result<SchemaNiveauListe, _> =
+            conn.query_one(sql, [], SchemaNiveauListe::from_sql);
 
         // no commit: este test espera error
         assert!(res.is_err());
@@ -126,19 +113,17 @@ mod tests_schema_niveau_liste_from_sql {
 
     #[test]
     fn from_sql_err_when_missing_column() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
-        let tx = conn.transaction()?;
+        let conn = setup_conn()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             "INSERT INTO niveau_liste (niveau, created_at, deleted_at) VALUES (?1, ?2, NULL)",
             params!["C1", "2025-12-04 18:07:37"],
         )?;
 
         // OJO: aquí seleccionamos SOLO 2 columnas pero from_sql intenta get(2)
         let sql = "SELECT niveau, created_at FROM niveau_liste LIMIT 1";
-        let res: Result<SchemaNiveauListe, DbError> =
-            DbQuery::query_one(&tx, sql, [], SchemaNiveauListe::from_sql);
+        let res: Result<SchemaNiveauListe, _> =
+            conn.query_one(sql, [], SchemaNiveauListe::from_sql);
 
         assert!(res.is_err());
         let err = res.unwrap_err();

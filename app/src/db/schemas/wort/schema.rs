@@ -23,7 +23,7 @@ pub struct SchemaWort {
 }
 
 impl FromSql for SchemaWort {
-    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, crate::helpers::error_handler::DbError> {
+    fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id: r.get(0)?,
             gender_id: r.get(1)?,
@@ -44,17 +44,14 @@ impl FromSql for SchemaWort {
 
 #[cfg(test)]
 mod tests {
-    use crate::{db::queries::DbQuery, helpers::error_handler::DbError};
 
-    use super::*;
+    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {
-        let mut conn = Connection::open_in_memory()?;
-        let tx = conn.transaction()?;
+        let conn = Connection::open_in_memory()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             CREATE TABLE wort (
                 id INTEGER,
@@ -75,17 +72,14 @@ mod tests {
             [],
         )?;
 
-        tx.commit()?;
         Ok(conn)
     }
 
     #[test]
     fn schema_wort_from_sql_full_row() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO wort VALUES (
                 1,
@@ -106,10 +100,7 @@ mod tests {
             [],
         )?;
 
-        let schema: SchemaWort =
-            DbQuery::query_one(&tx, "SELECT * FROM wort", [], SchemaWort::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaWort = conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
 
         assert_eq!(schema.id, 1);
         assert_eq!(schema.gender_id, Some(0));
@@ -130,11 +121,9 @@ mod tests {
 
     #[test]
     fn schema_wort_from_sql_with_null_optionals() -> Result<(), DbError> {
-        let mut conn = setup_db()?;
-        let tx = conn.transaction()?;
+        let conn = setup_db()?;
 
-        DbQuery::execute(
-            &tx,
+        conn.execute(
             r#"
             INSERT INTO wort VALUES (
                 2,
@@ -155,10 +144,7 @@ mod tests {
             [],
         )?;
 
-        let schema: SchemaWort =
-            DbQuery::query_one(&tx, "SELECT * FROM wort", [], SchemaWort::from_sql)?;
-
-        tx.commit()?;
+        let schema: SchemaWort = conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
 
         assert_eq!(schema.id, 2);
         assert_eq!(schema.gender_id, None);
