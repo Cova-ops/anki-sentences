@@ -1,5 +1,6 @@
 use crate::{
-    db::view::wort_audio_missing::SchemaWortAudioMissing, helpers::error_handler::InvalidValueError,
+    db::views::wort_audio_missing::SchemaWortAudioMissing,
+    helpers::error_handler::InvalidValueError,
 };
 
 #[derive(Debug)]

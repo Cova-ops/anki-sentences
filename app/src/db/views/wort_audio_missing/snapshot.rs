@@ -1,4 +1,4 @@
-use crate::db::view::wort_audio_missing::ModelWortAudioMissing;
+use crate::db::views::wort_audio_missing::ModelWortAudioMissing;
 
 #[derive(Debug)]
 pub struct SnapshotWortAudioMissing {

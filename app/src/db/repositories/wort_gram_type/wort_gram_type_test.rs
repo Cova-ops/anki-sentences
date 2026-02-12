@@ -381,5 +381,25 @@ mod test_worte_gram_type_repo {
 
             Ok(())
         }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = WortGramTypeRepo::delete_by_wort_id(&mut conn, &[1]).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
     }
 }

@@ -3,7 +3,7 @@ mod repositories;
 pub mod schemas;
 pub mod seeders;
 pub mod traits;
-pub mod view;
+pub mod views;
 
 use std::path::Path;
 
