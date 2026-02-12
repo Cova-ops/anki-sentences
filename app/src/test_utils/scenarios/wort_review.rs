@@ -1,4 +1,7 @@
-use crate::test_utils::prelude::*;
+use crate::{
+    db::schemas::wort_review::{EnumReviewDirection, InputWortReview},
+    test_utils::scenarios::Scenario,
+};
 
 pub fn scenario_wort_review() -> Scenario<InputWortReview> {
     Scenario {

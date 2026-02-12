@@ -33,7 +33,6 @@ impl FromSql for SchemaSetzeReview {
 
 #[cfg(test)]
 mod tests_schema_setze_review {
-    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {

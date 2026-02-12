@@ -16,13 +16,3 @@ pub fn get_conn(path: &Path) -> Result<Connection, rusqlite::Error> {
 
     Ok(conn)
 }
-
-#[cfg(test)]
-pub fn setup_test_db() -> Result<Connection, rusqlite::Error> {
-    use crate::db::schemas::init_schemas;
-
-    let mut conn = Connection::open_in_memory()?;
-    init_schemas(&mut conn)?;
-
-    Ok(conn)
-}

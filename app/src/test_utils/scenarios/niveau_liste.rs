@@ -1,4 +1,4 @@
-use crate::test_utils::prelude::*;
+use crate::{db::schemas::niveau_liste::InputNiveauListe, test_utils::scenarios::Scenario};
 
 pub fn scenario_niveau_liste() -> Scenario<InputNiveauListe> {
     Scenario {

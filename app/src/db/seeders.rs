@@ -2,16 +2,19 @@ use color_eyre::eyre::Result;
 
 use rusqlite::Connection;
 
-use crate::db::{
-    gram_type::GramTypeRepo,
-    niveau_liste::NiveauListeRepo,
-    schemas::{
-        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_gender::EnumWortGender,
+use crate::{
+    db::{
+        gram_type::GramTypeRepo,
+        niveau_liste::NiveauListeRepo,
+        schemas::{
+            gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_gender::EnumWortGender,
+        },
+        worte_gender::WorteGenderRepo,
     },
-    worte_gender::WorteGenderRepo,
+    helpers::error_handler::DbError,
 };
 
-pub fn init_data(conn: &mut Connection) -> Result<()> {
+pub fn init_data(conn: &mut Connection) -> Result<(), DbError> {
     let tx = conn.transaction()?;
 
     // GenderWorte

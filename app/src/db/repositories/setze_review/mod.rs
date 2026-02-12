@@ -1,9 +1,12 @@
-use color_eyre::eyre::{Context, Result};
+use chrono::{DateTime, Utc};
 use rusqlite::{Connection, Transaction, params, params_from_iter};
-use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::db::schemas::setze_review::{
-    NewSetzeReviewSchema as New, RawWorteReviewSchema as Raw, SetzeReviewSchema as Schema,
+use crate::{
+    db::{
+        schemas::setze_review::{InputSetzeReview, SchemaSetzeReview, SqlSetzeReview},
+        traits::{FromSql, SqlNew},
+    },
+    helpers::{error_handler::DbError, time::datetime_2_string},
 };
 
 #[cfg(test)]
@@ -12,14 +15,20 @@ mod setze_review_test;
 pub struct SetzeReviewRepo;
 
 impl SetzeReviewRepo {
-    pub fn bulk_upsert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert(
+        conn: &mut Connection,
+        data: &[InputSetzeReview],
+    ) -> Result<Vec<SchemaSetzeReview>, DbError> {
         let tx = conn.transaction()?;
         let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
     }
 
-    pub fn bulk_upsert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_upsert_tx(
+        tx: &Transaction,
+        data: &[InputSetzeReview],
+    ) -> Result<Vec<SchemaSetzeReview>, DbError> {
         if data.is_empty() {
             return Ok(vec![]);
         }
@@ -39,24 +48,24 @@ impl SetzeReviewRepo {
         "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
-        let mut stmt = tx.prepare_cached(sql).context(format!("sql: {}", sql))?;
+        let mut stmt = tx.prepare_cached(sql).map_err(DbError::with_sql(sql))?;
         for d in data {
+            let params: SqlSetzeReview = d.to_owned().into();
             let raw = stmt
-                .query_one(d.to_params(), Raw::from_sql)
-                .context(format!("sql: {}, params: {:#?}", sql, d))?;
-            vec_out.push(Schema::from_raw(raw)?)
+                .query_one(params.to_params(), SchemaSetzeReview::from_sql)
+                .map_err(DbError::with_sql(sql))?;
+
+            vec_out.push(raw)
         }
 
         Ok(vec_out)
     }
 
-    pub fn fetch_by_satz_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
-        let placeholders = std::iter::repeat_n("?", ids.len())
-            .collect::<Vec<_>>()
-            .join(",");
-
-        let params: Vec<&dyn rusqlite::ToSql> =
-            ids.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
+    pub fn fetch_by_satz_id(
+        conn: &Connection,
+        ids: &[i32],
+    ) -> Result<Vec<SchemaSetzeReview>, DbError> {
+        let placeholders = vec!["?"; ids.len()].join(",");
 
         let sql = format!(
             "
@@ -69,17 +78,21 @@ impl SetzeReviewRepo {
             "
         );
 
-        let mut stmt = conn.prepare(&sql)?;
+        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(&sql))?;
         let raw = stmt
-            .query(params_from_iter(params))?
-            .mapped(Raw::from_sql)
-            .collect::<Result<Vec<Raw>, _>>()?;
+            .query(params_from_iter(ids))
+            .map_err(DbError::with_sql(&sql))?
+            .mapped(SchemaSetzeReview::from_sql)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(DbError::with_sql(&sql))?;
 
-        let vec_out = Schema::from_vec_raw(raw)?;
-        Ok(vec_out)
+        Ok(raw)
     }
 
-    pub fn fetch_review_satz_id_by_day(conn: &Connection, date_review: String) -> Result<Vec<i32>> {
+    pub fn fetch_review_satz_id_by_day(
+        conn: &Connection,
+        date_review: DateTime<Utc>,
+    ) -> Result<Vec<i32>, DbError> {
         let sql = r#"
             SELECT satz_id
             FROM setze_review
@@ -88,11 +101,15 @@ impl SetzeReviewRepo {
             ORDER BY next_review ASC;
         "#;
 
-        let mut stmt = conn.prepare(sql)?;
-        let vec_ids = stmt
-            .query(params![date_review])?
+        let date = datetime_2_string(date_review);
+
+        let mut stmt = conn.prepare(sql).map_err(DbError::with_sql(sql))?;
+        let vec_ids: Vec<i32> = stmt
+            .query(params![date])
+            .map_err(DbError::with_sql(sql))?
             .mapped(|r| r.get(0))
-            .collect::<Result<Vec<i32>, _>>()?;
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(DbError::with_sql(sql))?;
 
         Ok(vec_ids)
     }

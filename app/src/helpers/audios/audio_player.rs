@@ -3,11 +3,7 @@ use std::{fs::File, io::BufReader};
 use color_eyre::eyre::Result;
 use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink};
 
-use crate::{
-    db::schemas::worte_gender::{GenderGermanListe, WorteGenderSchema},
-    helpers::audios::ManageAudios,
-    services::tts::eleven_labs::LanguageVoice,
-};
+use crate::{helpers::audios::ManageAudios, services::tts::eleven_labs::LanguageVoice};
 
 pub struct AudioPlayer {
     stream: OutputStream,

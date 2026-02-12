@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaWortGramType {
     pub id_worte: i32,
     pub id_gram_type: i32,

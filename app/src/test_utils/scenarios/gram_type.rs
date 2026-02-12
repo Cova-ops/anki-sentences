@@ -1,4 +1,4 @@
-use crate::test_utils::prelude::*;
+use crate::{db::schemas::gram_type::InputGramType, test_utils::scenarios::Scenario};
 
 pub fn scenario_gram_type() -> Scenario<InputGramType> {
     Scenario {

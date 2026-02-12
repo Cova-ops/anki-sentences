@@ -40,9 +40,7 @@ impl GramTypeRepo {
             RETURNING id, code, name, created_at, deleted_at;
         "#;
 
-        let mut stmt = tx
-            .prepare_cached(sql)
-            .map_err(|e| DbError::with_sql(sql, e))?;
+        let mut stmt = tx.prepare_cached(sql).map_err(DbError::with_sql(sql))?;
 
         let mut vec_out = Vec::with_capacity(data.len());
 
@@ -50,7 +48,7 @@ impl GramTypeRepo {
             let params: SqlGramType = d.to_owned().into();
             let raw = stmt
                 .query_one(params.to_params(), SchemaGramType::from_sql)
-                .map_err(|e| DbError::with_sql(sql, e))?;
+                .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);
         }

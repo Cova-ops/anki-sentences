@@ -2,16 +2,8 @@ use std::collections::HashMap;
 
 use color_eyre::eyre::{Context, Result};
 use rusqlite::{Connection, Transaction, params, params_from_iter};
-use sql_model::{FromRaw, SqlNew, SqlRaw};
 
-use crate::db::{
-    schemas::{
-        gram_type::GramTypeSchema,
-        worte::{NewWorteSchema as New, RawWorteSchema as Raw, WorteSchema as Schema},
-        worte_gram_type::NewWorteGramTypeSchema,
-    },
-    worte_gram_type::WorteGramTypeRepo,
-};
+use crate::db::{schemas::wort::SchemaWort, worte_gram_type::WorteGramTypeRepo};
 
 #[cfg(test)]
 mod worte_test;
@@ -19,7 +11,7 @@ mod worte_test;
 pub struct WorteRepo;
 
 impl WorteRepo {
-    fn hydrate_gram_types(conn: &Connection, worte: &mut [Schema]) -> Result<()> {
+    fn hydrate_gram_types(conn: &Connection, worte: &mut [SchemaWort]) -> Result<()> {
         if worte.is_empty() {
             return Ok(());
         }
@@ -35,8 +27,6 @@ impl WorteRepo {
 
         for w in worte.iter_mut() {
             if let Some(gt_ids) = map.get(&w.id) {
-                // si NO quieres cache estático, aquí en vez de from_id()
-                // harías un fetch a gram_type por ids y lo mapearías.
                 w.gram_type_id = gt_ids
                     .iter()
                     .map(|id| GramTypeSchema::from_id(*id)) // o fetch_by_ids(...)

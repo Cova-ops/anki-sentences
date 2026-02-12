@@ -1,9 +1,12 @@
+use crate::db::traits::SqlNew;
+
+#[derive(Debug, Clone)]
 pub struct SqlWortGramType {
     pub id_worte: i32,
     pub id_gram_type: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InputWortGramType {
     pub id_worte: i32,
     pub id_gram_type: i32,
@@ -15,6 +18,20 @@ impl From<InputWortGramType> for SqlWortGramType {
             id_worte: value.id_worte,
             id_gram_type: value.id_gram_type,
         }
+    }
+}
+
+impl SqlNew for SqlWortGramType {
+    type Params<'a>
+        = (&'a dyn rusqlite::ToSql, &'a dyn rusqlite::ToSql)
+    where
+        Self: 'a;
+
+    /// This orden:
+    /// - id_worte
+    /// - id_gram_type
+    fn to_params<'a>(&'a self) -> Self::Params<'a> {
+        (&self.id_worte, &self.id_gram_type)
     }
 }
 

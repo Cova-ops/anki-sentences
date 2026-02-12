@@ -2,7 +2,6 @@ use rusqlite::{Connection, Transaction};
 
 use crate::{
     db::{
-        queries::DbQuery,
         schemas::niveau_liste::{InputNiveauListe, SchemaNiveauListe, SqlNiveauListe},
         traits::{FromSql, SqlNew},
     },
@@ -18,7 +17,7 @@ impl NiveauListeRepo {
         conn: &mut Connection,
         data: &[InputNiveauListe],
     ) -> Result<Vec<SchemaNiveauListe>, DbError> {
-        let tx = conn.transaction().map_err(|e| DbE)?;
+        let tx = conn.transaction()?;
         let out = Self::bulk_upsert_tx(&tx, data)?;
         tx.commit()?;
         Ok(out)
@@ -42,37 +41,10 @@ impl NiveauListeRepo {
         let mut vec_out = Vec::with_capacity(data.len());
         for d in data {
             let params: SqlNiveauListe = d.to_owned().into();
-            let raw = DbQuery::query_one(tx, sql, params.to_params(), SchemaNiveauListe::from_sql)?;
+            let raw = tx.query_one(sql, params.to_params(), SchemaNiveauListe::from_sql)?;
             vec_out.push(raw)
         }
 
         Ok(vec_out)
     }
 }
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

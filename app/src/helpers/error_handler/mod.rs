@@ -87,7 +87,7 @@ pub struct FieldIssue {
 
 #[derive(Debug)]
 pub struct DbError {
-    pub sql: Option<&'static str>,
+    pub sql: Option<String>,
     pub message: String,
     pub source: Option<rusqlite::Error>,
 }
@@ -106,7 +106,7 @@ impl fmt::Display for DbError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Database error: {}", self.message)?;
 
-        if let Some(sql) = self.sql {
+        if let Some(sql) = self.sql.as_deref() {
             writeln!(f, "SQL: {}", sql)?;
         }
 
@@ -121,9 +121,9 @@ impl fmt::Display for DbError {
 impl std::error::Error for DbError {}
 
 impl DbError {
-    pub fn with_sql(sql: &'static str, e: rusqlite::Error) -> Self {
-        Self {
-            sql: Some(sql),
+    pub fn with_sql<'a>(sql: impl Into<String>) -> impl FnOnce(rusqlite::Error) -> DbError {
+        move |e| DbError {
+            sql: Some(sql.into()),
             message: e.to_string(),
             source: Some(e),
         }

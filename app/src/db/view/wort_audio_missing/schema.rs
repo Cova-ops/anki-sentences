@@ -23,7 +23,6 @@ impl FromSql for SchemaWortAudioMissing {
 
 #[cfg(test)]
 mod tests_schema_wort_audio_missing {
-    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {

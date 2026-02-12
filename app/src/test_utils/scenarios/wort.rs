@@ -1,6 +1,9 @@
 use crate::{
-    db::schemas::{niveau_liste::EnumNiveauListe, wort::InputWort, wort_gender::EnumWortGender},
-    test_utils::{prelude::EnumGramType, scenarios::Scenario},
+    db::schemas::{
+        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort::InputWort,
+        wort_gender::EnumWortGender,
+    },
+    test_utils::scenarios::Scenario,
 };
 
 pub fn scenario_wort() -> Scenario<InputWort> {

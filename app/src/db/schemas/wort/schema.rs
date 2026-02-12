@@ -44,15 +44,19 @@ impl FromSql for SchemaWort {
 
 #[cfg(test)]
 mod tests {
+    use crate::helpers::error_handler::DbError;
 
-    use crate::test_utils::prelude::*;
+    use super::*;
     use rusqlite::Connection;
 
-    fn setup_db() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
+    mod from_sql {
+        use super::*;
 
-        conn.execute(
-            r#"
+        fn setup_db() -> Result<Connection, DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            conn.execute(
+                r#"
             CREATE TABLE wort (
                 id INTEGER,
                 gender_id INTEGER,
@@ -69,18 +73,18 @@ mod tests {
                 deleted_at TEXT
             );
             "#,
-            [],
-        )?;
+                [],
+            )?;
 
-        Ok(conn)
-    }
+            Ok(conn)
+        }
 
-    #[test]
-    fn schema_wort_from_sql_full_row() -> Result<(), DbError> {
-        let conn = setup_db()?;
+        #[test]
+        fn schema_wort_from_sql_full_row() -> Result<(), DbError> {
+            let conn = setup_db()?;
 
-        conn.execute(
-            r#"
+            conn.execute(
+                r#"
             INSERT INTO wort VALUES (
                 1,
                 0,
@@ -97,34 +101,35 @@ mod tests {
                 NULL
             );
             "#,
-            [],
-        )?;
+                [],
+            )?;
 
-        let schema: SchemaWort = conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
+            let schema: SchemaWort =
+                conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
 
-        assert_eq!(schema.id, 1);
-        assert_eq!(schema.gender_id, Some(0));
-        assert_eq!(schema.worte_de, "Haus");
-        assert_eq!(schema.worte_es, "Casa");
-        assert_eq!(schema.plural.as_deref(), Some("Häuser"));
-        assert_eq!(schema.niveau_id, 2);
-        assert_eq!(schema.example_de, "Das Haus ist groß.");
-        assert_eq!(schema.example_es, "La casa es grande.");
-        assert_eq!(schema.verb_aux.as_deref(), Some("sein"));
-        assert_eq!(schema.trennbar, Some(true));
-        assert_eq!(schema.reflexiv, Some(false));
-        assert_eq!(schema.created_at, "2025-12-04 17:44:37");
-        assert_eq!(schema.deleted_at, None);
+            assert_eq!(schema.id, 1);
+            assert_eq!(schema.gender_id, Some(0));
+            assert_eq!(schema.worte_de, "Haus");
+            assert_eq!(schema.worte_es, "Casa");
+            assert_eq!(schema.plural.as_deref(), Some("Häuser"));
+            assert_eq!(schema.niveau_id, 2);
+            assert_eq!(schema.example_de, "Das Haus ist groß.");
+            assert_eq!(schema.example_es, "La casa es grande.");
+            assert_eq!(schema.verb_aux.as_deref(), Some("sein"));
+            assert_eq!(schema.trennbar, Some(true));
+            assert_eq!(schema.reflexiv, Some(false));
+            assert_eq!(schema.created_at, "2025-12-04 17:44:37");
+            assert_eq!(schema.deleted_at, None);
 
-        Ok(())
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn schema_wort_from_sql_with_null_optionals() -> Result<(), DbError> {
-        let conn = setup_db()?;
+        #[test]
+        fn schema_wort_from_sql_with_null_optionals() -> Result<(), DbError> {
+            let conn = setup_db()?;
 
-        conn.execute(
-            r#"
+            conn.execute(
+                r#"
             INSERT INTO wort VALUES (
                 2,
                 NULL,
@@ -141,19 +146,21 @@ mod tests {
                 '2025-12-05 10:00:00'
             );
             "#,
-            [],
-        )?;
+                [],
+            )?;
 
-        let schema: SchemaWort = conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
+            let schema: SchemaWort =
+                conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
 
-        assert_eq!(schema.id, 2);
-        assert_eq!(schema.gender_id, None);
-        assert_eq!(schema.plural, None);
-        assert_eq!(schema.verb_aux, None);
-        assert_eq!(schema.trennbar, None);
-        assert_eq!(schema.reflexiv, None);
-        assert_eq!(schema.deleted_at.as_deref(), Some("2025-12-05 10:00:00"));
+            assert_eq!(schema.id, 2);
+            assert_eq!(schema.gender_id, None);
+            assert_eq!(schema.plural, None);
+            assert_eq!(schema.verb_aux, None);
+            assert_eq!(schema.trennbar, None);
+            assert_eq!(schema.reflexiv, None);
+            assert_eq!(schema.deleted_at.as_deref(), Some("2025-12-05 10:00:00"));
 
-        Ok(())
+            Ok(())
+        }
     }
 }

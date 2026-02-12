@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SchemaSetze {
     pub id: i32,
 
@@ -29,9 +29,6 @@ impl FromSql for SchemaSetze {
 
 #[cfg(test)]
 mod tests_schema_setze {
-    use crate::helpers::error_handler::DbError;
-
-    use super::*;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {
@@ -55,28 +52,31 @@ mod tests_schema_setze {
         Ok(conn)
     }
 
-    #[test]
-    fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+    mod from_sql {
+        use super::*;
 
-        conn.execute(
-            r#"
+        #[test]
+        fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
+            let conn = setup_conn()?;
+
+            conn.execute(
+                r#"
             INSERT INTO setze (
                 id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
             "#,
-            params![
-                1,
-                "Estoy aprendiendo alemán.",
-                "Ich lerne Deutsch.",
-                2,
-                "learning",
-                "2025-01-01 10:00:00",
-                Option::<String>::None
-            ],
-        )?;
+                params![
+                    1,
+                    "Estoy aprendiendo alemán.",
+                    "Ich lerne Deutsch.",
+                    2,
+                    "learning",
+                    "2025-01-01 10:00:00",
+                    Option::<String>::None
+                ],
+            )?;
 
-        let sql = r#"
+            let sql = r#"
             SELECT
                 id,
                 setze_spanisch,
@@ -88,46 +88,47 @@ mod tests_schema_setze {
             FROM setze
         "#;
 
-        let schema: SchemaSetze = conn.query_one(sql, [], SchemaSetze::from_sql)?;
+            let schema: SchemaSetze = conn.query_one(sql, [], SchemaSetze::from_sql)?;
 
-        assert_eq!(schema.id, 1);
-        assert_eq!(schema.setze_spanisch, "Estoy aprendiendo alemán.");
-        assert_eq!(schema.setze_deutsch, "Ich lerne Deutsch.");
-        assert_eq!(schema.niveau_id, 2);
-        assert_eq!(schema.thema, "learning");
-        assert_eq!(schema.created_at, "2025-01-01 10:00:00");
-        assert_eq!(schema.deleted_at, None);
+            assert_eq!(schema.id, 1);
+            assert_eq!(schema.setze_spanisch, "Estoy aprendiendo alemán.");
+            assert_eq!(schema.setze_deutsch, "Ich lerne Deutsch.");
+            assert_eq!(schema.niveau_id, 2);
+            assert_eq!(schema.thema, "learning");
+            assert_eq!(schema.created_at, "2025-01-01 10:00:00");
+            assert_eq!(schema.deleted_at, None);
 
-        Ok(())
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn from_sql_with_deleted_at() -> Result<(), DbError> {
-        let mut conn = setup_conn()?;
+        #[test]
+        fn from_sql_with_deleted_at() -> Result<(), DbError> {
+            let conn = setup_conn()?;
 
-        conn.execute(
-            r#"
+            conn.execute(
+                r#"
             INSERT INTO setze (
                 id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
             "#,
-            params![
-                2,
-                "Ella trabaja aquí.",
-                "Sie arbeitet hier.",
-                3,
-                "work",
-                "2025-01-02 12:00:00",
-                "2025-02-01 00:00:00"
-            ],
-        )?;
+                params![
+                    2,
+                    "Ella trabaja aquí.",
+                    "Sie arbeitet hier.",
+                    3,
+                    "work",
+                    "2025-01-02 12:00:00",
+                    "2025-02-01 00:00:00"
+                ],
+            )?;
 
-        let schema: SchemaSetze =
-            conn.query_one("SELECT * FROM setze", [], SchemaSetze::from_sql)?;
+            let schema: SchemaSetze =
+                conn.query_one("SELECT * FROM setze", [], SchemaSetze::from_sql)?;
 
-        assert_eq!(schema.id, 2);
-        assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-01 00:00:00"));
+            assert_eq!(schema.id, 2);
+            assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-01 00:00:00"));
 
-        Ok(())
+            Ok(())
+        }
     }
 }

@@ -28,7 +28,6 @@ impl From<SchemaNiveauListe> for SnapshotNiveauListe {
 
 #[cfg(test)]
 mod tests_snapshot_niveau_liste {
-    use crate::test_utils::prelude::*;
     use chrono::{TimeZone, Utc};
 
     mod from_model {

@@ -5,8 +5,8 @@ use rusqlite::Connection;
 
 use crate::{
     db::{
-        get_conn, worte::WorteRepo, worte_audio::WorteAudioRepo,
-        worte_gram_type::WorteGramTypeRepo, worte_review::WorteReviewRepo,
+        get_conn, wort_gram_type::WortGramTypeRepo, worte::WorteRepo, worte_audio::WorteAudioRepo,
+        worte_review::WorteReviewRepo,
     },
     helpers::{
         audios::{AudioKind, ManageAudios},

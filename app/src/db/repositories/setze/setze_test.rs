@@ -1,235 +1,330 @@
-use crate::db::setup_test_db;
-
 #[cfg(test)]
 mod test_setze_repo {
-
-    use crate::db::{
-        schemas::setze::{NewSetzeSchema as New, SetzeSchema as Schema},
-        setze::SetzeRepo,
+    use crate::{
+        db::{
+            schemas::{
+                niveau_liste::EnumNiveauListe,
+                setze::{InputSetze, SnapshotSetze},
+            },
+            seeders::init_data,
+            setze::SetzeRepo,
+        },
+        helpers::{error_handler::DbError, time::string_2_datetime},
+        test_utils::scenarios::scenario_setze,
     };
 
-    use super::*;
+    use rusqlite::Connection;
 
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct Snapshot {
-        id: i32,
-        setze_spanisch: String,
-        setze_deutsch: String,
-        niveau_id: NiveauSnapshot,
-        thema: String,
+    fn assert_iter(res: &[SchemaSetze], data: &[InputSetze]) {
+        assert_eq!(res.len(), data.len());
 
-        created_at: String,
-        deleted_at: String,
+        for (i, satz) in data.iter().enumerate() {
+            assert_eq!(res[i].setze_spanisch, satz.setze_spanisch);
+            assert_eq!(res[i].setze_deutsch, satz.setze_deutsch);
+            assert_eq!(res[i].niveau_id, satz.niveau.id());
+            assert_eq!(res[i].thema, satz.thema);
+            assert!(res[i].deleted_at.is_none());
+        }
     }
 
-    #[derive(Debug)]
-    #[allow(dead_code)]
-    struct NiveauSnapshot {
-        id: i32,
-        niveau: String,
-        created_at: String,
-        deleted_at: String,
-    }
-
-    fn placeholder_dates(data: Vec<Schema>) -> Vec<Snapshot> {
-        data.into_iter()
-            .map(|d| Snapshot {
-                id: d.id,
-                setze_spanisch: d.setze_spanisch,
-                setze_deutsch: d.setze_deutsch,
-                niveau_id: NiveauSnapshot {
-                    id: d.niveau_id.id,
-                    niveau: d.niveau_id.niveau,
-                    created_at: "<created_at>".into(),
-                    deleted_at: "<deleted_at>".into(),
-                },
-                thema: d.thema,
-
-                created_at: "<created_at>".into(),
-                deleted_at: "<deleted_at>".into(),
-            })
-            .collect()
-    }
-
-    mod insert_update {
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
-
-        use crate::db::seeders::init_data;
+    mod bulk_insert {
 
         use super::*;
 
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            Ok(())
-        }
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
 
-        fn run_bulk_insert_update_scenario<F>(c1: F)
-        where
-            F: FnOnce(&mut Connection) -> Result<Vec<Schema>>,
-        {
-            let mut conn = setup_test_db().unwrap();
-            init_data_local(&mut conn).expect("Error al iniciar datos dummy");
-
-            let res_1 = c1(&mut conn).expect("La inserción no debe fallar");
-
-            assert_eq!(res_1.len(), 2);
-
-            assert_eq!(res_1[0].id, 1);
-            assert_eq!(res_1[0].setze_spanisch, "Hola");
-            assert_eq!(res_1[0].setze_deutsch, "Hallo");
-            assert_eq!(res_1[0].niveau_id.id, 1);
-            assert_eq!(res_1[0].thema, "Thema 1");
-
-            assert_eq!(res_1[1].id, 2);
-            assert_eq!(res_1[1].setze_spanisch, "Adios");
-            assert_eq!(res_1[1].setze_deutsch, "Tschüss");
-            assert_eq!(res_1[1].niveau_id.id, 2);
-            assert_eq!(res_1[1].thema, "Thema 2");
-
-            let res_1 = placeholder_dates(res_1);
-            insta::assert_debug_snapshot!(res_1);
+            Ok(conn)
         }
 
         #[test]
-        fn test_bulk_insert() {
-            let data_1 = vec![
-                New {
-                    setze_spanisch: "Hola".into(),
-                    setze_deutsch: "Hallo".into(),
-                    niveau_id: 1,
-                    thema: "Thema 1".into(),
-                },
-                New {
-                    setze_spanisch: "Adios".into(),
-                    setze_deutsch: "Tschüss".into(),
-                    niveau_id: 2,
-                    thema: "Thema 2".into(),
-                },
-            ];
-            run_bulk_insert_update_scenario(|conn| SetzeRepo::bulk_insert(conn, &data_1));
-        }
+        fn empty() -> Result<(), DbError> {
+            let mut conn = init_conn()?;
 
-        #[test]
-        fn test_bulk_insert_and_update_tx() {
-            let data_1 = vec![
-                New {
-                    setze_spanisch: "Hola".into(),
-                    setze_deutsch: "Hallo".into(),
-                    niveau_id: 1,
-                    thema: "Thema 1".into(),
-                },
-                New {
-                    setze_spanisch: "Adios".into(),
-                    setze_deutsch: "Tschüss".into(),
-                    niveau_id: 2,
-                    thema: "Thema 2".into(),
-                },
-            ];
-            run_bulk_insert_update_scenario(|conn| {
-                let tx = conn.transaction()?;
-                let out = SetzeRepo::bulk_insert_tx(&tx, &data_1)?;
-                tx.commit()?;
-                Ok(out)
-            });
-        }
-    }
+            let res = SetzeRepo::bulk_insert(&mut conn, &[])?;
 
-    mod fetch {
-        use color_eyre::eyre::Result;
-        use rusqlite::Connection;
+            let snapshot: Vec<SnapshotSetze> = res.into_iter().map(Into::into).collect();
+            insta::assert_debug_snapshot!("[Setze::bulk_insert] - empty", snapshot);
 
-        use super::*;
-        use crate::db::{
-            schemas::setze_review::NewSetzeReviewSchema, seeders::init_data, setup_test_db,
-            setze::SetzeRepo, setze_review::SetzeReviewRepo,
-        };
-
-        fn init_data_local(conn: &mut Connection) -> Result<()> {
-            init_data(conn)?;
-            let data_1 = vec![
-                New {
-                    setze_spanisch: "Hola".into(),
-                    setze_deutsch: "Hallo".into(),
-                    niveau_id: 1,
-                    thema: "Thema 1".into(),
-                },
-                New {
-                    setze_spanisch: "Adios".into(),
-                    setze_deutsch: "Tschüss".into(),
-                    niveau_id: 3,
-                    thema: "Thema 2".into(),
-                },
-            ];
-            SetzeRepo::bulk_insert(conn, &data_1)?;
             Ok(())
         }
 
         #[test]
-        fn test_fetch_by_id() {
-            let mut conn = setup_test_db().expect("Error al crear db test");
-            init_data_local(&mut conn).expect("Error al iniciar data test");
+        fn after_insert() -> Result<(), DbError> {
+            let mut conn = init_conn()?;
 
-            let res = SetzeRepo::fetch_by_id(&conn, &[]).expect("Error al hacer fetch");
-            assert_eq!(res.len(), 0);
-            insta::assert_debug_snapshot!(res);
+            let data = scenario_setze().initial;
+            let res = SetzeRepo::bulk_insert(&tx, &data)?;
 
-            let res = SetzeRepo::fetch_by_id(&conn, &[1, 2]).expect("Error al hacer fetch");
-            assert_eq!(res.len(), 2);
+            // A couple of hard asserts so we don't rely only on snapshots
+            assert!(res[0].id > 0);
+            assert!(res[1].id > 0);
+            assert_ne!(res[0].id, res[1].id);
 
-            assert_eq!(res[0].id, 1);
-            assert_eq!(res[0].setze_spanisch, "Hola");
-            assert_eq!(res[0].setze_deutsch, "Hallo");
-            assert_eq!(res[0].niveau_id.id, 1);
-            assert_eq!(res[0].thema, "Thema 1");
+            assert_iter(&res, &data);
 
-            assert_eq!(res[1].id, 2);
-            assert_eq!(res[1].setze_spanisch, "Adios");
-            assert_eq!(res[1].setze_deutsch, "Tschüss");
-            assert_eq!(res[1].niveau_id.id, 3);
-            assert_eq!(res[1].thema, "Thema 2");
+            let snapshot: Vec<SnapshotSetze> = res.into_iter().map(Into::into).collect();
+            insta::assert_debug_snapshot!("[Setze::bulk_insert] - after_insert", snapshot);
 
-            let res = placeholder_dates(res);
-            insta::assert_debug_snapshot!(res);
-
-            let res = SetzeRepo::fetch_by_id(&conn, &[99]).expect("Error al hacer fetch");
-            assert_eq!(res.len(), 0);
-            insta::assert_debug_snapshot!(res);
+            Ok(())
         }
 
         #[test]
-        fn test_fetch_id_neue_sentences() {
-            let mut conn = setup_test_db().expect("Error al crear db test");
-            init_data_local(&mut conn).expect("Error al iniciar data test");
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
 
-            let res = SetzeRepo::fetch_id_neue_sentences(&conn).expect("Error al hacer fetch");
+            let data = vec![InputSetze {
+                setze_spanisch: "x".into(),
+                setze_deutsch: "y".into(),
+                niveau: EnumNiveauListe::A2,
+                thema: "z".into(),
+            }];
+
+            let err = SetzeRepo::bulk_insert(&mut conn, &data).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
+    }
+
+    mod fetch_by_id {
+        use super::*;
+
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
+
+            let data = scenario_setze().initial;
+            SetzeRepo::bulk_insert(&mut conn, &data)?;
+
+            Ok(conn)
+        }
+
+        #[test]
+        fn empty() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let data: Vec<_> = vec![];
+            let res = SetzeRepo::fetch_by_id(&conn, &data)?;
+            assert_eq!(res, []);
+
+            let res: Vec<SnapshotSetze> = res.into_iter().map(Into::into).collect();
+            insta::assert_debug_snapshot!("[Setze::fetch_by_id] - empty", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn with_data() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let data: Vec<_> = scenario_setze().initial.drain(0..2).collect();
+            let res = SetzeRepo::fetch_by_id(&conn, &[1, 2])?;
+
+            assert_iter(&res, &data);
+
+            let res: Vec<SnapshotSetze> = res.into_iter().map(Into::into).collect();
+            insta::assert_debug_snapshot!("[Setze::fetch_by_id] - with_data", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn not_exists() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let res = SetzeRepo::fetch_by_id(&conn, &[-1])?;
+            assert_eq!(res.len(), 0);
+
+            let res: Vec<SnapshotSetze> = res.into_iter().map(Into::into).collect();
+            insta::assert_debug_snapshot!("[Setze::fetch_by_id] - not_exists", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = SetzeRepo::fetch_by_id(&mut conn, &[1, 2]).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
+    }
+
+    mod fetch_id_neue_sentences {
+        use crate::db::schemas::setze_review::InputSetzeReview;
+
+        use super::*;
+
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
+
+            let data = scenario_setze().initial;
+            SetzeRepo::bulk_insert(&mut conn, &data)?;
+
+            Ok(conn)
+        }
+
+        #[test]
+        fn valid_modified() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let res = SetzeRepo::fetch_id_neue_sentences(&conn)?;
 
             assert_eq!(res.len(), 2);
-            assert_eq!(res[0], 1);
-            assert_eq!(res[1], 2);
+            assert_eq!(res, [1, 2]);
 
-            insta::assert_debug_snapshot!(res);
+            insta::assert_debug_snapshot!(
+                "[Setze::fetch_id_neue_sentences] - valid_modified (1)",
+                res
+            );
 
             SetzeReviewRepo::bulk_upsert(
                 &mut conn,
-                &[NewSetzeReviewSchema {
+                &[InputSetzeReview {
                     satz_id: 1,
                     repetitions: 1,
                     ease_factor: 2.0,
                     interval: 1,
-                    last_review: "2025-01-10 12:00:00".into(),
-                    next_review: "2025-01-10 12:00:00".into(),
+                    last_review: string_2_datetime("2025-01-10 12:00:00").unwrap(),
+                    next_review: string_2_datetime("2025-01-10 12:00:00").unwrap(),
                 }],
-            )
-            .expect("Error al guardar los resultados del historial");
+            )?;
 
-            let res = SetzeRepo::fetch_id_neue_sentences(&conn).expect("Error al hacer fetch");
+            let res = SetzeRepo::fetch_id_neue_sentences(&conn)?;
 
             assert_eq!(res.len(), 1);
-            assert_eq!(res[0], 2);
+            assert_eq!(res, [2]);
 
-            insta::assert_debug_snapshot!(res);
+            insta::assert_debug_snapshot!(
+                "[Setze::fetch_id_neue_sentences] - valid_modified (2)",
+                res
+            );
+
+            Ok(())
+        }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = SetzeRepo::fetch_id_neue_sentences(&mut conn).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
+    }
+
+    mod fetch_id_without_audio {
+        use super::*;
+
+        use std::path::PathBuf;
+
+        use crate::{
+            db::{schemas::setze_audio::InputSetzeAudio, setze_audio::SetzeAudioRepo},
+            services::tts::eleven_labs::EnumVoiceIDElevenLabs,
+        };
+
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
+
+            let data = scenario_setze().initial;
+            SetzeRepo::bulk_insert(&mut conn, &data)?;
+
+            Ok(conn)
+        }
+
+        #[test]
+        fn valid_modified() -> Result<(), DbError> {
+            let mut conn = init_conn()?;
+
+            let res = SetzeRepo::fetch_id_without_audio(&conn)?;
+            assert_eq!(res.len(), 2);
+            assert_eq!(res, [1, 2]);
+
+            insta::assert_debug_snapshot!(
+                "[Setze::fetch_setze_without_audio] - valid_modified (1)",
+                res
+            );
+
+            SetzeAudioRepo::bulk_upsert(
+                &mut conn,
+                &[InputSetzeAudio {
+                    satz_id: 1,
+                    voice: EnumVoiceIDElevenLabs::GermanMan,
+                    file_path: PathBuf::from("abc"),
+                }],
+            )?;
+
+            let res = SetzeRepo::fetch_id_without_audio(&conn)?;
+            assert_eq!(res.len(), 1);
+            assert_eq!(res, [2]);
+
+            insta::assert_debug_snapshot!(
+                "[Setze::fetch_id_neue_sentences] - valid_modified (2)",
+                res
+            );
+
+            Ok(())
+        }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = SetzeRepo::fetch_id_without_audio(&mut conn).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
         }
     }
 }

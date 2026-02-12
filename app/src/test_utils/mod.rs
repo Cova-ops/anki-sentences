@@ -1,6 +1,5 @@
-pub mod macros;
+#![cfg(test)]
 
-#[cfg(test)]
-pub mod prelude;
+pub mod macros;
 pub mod scenarios;
 pub mod traits;

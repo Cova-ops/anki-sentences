@@ -1,6 +1,12 @@
 use rusqlite::{Connection, Transaction, params_from_iter};
 
-use crate::with_ctx;
+use crate::{
+    db::{
+        schemas::setze::{InputSetze, SchemaSetze, SqlSetze},
+        traits::{FromSql, SqlNew},
+    },
+    helpers::error_handler::DbError,
+};
 
 #[cfg(test)]
 mod setze_test;
@@ -8,14 +14,20 @@ mod setze_test;
 pub struct SetzeRepo;
 
 impl SetzeRepo {
-    pub fn bulk_insert(conn: &mut Connection, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_insert(
+        conn: &mut Connection,
+        data: &[InputSetze],
+    ) -> Result<Vec<SchemaSetze>, DbError> {
         let tx = conn.transaction()?;
         let result = Self::bulk_insert_tx(&tx, data)?;
         tx.commit()?;
         Ok(result)
     }
 
-    pub fn bulk_insert_tx(tx: &Transaction, data: &[New]) -> Result<Vec<Schema>> {
+    pub fn bulk_insert_tx(
+        tx: &Transaction,
+        data: &[InputSetze],
+    ) -> Result<Vec<SchemaSetze>, DbError> {
         if data.is_empty() {
             return Ok(vec![]);
         }
@@ -26,20 +38,22 @@ impl SetzeRepo {
             RETURNING id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at;
         "#;
 
-        let mut out: Vec<Schema> = Vec::with_capacity(data.len());
-        let mut stmt = tx.prepare_cached(sql)?;
+        let mut out: Vec<SchemaSetze> = Vec::with_capacity(data.len());
+        let mut stmt = tx.prepare(sql)?;
 
         for d in data {
+            let params: SqlSetze = d.to_owned().into();
             let raw = stmt
-                .query_one(d.to_params(), Raw::from_sql)
-                .with_context(|| format!("sql: {}, params: {:#?}", sql, d))?;
-            out.push(Schema::from_raw(raw)?);
+                .query_one(params.to_params(), SchemaSetze::from_sql)
+                .map_err(DbError::with_sql(sql))?;
+
+            out.push(raw);
         }
 
         Ok(out)
     }
 
-    pub fn fetch_id_neue_sentences(conn: &Connection) -> Result<Vec<i32>> {
+    pub fn fetch_id_neue_sentences(conn: &Connection) -> Result<Vec<i32>, DbError> {
         let sql = "
             SELECT
                 s.id
@@ -51,28 +65,26 @@ impl SetzeRepo {
             )
             AND s.deleted_at IS NULL
             ORDER BY s.id ASC;
-            "
-        .to_string();
+            ";
 
-        let mut stmt = conn.prepare_cached(&sql)?;
+        let mut stmt = conn.prepare(sql)?;
 
         let ids = stmt
             .query([])
-            .context(with_ctx!(format!("Sql - {}", sql)))?
+            .map_err(DbError::with_sql(sql))?
             .mapped(|r| r.get(0))
-            .collect::<Result<Vec<i32>, _>>()?;
+            .collect::<Result<Vec<i32>, _>>()
+            .map_err(DbError::with_sql(sql))?;
 
         Ok(ids)
     }
 
-    pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<Schema>> {
+    pub fn fetch_by_id(conn: &Connection, ids: &[i32]) -> Result<Vec<SchemaSetze>, DbError> {
         if ids.is_empty() {
             return Ok(vec![]);
         }
 
-        let placeholders = std::iter::repeat_n("?", ids.len())
-            .collect::<Vec<_>>()
-            .join(",");
+        let placeholders = vec!["?"; ids.len()].join(",");
 
         let sql = format!(
             "SELECT
@@ -88,46 +100,37 @@ impl SetzeRepo {
             ORDER BY setze_deutsch"
         );
 
-        let mut stmt = conn.prepare_cached(&sql)?;
-        let params: Vec<&dyn rusqlite::ToSql> =
-            ids.iter().map(|t| t as &dyn rusqlite::ToSql).collect();
+        let mut stmt = conn.prepare(&sql)?;
 
         let rows = stmt
-            .query(params_from_iter(params))
-            .context(format!("sql: {}, params: {:#?}", sql, ids))?
-            .mapped(Raw::from_sql)
-            .collect::<Result<Vec<Raw>, _>>()?;
+            .query(params_from_iter(ids))
+            .map_err(DbError::with_sql(&sql))?
+            .mapped(SchemaSetze::from_sql)
+            .collect::<Result<Vec<SchemaSetze>, _>>()
+            .map_err(DbError::with_sql(&sql))?;
 
-        let result = Schema::from_vec_raw(rows)?;
-        Ok(result)
+        Ok(rows)
     }
 
-    pub fn fetch_setze_without_audio(conn: &Connection) -> Result<Vec<Schema>> {
+    pub fn fetch_id_without_audio(conn: &Connection) -> Result<Vec<i32>, DbError> {
         let sql = "
             SELECT
                 s.id,
-                s.setze_spanisch,
-                s.setze_deutsch,
-                s.niveau_id,
-                s.thema,
-                s.created_at,
-                s.deleted_at
             FROM setze s
             LEFT JOIN setze_audio sa ON s.id = sa.wort_id 
             WHERE s.deleted_at IS NULL AND sa.satz_id is NULL
             ORDER BY s.id ASC;
-        "
-        .to_string();
+        ";
 
-        let mut stmt = conn.prepare_cached(&sql)?;
+        let mut stmt = conn.prepare_cached(sql)?;
 
         let raws = stmt
             .query([])
-            .context(format!("Sql - {}", sql))?
-            .mapped(Raw::from_sql)
-            .collect::<Result<Vec<Raw>, _>>()?;
+            .map_err(DbError::with_sql(sql))?
+            .mapped(|r| r.get(0))
+            .collect::<Result<Vec<i32>, _>>()
+            .map_err(DbError::with_sql(sql))?;
 
-        let vec_out = Schema::from_vec_raw(raws)?;
-        Ok(vec_out)
+        Ok(raws)
     }
 }

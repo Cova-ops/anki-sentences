@@ -26,8 +26,8 @@ impl FromStr for EnumVoiceIDElevenLabs {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
-            "TX3LPaxmHKxFdv7VOQHJ" => Self::GermanMan,
-            "EXAVITQu4vr4xnSDxMaL" => Self::SpanishWoman,
+            "TX3LPaxmHKxFdv7VOQHJ" => Ok(Self::GermanMan),
+            "EXAVITQu4vr4xnSDxMaL" => Ok(Self::SpanishWoman),
 
             _ => {
                 return Err(InvalidValueError {
