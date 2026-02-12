@@ -19,8 +19,9 @@ impl FromSql for SchemaWortGender {
 
 #[cfg(test)]
 mod tests_schema_wort_gender {
-    use crate::test_utils::prelude::*;
     use rusqlite::Connection;
+
+    use crate::helpers::error_handler::DbError;
 
     fn setup_db(sql_create: &'static str) -> Result<Connection, DbError> {
         let conn = Connection::open_in_memory()?;

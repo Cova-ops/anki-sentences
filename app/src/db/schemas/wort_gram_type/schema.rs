@@ -23,7 +23,9 @@ impl FromSql for SchemaWortGramType {
 
 #[cfg(test)]
 mod tests_schema_wort_gram_type_from_sql {
-    use crate::test_utils::prelude::*;
+    use super::*;
+
+    use crate::helpers::error_handler::DbError;
     use rusqlite::{Connection, params};
 
     fn setup_conn() -> Result<Connection, DbError> {

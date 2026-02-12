@@ -35,7 +35,8 @@ impl FromSql for SchemaWortReview {
 
 #[cfg(test)]
 mod tests_schema_wort_review_from_sql {
-    use crate::test_utils::prelude::*;
+    use super::*;
+    use crate::helpers::error_handler::DbError;
     use rusqlite::Connection;
 
     #[test]

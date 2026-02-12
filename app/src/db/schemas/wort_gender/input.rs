@@ -1,4 +1,4 @@
-use crate::db::schemas::wort_gender::EnumWortGender;
+use crate::db::{schemas::wort_gender::EnumWortGender, traits::SqlNew};
 
 pub struct SqlWortGender {
     pub id: i32,
@@ -18,6 +18,25 @@ impl From<InputWortGender> for SqlWortGender {
             gender: value.gender.gender().to_string(),
             artikel: value.gender.artikel().to_string(),
         }
+    }
+}
+
+impl SqlNew for SqlWortGender {
+    type Params<'a>
+        = (
+        &'a dyn rusqlite::ToSql,
+        &'a dyn rusqlite::ToSql,
+        &'a dyn rusqlite::ToSql,
+    )
+    where
+        Self: 'a;
+
+    /// This orden:
+    /// - id
+    /// - gender
+    /// - artikel
+    fn to_params<'a>(&'a self) -> Self::Params<'a> {
+        (&self.id, &self.gender, &self.artikel)
     }
 }
 

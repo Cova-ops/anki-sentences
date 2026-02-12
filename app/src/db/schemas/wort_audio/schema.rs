@@ -25,7 +25,9 @@ impl FromSql for SchemaWortAudio {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_utils::prelude::*;
+    use crate::helpers::error_handler::DbError;
+
+    use super::*;
     use rusqlite::Connection;
 
     fn setup_db() -> Result<Connection, DbError> {
