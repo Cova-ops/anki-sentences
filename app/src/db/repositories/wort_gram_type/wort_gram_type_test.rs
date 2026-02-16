@@ -24,7 +24,7 @@ mod test_worte_gram_type_repo {
     }
 
     mod bulk_insert {
-        use crate::db::{schemas::wort::InputWort, worte::WorteRepo};
+        use crate::db::{schemas::wort::InputWort, wort::WortRepo};
 
         use super::*;
 
@@ -43,7 +43,7 @@ mod test_worte_gram_type_repo {
                     ..s
                 })
                 .collect();
-            WorteRepo::bulk_insert(&mut conn, &data)?;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             Ok(conn)
         }
@@ -109,7 +109,7 @@ mod test_worte_gram_type_repo {
             init_data(&mut conn)?;
 
             let data = scenario_wort().initial;
-            WorteRepo::bulk_insert(&mut conn, &data)?;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;
             WortGramTypeRepo::bulk_insert(&mut conn, &data)?;
@@ -184,7 +184,7 @@ mod test_worte_gram_type_repo {
             init_data(&mut conn)?;
 
             let data = scenario_wort().initial;
-            WorteRepo::bulk_insert(&mut conn, &data)?;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;
             WortGramTypeRepo::bulk_insert(&mut conn, &data)?;
@@ -281,7 +281,7 @@ mod test_worte_gram_type_repo {
             init_data(&mut conn)?;
 
             let data = scenario_wort().initial;
-            WorteRepo::bulk_insert(&mut conn, &data)?;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;
             WortGramTypeRepo::bulk_insert(&mut conn, &data)?;

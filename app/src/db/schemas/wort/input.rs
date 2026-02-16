@@ -1,5 +1,9 @@
-use crate::db::schemas::{
-    gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_gender::EnumWortGender,
+use crate::db::{
+    schemas::{
+        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_audio::SqlWortAudio,
+        wort_gender::EnumWortGender,
+    },
+    traits::{SqlInsert, SqlNew, SqlUpdate},
 };
 
 #[derive(Debug)]
@@ -55,6 +59,36 @@ impl From<InputWort> for SqlWort {
         }
     }
 }
+
+impl SqlInsert for SqlWort {
+    /// This orden:
+    /// - gender_id
+    /// - worte_de
+    /// - worte_es
+    /// - plural
+    /// - niveau_id
+    /// - example_de
+    /// - example_es
+    /// - verb_aux
+    /// - trennbar
+    /// - reflexiv
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![
+            &self.gender_id,
+            &self.worte_de,
+            &self.worte_es,
+            &self.plural,
+            &self.niveau_id,
+            &self.example_de,
+            &self.example_es,
+            &self.verb_aux,
+            &self.trennbar,
+            &self.reflexiv,
+        ]
+    }
+}
+
+impl SqlUpdate for SqlWort {}
 
 #[cfg(test)]
 mod tests {

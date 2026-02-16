@@ -6,11 +6,15 @@ pub trait FromSql {
 }
 
 // Input
-pub trait SqlNew {
-    // GAT: el tipo de parámetros depende del lifetime
-    type Params<'a>: rusqlite::Params
-    where
-        Self: 'a;
+pub trait SqlInsert {
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql>;
+}
 
-    fn to_params<'a>(&'a self) -> Self::Params<'a>;
+pub trait SqlUpdate: SqlInsert {
+    /// Add id to the final of the vec
+    fn update_params<'a>(&'a self, id: i32) -> Vec<&'a dyn rusqlite::ToSql> {
+        let mut params = self.insert_params();
+        params.push(id);
+        params
+    }
 }

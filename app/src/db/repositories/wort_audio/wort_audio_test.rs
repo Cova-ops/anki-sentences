@@ -4,11 +4,12 @@ mod test_wort_audio_repo {
 
     use crate::{
         db::{
+            init_schemas,
             schemas::wort_audio::{InputWortAudio, SchemaWortAudio, SnapshotWortAudio},
             seeders::init_data,
             wort_audio::WortAudioRepo,
         },
-        helpers::error_handler::DbError,
+        helpers::{error_handler::DbError, time::string_2_datetime},
         test_utils::scenarios::scenario_wort_audio,
     };
 
@@ -16,9 +17,13 @@ mod test_wort_audio_repo {
         assert_eq!(res.len(), data.len());
 
         for (i, satz) in data.iter().enumerate() {
+            assert!(res[i].id > 0);
+
             assert_eq!(res[i].wort_id, satz.wort_id);
             assert_eq!(res[i].audio_name_es, satz.audio_name_es);
             assert_eq!(res[i].audio_name_de, satz.audio_name_de);
+
+            assert!(string_2_datetime(res[i].created_at).is_ok());
             assert!(res[i].deleted_at.is_none());
         }
     }
