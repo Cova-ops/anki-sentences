@@ -1,7 +1,10 @@
 use chrono::{DateTime, Utc};
 
 use crate::{
-    db::{schemas::wort_review::EnumReviewDirection, traits::SqlNew},
+    db::{
+        schemas::wort_review::EnumReviewDirection,
+        traits::{SqlInsert, SqlUpdate},
+    },
     helpers::time::datetime_2_string,
 };
 
@@ -41,20 +44,7 @@ impl From<InputWortReview> for SqlWortReview {
     }
 }
 
-impl SqlNew for SqlWortReview {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlWortReview {
     /// This orden:
     /// - wort_id
     /// - direction
@@ -63,8 +53,8 @@ impl SqlNew for SqlWortReview {
     /// - repetitions
     /// - last_review
     /// - next_review
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![
             &self.wort_id,
             &self.direction,
             &self.interval,
@@ -72,9 +62,11 @@ impl SqlNew for SqlWortReview {
             &self.repetitions,
             &self.last_review,
             &self.next_review,
-        )
+        ]
     }
 }
+
+impl SqlUpdate for SqlWortReview {}
 
 #[cfg(test)]
 mod tests_sql_wort_review {
@@ -136,8 +128,12 @@ mod tests_sql_wort_review {
         }
     }
 
-    mod sql_new {
+    mod sql_params {
         use super::*;
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
+        };
 
         fn to_value(p: &dyn ToSql) -> Value {
             match p.to_sql().expect("to_sql should work") {
@@ -154,32 +150,62 @@ mod tests_sql_wort_review {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlWortReview {
                 wort_id: 1,
-                direction: "es_2_de",
+                direction: String::from("es_2_de"),
                 interval: 2,
                 ease_factor: 1.2,
                 repetitions: 10,
-                last_review: "2018-04-01 20:00:00",
-                next_review: "2018-05-01 20:00:00",
+                last_review: String::from("2018-04-01 20:00:00"),
+                next_review: String::from("2018-05-01 20:00:00"),
             };
 
-            let (p1, p2, p3, p4, p5, p6, p7) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(1));
-            assert_eq!(to_value(p2), Value::Text("es_2_de".to_string()));
-            assert_eq!(to_value(p3), Value::Integer(2));
-            assert_eq!(to_value(p4), Value::Real(1.2));
-            assert_eq!(to_value(p5), Value::Integer(10));
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text("es_2_de".to_string()));
+            assert_eq!(to_value(params[2]), Value::Integer(2));
+            assert_eq!(to_value(params[3]), Value::Real(1.2));
+            assert_eq!(to_value(params[4]), Value::Integer(10));
             assert_eq!(
-                to_value(p6),
+                to_value(params[5]),
                 Value::Text(String::from("2018-04-01 20:00:00"))
             );
             assert_eq!(
-                to_value(p7),
+                to_value(params[6]),
                 Value::Text(String::from("2018-05-01 20:00:00"))
             );
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlWortReview {
+                wort_id: 1,
+                direction: String::from("es_2_de"),
+                interval: 2,
+                ease_factor: 1.2,
+                repetitions: 10,
+                last_review: String::from("2018-04-01 20:00:00"),
+                next_review: String::from("2018-05-01 20:00:00"),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text("es_2_de".to_string()));
+            assert_eq!(to_value(params[2]), Value::Integer(2));
+            assert_eq!(to_value(params[3]), Value::Real(1.2));
+            assert_eq!(to_value(params[4]), Value::Integer(10));
+            assert_eq!(
+                to_value(params[5]),
+                Value::Text(String::from("2018-04-01 20:00:00"))
+            );
+            assert_eq!(
+                to_value(params[6]),
+                Value::Text(String::from("2018-05-01 20:00:00"))
+            );
+            assert_eq!(to_value(params[7]), Value::Integer(99));
         }
     }
 }

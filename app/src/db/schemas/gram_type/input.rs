@@ -1,4 +1,7 @@
-use crate::db::{schemas::gram_type::EnumGramType, traits::SqlNew};
+use crate::db::{
+    schemas::gram_type::EnumGramType,
+    traits::{SqlInsert, SqlUpdate},
+};
 
 #[derive(Debug, Clone)]
 pub struct InputGramType {
@@ -22,113 +25,103 @@ impl From<InputGramType> for SqlGramType {
     }
 }
 
-impl SqlNew for SqlGramType {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlGramType {
     /// This orden:
     /// - id
     /// - code
     /// - name
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (&self.id, &self.code, &self.name)
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![&self.id, &self.code, &self.name]
     }
 }
 
+impl SqlUpdate for SqlGramType {}
+
 #[cfg(test)]
 mod tests_sql_gram_type {
-    use rusqlite::{Connection, params_from_iter};
-
     use super::*;
 
-    #[test]
-    fn from_input_gram_type_noun_common() {
-        let input = InputGramType {
-            gram: EnumGramType::NounCommon,
-        };
+    mod from_input {
+        use super::*;
 
-        let sql: SqlGramType = input.into();
+        #[test]
+        fn from_input_gram_type_noun_common() {
+            let input = InputGramType {
+                gram: EnumGramType::NounCommon,
+            };
 
-        assert_eq!(sql.id, 0);
-        assert_eq!(sql.code, "noun_common");
-        assert_eq!(sql.name, "Sustantivo común");
+            let sql: SqlGramType = input.into();
+
+            assert_eq!(sql.id, 0);
+            assert_eq!(sql.code, "noun_common");
+            assert_eq!(sql.name, "Sustantivo común");
+        }
+
+        #[test]
+        fn from_input_gram_type_verb_main() {
+            let input = InputGramType {
+                gram: EnumGramType::VerbMain,
+            };
+
+            let sql: SqlGramType = input.into();
+
+            assert_eq!(sql.id, 2);
+            assert_eq!(sql.code, "verb_main");
+            assert_eq!(sql.name, "Verbo léxico");
+        }
     }
 
-    #[test]
-    fn from_input_gram_type_verb_main() {
-        let input = InputGramType {
-            gram: EnumGramType::VerbMain,
+    mod sql_params {
+        use super::*;
+
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
         };
 
-        let sql: SqlGramType = input.into();
+        fn to_value(p: &dyn ToSql) -> Value {
+            match p.to_sql().expect("to_sql should work") {
+                ToSqlOutput::Owned(v) => v,
+                ToSqlOutput::Borrowed(vr) => match vr {
+                    ValueRef::Null => Value::Null,
+                    ValueRef::Integer(i) => Value::Integer(i),
+                    ValueRef::Real(f) => Value::Real(f),
+                    ValueRef::Text(t) => Value::Text(String::from_utf8_lossy(t).into_owned()),
+                    ValueRef::Blob(b) => Value::Blob(b.to_vec()),
+                },
+                _ => panic!(""),
+            }
+        }
 
-        assert_eq!(sql.id, 2);
-        assert_eq!(sql.code, "verb_main");
-        assert_eq!(sql.name, "Verbo léxico");
-    }
+        #[test]
+        fn insert_params() {
+            let s = SqlGramType {
+                id: 1,
+                code: String::from("verb_main"),
+                name: String::from("Verb Main"),
+            };
 
-    #[test]
-    fn to_params_binds_correctly_in_sqlite() -> rusqlite::Result<()> {
-        let conn = Connection::open_in_memory()?;
+            let params = s.insert_params();
 
-        conn.execute_batch(
-            r#"
-            CREATE TABLE gram_type (
-                id   INTEGER NOT NULL,
-                code TEXT    NOT NULL,
-                name TEXT    NOT NULL
-            );
-            "#,
-        )?;
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text(String::from("verb_main")));
+            assert_eq!(to_value(params[2]), Value::Text(String::from("Verb Main")));
+        }
 
-        let model = SqlGramType {
-            id: 7,
-            code: "verb_main".to_string(),
-            name: "Verb (main)".to_string(),
-        };
+        #[test]
+        fn update_params() {
+            let s = SqlGramType {
+                id: 1,
+                code: String::from("verb_main"),
+                name: String::from("Verb Main"),
+            };
 
-        // 1) Obtenemos params desde el trait
-        let params = model.to_params();
+            let params = s.update_params(&10);
 
-        // 2) Insert usando esos params (como slice/iter)
-        conn.execute(
-            "INSERT INTO gram_type (id, code, name) VALUES (?1, ?2, ?3)",
-            params_from_iter([params.0, params.1, params.2]),
-        )?;
-
-        // 3) Leemos de vuelta y comprobamos valores
-        let (id, code, name): (i64, String, String) =
-            conn.query_row("SELECT id, code, name FROM gram_type LIMIT 1", [], |row| {
-                Ok((row.get(0)?, row.get(1)?, row.get(2)?))
-            })?;
-
-        assert_eq!(id, model.id as i64);
-        assert_eq!(code, model.code);
-        assert_eq!(name, model.name);
-
-        Ok(())
-    }
-
-    #[test]
-    fn to_params_has_expected_shape() {
-        // Este test “fuerza” que el tipo sea un tuple de 3.
-        // Si cambias el impl (por ejemplo a Vec), esto deja de compilar.
-
-        fn assert_params_shape<'a>(_: <SqlGramType as SqlNew>::Params<'a>) {}
-
-        let model = SqlGramType {
-            id: 1,
-            code: "a".into(),
-            name: "b".into(),
-        };
-
-        let p = model.to_params();
-        assert_params_shape(p);
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text(String::from("verb_main")));
+            assert_eq!(to_value(params[2]), Value::Text(String::from("Verb Main")));
+            assert_eq!(to_value(params[3]), Value::Integer(10));
+        }
     }
 }

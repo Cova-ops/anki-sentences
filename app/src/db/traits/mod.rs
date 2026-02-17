@@ -12,9 +12,9 @@ pub trait SqlInsert {
 
 pub trait SqlUpdate: SqlInsert {
     /// Add id to the final of the vec
-    fn update_params<'a>(&'a self, id: i32) -> Vec<&'a dyn rusqlite::ToSql> {
+    fn update_params<'a>(&'a self, id: &'a i32) -> Vec<&'a dyn rusqlite::ToSql> {
         let mut params = self.insert_params();
-        params.push(id);
+        params.push(id as &'a dyn rusqlite::ToSql);
         params
     }
 }

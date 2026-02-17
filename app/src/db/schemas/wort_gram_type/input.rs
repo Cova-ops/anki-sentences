@@ -1,4 +1,4 @@
-use crate::db::traits::SqlNew;
+use crate::db::traits::{SqlInsert, SqlUpdate};
 
 #[derive(Debug, Clone)]
 pub struct SqlWortGramType {
@@ -21,19 +21,16 @@ impl From<InputWortGramType> for SqlWortGramType {
     }
 }
 
-impl SqlNew for SqlWortGramType {
-    type Params<'a>
-        = (&'a dyn rusqlite::ToSql, &'a dyn rusqlite::ToSql)
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlWortGramType {
     /// This orden:
     /// - id_worte
     /// - id_gram_type
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (&self.id_worte, &self.id_gram_type)
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![&self.id_worte, &self.id_gram_type]
     }
 }
+
+impl SqlUpdate for SqlWortGramType {}
 
 #[cfg(test)]
 mod tests_sql_wort_gram_type {
@@ -56,7 +53,12 @@ mod tests_sql_wort_gram_type {
         }
     }
 
-    mod from_sql {
+    mod sql_params {
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
+        };
+
         use super::*;
 
         fn to_value(p: &dyn ToSql) -> Value {
@@ -74,16 +76,30 @@ mod tests_sql_wort_gram_type {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlWortGramType {
                 id_worte: 1,
                 id_gram_type: 2,
             };
 
-            let (p1, p2) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(1));
-            assert_eq!(to_value(p2), Value::Integer(2));
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Integer(2));
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlWortGramType {
+                id_worte: 1,
+                id_gram_type: 2,
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Integer(2));
+            assert_eq!(to_value(params[2]), Value::Integer(99));
         }
     }
 }

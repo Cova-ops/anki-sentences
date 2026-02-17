@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use crate::{db::traits::SqlNew, services::tts::eleven_labs::EnumVoiceIDElevenLabs};
+use crate::{
+    db::traits::{SqlInsert, SqlUpdate},
+    services::tts::eleven_labs::EnumVoiceIDElevenLabs,
+};
 
 #[derive(Debug)]
 pub struct SqlSetzeAudio {
@@ -26,24 +29,17 @@ impl From<InputSetzeAudio> for SqlSetzeAudio {
     }
 }
 
-impl SqlNew for SqlSetzeAudio {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlSetzeAudio {
     /// This orden:
     /// - satz_id
     /// - file_path
     /// - voice_id
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (&self.satz_id, &self.file_path, &self.voice_id)
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![&self.satz_id, &self.file_path, &self.voice_id]
     }
 }
+
+impl SqlUpdate for SqlSetzeAudio {}
 
 #[cfg(test)]
 mod tests {
@@ -108,21 +104,40 @@ mod tests {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlSetzeAudio {
                 satz_id: 1,
                 file_path: String::from("tmp"),
                 voice_id: EnumVoiceIDElevenLabs::GermanMan.get_key().to_string(),
             };
 
-            let (p1, p2, p3) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(1));
-            assert_eq!(to_value(p2), Value::Text(String::from("tmp")));
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text(String::from("tmp")));
             assert_eq!(
-                to_value(p3),
+                to_value(params[2]),
                 Value::Text(EnumVoiceIDElevenLabs::GermanMan.get_key().to_string())
             );
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlSetzeAudio {
+                satz_id: 1,
+                file_path: String::from("tmp"),
+                voice_id: EnumVoiceIDElevenLabs::GermanMan.get_key().to_string(),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text(String::from("tmp")));
+            assert_eq!(
+                to_value(params[2]),
+                Value::Text(EnumVoiceIDElevenLabs::GermanMan.get_key().to_string())
+            );
+            assert_eq!(to_value(params[3]), Value::Integer(99));
         }
     }
 }

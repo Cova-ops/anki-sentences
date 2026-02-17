@@ -35,6 +35,11 @@ impl FromSql for SchemaSetzeReview {
 mod tests_schema_setze_review {
     use rusqlite::Connection;
 
+    use crate::{
+        db::{schemas::setze_review::SchemaSetzeReview, traits::FromSql},
+        helpers::error_handler::DbError,
+    };
+
     fn setup_db() -> Result<Connection, DbError> {
         let conn = Connection::open_in_memory()?;
 

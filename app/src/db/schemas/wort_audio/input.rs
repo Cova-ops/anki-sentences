@@ -1,4 +1,4 @@
-use crate::db::traits::SqlNew;
+use crate::db::traits::{SqlInsert, SqlUpdate};
 
 #[derive(Debug, Clone)]
 pub struct SqlWortAudio {
@@ -24,24 +24,17 @@ impl From<InputWortAudio> for SqlWortAudio {
     }
 }
 
-impl SqlNew for SqlWortAudio {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlWortAudio {
     /// This orden:
     /// - wort_id
     /// - audio_name_es
     /// - audio_name_de
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (&self.wort_id, &self.audio_name_es, &self.audio_name_de)
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![&self.wort_id, &self.audio_name_es, &self.audio_name_de]
     }
 }
+
+impl SqlUpdate for SqlWortAudio {}
 
 #[cfg(test)]
 mod tests {
@@ -96,7 +89,12 @@ mod tests {
         }
     }
 
-    mod trait_sql_new {
+    mod sql_params {
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
+        };
+
         use super::*;
 
         fn to_value(p: &dyn ToSql) -> Value {
@@ -114,18 +112,34 @@ mod tests {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlWortAudio {
                 wort_id: 1,
-                audio_name_es: String::from("audio_es"),
-                audio_name_de: String::from("audio_de"),
+                audio_name_es: Some(String::from("audio_es")),
+                audio_name_de: Some(String::from("audio_de")),
             };
 
-            let (p1, p2, p3) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(1));
-            assert_eq!(to_value(p2), Value::Text("audio_es".to_string()));
-            assert_eq!(to_value(p3), Value::Text("audio_de".to_string()));
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text("audio_es".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("audio_de".to_string()));
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlWortAudio {
+                wort_id: 1,
+                audio_name_es: Some(String::from("audio_es")),
+                audio_name_de: Some(String::from("audio_de")),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(to_value(params[1]), Value::Text("audio_es".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("audio_de".to_string()));
+            assert_eq!(to_value(params[3]), Value::Integer(99));
         }
     }
 }

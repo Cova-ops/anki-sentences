@@ -31,6 +31,8 @@ impl FromSql for SchemaSetze {
 mod tests_schema_setze {
     use rusqlite::{Connection, params};
 
+    use crate::helpers::error_handler::DbError;
+
     fn setup_conn() -> Result<Connection, DbError> {
         let conn = Connection::open_in_memory()?;
 
@@ -53,6 +55,8 @@ mod tests_schema_setze {
     }
 
     mod from_sql {
+        use crate::db::{schemas::setze::SchemaSetze, traits::FromSql};
+
         use super::*;
 
         #[test]

@@ -5,6 +5,7 @@ mod tests_gram_type_repo_bulk_upsert {
     use crate::{
         db::{
             gram_type::GramTypeRepo,
+            init_schemas,
             schemas::gram_type::{InputGramType, SchemaGramType, SnapshotGramType},
         },
         helpers::error_handler::DbError,
@@ -21,6 +22,7 @@ mod tests_gram_type_repo_bulk_upsert {
     }
 
     mod bulk_upsert {
+
         use super::*;
 
         fn init_conn() -> Result<Connection, DbError> {

@@ -119,6 +119,8 @@ mod tests {
     }
 
     mod from_schema {
+        use crate::helpers::time::string_2_datetime;
+
         use super::*;
 
         #[test]
@@ -126,27 +128,33 @@ mod tests {
             let schema = SchemaWortReview {
                 id: 20,
                 wort_id: 1,
-                direction: "es_2_de",
+                direction: String::from("es_2_de"),
                 interval: 2,
                 ease_factor: 1.3,
                 repetitions: 10,
-                last_review: "2018-06-10 20:00:00",
-                next_review: "2018-07-10 20:00:00",
-                created_at: "2020-01-01 20:00:00",
+                last_review: String::from("2018-06-10 20:00:00"),
+                next_review: String::from("2018-07-10 20:00:00"),
+                created_at: String::from("2020-01-01 20:00:00"),
                 deleted_at: None,
             };
 
             let snap: SnapshotWortReview = schema.into();
 
-            assert_eq!(snap.id, id);
+            assert_eq!(snap.id, 20);
             assert_eq!(snap.wort_id, 1);
             assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 2);
             assert_eq!(snap.ease_factor, 1.3);
             assert_eq!(snap.repetitions, 10);
-            assert_eq!(snap.last_review, "2018-06-10 20:00:00");
-            assert_eq!(snap.next_review, "2018-07-10 20:00:00");
-            assert_eq!(snap.created_at, "2020-01-01 20:00:00");
+            assert_eq!(
+                snap.last_review,
+                string_2_datetime("2018-06-10 20:00:00").unwrap()
+            );
+            assert_eq!(
+                snap.next_review,
+                string_2_datetime("2018-07-10 20:00:00").unwrap()
+            );
+            assert_eq!(snap.created_at, "<created_at>");
             assert_eq!(snap.deleted_at, None);
         }
 
@@ -155,13 +163,13 @@ mod tests {
             let invalid = SchemaWortReview {
                 id: 20,
                 wort_id: 1,
-                direction: "NOT_VALID_DIRECTION",
+                direction: String::from("NOT_VALID_DIRECTION"),
                 interval: 2,
                 ease_factor: 1.3,
                 repetitions: 10,
-                last_review: "2018-06-10 20:00:00",
-                next_review: "2018-07-10 20:00:00",
-                created_at: "2020-01-01 20:00:00",
+                last_review: String::from("2018-06-10 20:00:00"),
+                next_review: String::from("2018-07-10 20:00:00"),
+                created_at: String::from("2020-01-01 20:00:00"),
                 deleted_at: None,
             };
 

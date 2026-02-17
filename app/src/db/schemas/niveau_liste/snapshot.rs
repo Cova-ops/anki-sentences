@@ -28,9 +28,13 @@ impl From<SchemaNiveauListe> for SnapshotNiveauListe {
 
 #[cfg(test)]
 mod tests_snapshot_niveau_liste {
+    use crate::db::schemas::niveau_liste::{
+        EnumNiveauListe, ModelNiveauListe, SchemaNiveauListe, SnapshotNiveauListe,
+    };
     use chrono::{TimeZone, Utc};
 
     mod from_model {
+
         use super::*;
 
         #[test]
@@ -65,6 +69,8 @@ mod tests_snapshot_niveau_liste {
     }
 
     mod from_schema {
+        use std::str::FromStr;
+
         use super::*;
 
         #[test]

@@ -1,4 +1,7 @@
-use crate::db::{schemas::niveau_liste::EnumNiveauListe, traits::SqlNew};
+use crate::db::{
+    schemas::niveau_liste::EnumNiveauListe,
+    traits::{SqlInsert, SqlUpdate},
+};
 
 #[derive(Debug)]
 pub struct SqlSetze {
@@ -27,34 +30,30 @@ impl From<InputSetze> for SqlSetze {
     }
 }
 
-impl SqlNew for SqlSetze {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlSetze {
     /// This orden:
     /// - setze_spanisch
     /// - setze_deutsch
     /// - niveau_id
     /// - thema
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![
             &self.setze_spanisch,
             &self.setze_deutsch,
             &self.niveau_id,
             &self.thema,
-        )
+        ]
     }
 }
 
+impl SqlUpdate for SqlSetze {}
+
 #[cfg(test)]
 mod tests_sql_setze_from_input {
+    use crate::db::schemas::{
+        niveau_liste::EnumNiveauListe,
+        setze::{InputSetze, SqlSetze},
+    };
     use rusqlite::ToSql;
     use rusqlite::types::{ToSqlOutput, Value, ValueRef};
 
@@ -80,6 +79,8 @@ mod tests_sql_setze_from_input {
     }
 
     mod sql_new {
+        use crate::db::traits::{SqlInsert, SqlUpdate};
+
         use super::*;
 
         fn to_value(p: &dyn ToSql) -> Value {
@@ -97,21 +98,50 @@ mod tests_sql_setze_from_input {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlSetze {
                 setze_spanisch: "Yo corro diario".to_string(),
                 setze_deutsch: "Ich laufe jeden Tag".to_string(),
-                niveau_id: 2, // ajusta si tu tipo es i64/u32/etc
+                niveau_id: 2,
                 thema: "Sport".to_string(),
-                // si tu struct tiene más campos, agrégalos aquí
             };
 
-            let (p1, p2, p3, p4) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Text("Yo corro diario".to_string()));
-            assert_eq!(to_value(p2), Value::Text("Ich laufe jeden Tag".to_string()));
-            assert_eq!(to_value(p3), Value::Integer(2));
-            assert_eq!(to_value(p4), Value::Text("Sport".to_string()));
+            assert_eq!(
+                to_value(params[0]),
+                Value::Text("Yo corro diario".to_string())
+            );
+            assert_eq!(
+                to_value(params[1]),
+                Value::Text("Ich laufe jeden Tag".to_string())
+            );
+            assert_eq!(to_value(params[2]), Value::Integer(2));
+            assert_eq!(to_value(params[3]), Value::Text("Sport".to_string()));
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlSetze {
+                setze_spanisch: "Yo corro diario".to_string(),
+                setze_deutsch: "Ich laufe jeden Tag".to_string(),
+                niveau_id: 2,
+                thema: "Sport".to_string(),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(
+                to_value(params[0]),
+                Value::Text("Yo corro diario".to_string())
+            );
+            assert_eq!(
+                to_value(params[1]),
+                Value::Text("Ich laufe jeden Tag".to_string())
+            );
+            assert_eq!(to_value(params[2]), Value::Integer(2));
+            assert_eq!(to_value(params[3]), Value::Text("Sport".to_string()));
+            assert_eq!(to_value(params[4]), Value::Integer(99));
         }
     }
 }

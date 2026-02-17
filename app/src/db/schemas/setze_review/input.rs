@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
 
-use crate::{db::traits::SqlNew, helpers::time::datetime_2_string};
+use crate::{
+    db::traits::{SqlInsert, SqlUpdate},
+    helpers::time::datetime_2_string,
+};
 
 #[derive(Debug)]
 pub struct SqlSetzeReview {
@@ -35,19 +38,7 @@ impl From<InputSetzeReview> for SqlSetzeReview {
     }
 }
 
-impl SqlNew for SqlSetzeReview {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlSetzeReview {
     /// This orden:
     /// - satz_id
     /// - interval
@@ -55,17 +46,19 @@ impl SqlNew for SqlSetzeReview {
     /// - repetitions
     /// - last_review
     /// - next_review
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![
             &self.satz_id,
             &self.interval,
             &self.ease_factor,
             &self.repetitions,
             &self.last_review,
             &self.next_review,
-        )
+        ]
     }
 }
+
+impl SqlUpdate for SqlSetzeReview {}
 
 #[cfg(test)]
 mod tests_sql_setze_review {
@@ -102,7 +95,7 @@ mod tests_sql_setze_review {
         }
     }
 
-    mod sql_new {
+    mod sql_params {
         use super::*;
 
         use rusqlite::ToSql;
@@ -123,7 +116,7 @@ mod tests_sql_setze_review {
         }
 
         #[test]
-        fn to_params_returns_values_in_expected_order() {
+        fn insert_params() {
             let s = SqlSetzeReview {
                 satz_id: 42,
                 interval: 5,
@@ -133,20 +126,48 @@ mod tests_sql_setze_review {
                 next_review: String::from("2026-01-03 06:50:00"),
             };
 
-            let (p1, p2, p3, p4, p5, p6) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(42));
-            assert_eq!(to_value(p2), Value::Integer(5));
-            assert_eq!(to_value(p3), Value::Real(2.5));
-            assert_eq!(to_value(p4), Value::Integer(3));
+            assert_eq!(to_value(params[0]), Value::Integer(42));
+            assert_eq!(to_value(params[1]), Value::Integer(5));
+            assert_eq!(to_value(params[2]), Value::Real(2.5));
+            assert_eq!(to_value(params[3]), Value::Integer(3));
             assert_eq!(
-                to_value(p5),
+                to_value(params[4]),
                 Value::Text(String::from("2026-01-02 06:50:00"))
             );
             assert_eq!(
-                to_value(p6),
+                to_value(params[5]),
                 Value::Text(String::from("2026-01-03 06:50:00"))
             );
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlSetzeReview {
+                satz_id: 42,
+                interval: 5,
+                ease_factor: 2.5,
+                repetitions: 3,
+                last_review: String::from("2026-01-02 06:50:00"),
+                next_review: String::from("2026-01-03 06:50:00"),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(42));
+            assert_eq!(to_value(params[1]), Value::Integer(5));
+            assert_eq!(to_value(params[2]), Value::Real(2.5));
+            assert_eq!(to_value(params[3]), Value::Integer(3));
+            assert_eq!(
+                to_value(params[4]),
+                Value::Text(String::from("2026-01-02 06:50:00"))
+            );
+            assert_eq!(
+                to_value(params[5]),
+                Value::Text(String::from("2026-01-03 06:50:00"))
+            );
+            assert_eq!(to_value(params[6]), Value::Integer(99));
         }
     }
 }

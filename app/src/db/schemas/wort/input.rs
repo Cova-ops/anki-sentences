@@ -3,7 +3,7 @@ use crate::db::{
         gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_audio::SqlWortAudio,
         wort_gender::EnumWortGender,
     },
-    traits::{SqlInsert, SqlNew, SqlUpdate},
+    traits::{SqlInsert, SqlUpdate},
 };
 
 #[derive(Debug)]
@@ -97,100 +97,214 @@ mod tests {
         gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_gender::EnumWortGender,
     };
 
-    #[test]
-    fn input_wort_to_sql_wort_maps_ids_and_fields() {
-        let input = InputWort {
-            gram_type: vec![EnumGramType::NounCommon, EnumGramType::VerbMain],
-            gender: Some(EnumWortGender::Maskuline),
-            worte_de: "Hund".to_string(),
-            worte_es: "Perro".to_string(),
-            plural: Some("Hunde".to_string()),
-            niveau: EnumNiveauListe::A2,
-            example_de: "Der Hund bellt.".to_string(),
-            example_es: "El perro ladra.".to_string(),
-            verb_aux: Some("haben".to_string()),
-            trennbar: Some(false),
-            reflexiv: Some(false),
-        };
+    mod from_input {
+        use super::*;
 
-        let sql: SqlWort = input.into();
+        #[test]
+        fn input_wort_to_sql_wort_maps_ids_and_fields() {
+            let input = InputWort {
+                gram_type: vec![EnumGramType::NounCommon, EnumGramType::VerbMain],
+                gender: Some(EnumWortGender::Maskuline),
+                worte_de: "Hund".to_string(),
+                worte_es: "Perro".to_string(),
+                plural: Some("Hunde".to_string()),
+                niveau: EnumNiveauListe::A2,
+                example_de: "Der Hund bellt.".to_string(),
+                example_es: "El perro ladra.".to_string(),
+                verb_aux: Some("haben".to_string()),
+                trennbar: Some(false),
+                reflexiv: Some(false),
+            };
 
-        // ids
-        assert_eq!(
-            sql.gram_type_ids,
-            vec![EnumGramType::NounCommon.id(), EnumGramType::VerbMain.id()]
-        );
-        assert_eq!(sql.gender_id, Some(EnumWortGender::Maskuline.id()));
-        assert_eq!(sql.niveau_id, EnumNiveauListe::A2.id());
+            let sql: SqlWort = input.into();
 
-        // passthrough fields
-        assert_eq!(sql.worte_de, "Hund");
-        assert_eq!(sql.worte_es, "Perro");
-        assert_eq!(sql.plural, Some("Hunde".to_string()));
-        assert_eq!(sql.example_de, "Der Hund bellt.");
-        assert_eq!(sql.example_es, "El perro ladra.");
-        assert_eq!(sql.verb_aux, Some("haben".to_string()));
-        assert_eq!(sql.trennbar, Some(false));
-        assert_eq!(sql.reflexiv, Some(false));
+            // ids
+            assert_eq!(
+                sql.gram_type_ids,
+                vec![EnumGramType::NounCommon.id(), EnumGramType::VerbMain.id()]
+            );
+            assert_eq!(sql.gender_id, Some(EnumWortGender::Maskuline.id()));
+            assert_eq!(sql.niveau_id, EnumNiveauListe::A2.id());
+
+            // passthrough fields
+            assert_eq!(sql.worte_de, "Hund");
+            assert_eq!(sql.worte_es, "Perro");
+            assert_eq!(sql.plural, Some("Hunde".to_string()));
+            assert_eq!(sql.example_de, "Der Hund bellt.");
+            assert_eq!(sql.example_es, "El perro ladra.");
+            assert_eq!(sql.verb_aux, Some("haben".to_string()));
+            assert_eq!(sql.trennbar, Some(false));
+            assert_eq!(sql.reflexiv, Some(false));
+        }
+
+        #[test]
+        fn input_wort_to_sql_wort_none_gender() {
+            let input = InputWort {
+                gram_type: vec![EnumGramType::Adjective],
+                gender: None,
+                worte_de: "müde".to_string(),
+                worte_es: "cansado".to_string(),
+                plural: None,
+                niveau: EnumNiveauListe::A1,
+                example_de: "Ich bin müde.".to_string(),
+                example_es: "Estoy cansado.".to_string(),
+                verb_aux: None,
+                trennbar: None,
+                reflexiv: None,
+            };
+
+            let sql: SqlWort = input.into();
+
+            assert_eq!(sql.gram_type_ids, vec![EnumGramType::Adjective.id()]);
+            assert_eq!(sql.gender_id, None);
+            assert_eq!(sql.niveau_id, EnumNiveauListe::A1.id());
+
+            assert_eq!(sql.plural, None);
+            assert_eq!(sql.verb_aux, None);
+            assert_eq!(sql.trennbar, None);
+            assert_eq!(sql.reflexiv, None);
+        }
+
+        #[test]
+        fn input_wort_to_sql_wort_preserves_gram_type_order() {
+            let input = InputWort {
+                gram_type: vec![
+                    EnumGramType::VerbSeparable,
+                    EnumGramType::VerbMain,
+                    EnumGramType::PrefixSeparable,
+                ],
+                gender: None,
+                worte_de: "weitergehen".to_string(),
+                worte_es: "seguir".to_string(),
+                plural: None,
+                niveau: EnumNiveauListe::B1,
+                example_de: "Wir gehen weiter.".to_string(),
+                example_es: "Seguimos.".to_string(),
+                verb_aux: Some("sein".to_string()),
+                trennbar: Some(true),
+                reflexiv: Some(false),
+            };
+
+            let sql: SqlWort = input.into();
+
+            assert_eq!(
+                sql.gram_type_ids,
+                vec![
+                    EnumGramType::VerbSeparable.id(),
+                    EnumGramType::VerbMain.id(),
+                    EnumGramType::PrefixSeparable.id(),
+                ]
+            );
+        }
     }
 
-    #[test]
-    fn input_wort_to_sql_wort_none_gender() {
-        let input = InputWort {
-            gram_type: vec![EnumGramType::Adjective],
-            gender: None,
-            worte_de: "müde".to_string(),
-            worte_es: "cansado".to_string(),
-            plural: None,
-            niveau: EnumNiveauListe::A1,
-            example_de: "Ich bin müde.".to_string(),
-            example_es: "Estoy cansado.".to_string(),
-            verb_aux: None,
-            trennbar: None,
-            reflexiv: None,
+    mod sql_params {
+        use super::*;
+
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
         };
 
-        let sql: SqlWort = input.into();
+        fn to_value(p: &dyn ToSql) -> Value {
+            match p.to_sql().expect("to_sql should work") {
+                ToSqlOutput::Owned(v) => v,
+                ToSqlOutput::Borrowed(vr) => match vr {
+                    ValueRef::Null => Value::Null,
+                    ValueRef::Integer(i) => Value::Integer(i),
+                    ValueRef::Real(f) => Value::Real(f),
+                    ValueRef::Text(t) => Value::Text(String::from_utf8_lossy(t).into_owned()),
+                    ValueRef::Blob(b) => Value::Blob(b.to_vec()),
+                },
+                _ => panic!(""),
+            }
+        }
 
-        assert_eq!(sql.gram_type_ids, vec![EnumGramType::Adjective.id()]);
-        assert_eq!(sql.gender_id, None);
-        assert_eq!(sql.niveau_id, EnumNiveauListe::A1.id());
+        #[test]
+        fn insert_params() {
+            let s = SqlWort {
+                gram_type_ids: vec![1, 2, 3],
+                gender_id: Some(1),
+                worte_de: String::from("Wort auf Deutsch"),
+                worte_es: String::from("Palabra en aleman"),
+                plural: None,
+                niveau_id: 1,
+                example_de: String::from("Beispiel auf Deutsch"),
+                example_es: String::from("Ejemplo en aleman"),
+                verb_aux: None,
+                trennbar: None,
+                reflexiv: None,
+            };
 
-        assert_eq!(sql.plural, None);
-        assert_eq!(sql.verb_aux, None);
-        assert_eq!(sql.trennbar, None);
-        assert_eq!(sql.reflexiv, None);
-    }
+            // insert_params ignores gram_types_ids
+            let params = s.insert_params();
 
-    #[test]
-    fn input_wort_to_sql_wort_preserves_gram_type_order() {
-        let input = InputWort {
-            gram_type: vec![
-                EnumGramType::VerbSeparable,
-                EnumGramType::VerbMain,
-                EnumGramType::PrefixSeparable,
-            ],
-            gender: None,
-            worte_de: "weitergehen".to_string(),
-            worte_es: "seguir".to_string(),
-            plural: None,
-            niveau: EnumNiveauListe::B1,
-            example_de: "Wir gehen weiter.".to_string(),
-            example_es: "Seguimos.".to_string(),
-            verb_aux: Some("sein".to_string()),
-            trennbar: Some(true),
-            reflexiv: Some(false),
-        };
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(
+                to_value(params[1]),
+                Value::Text(String::from("Wort auf Deutsch"))
+            );
+            assert_eq!(
+                to_value(params[2]),
+                Value::Text(String::from("Palabra en aleman"))
+            );
+            assert_eq!(to_value(params[3]), Value::Null);
+            assert_eq!(to_value(params[4]), Value::Integer(1));
+            assert_eq!(
+                to_value(params[5]),
+                Value::Text(String::from("Beispiel auf Deutsch"))
+            );
+            assert_eq!(
+                to_value(params[6]),
+                Value::Text(String::from("Ejemplo en aleman"))
+            );
+            assert_eq!(to_value(params[7]), Value::Null);
+            assert_eq!(to_value(params[8]), Value::Null);
+            assert_eq!(to_value(params[9]), Value::Null);
+        }
 
-        let sql: SqlWort = input.into();
+        #[test]
+        fn update_params() {
+            let s = SqlWort {
+                gram_type_ids: vec![1, 2, 3],
+                gender_id: Some(1),
+                worte_de: String::from("Wort auf Deutsch"),
+                worte_es: String::from("Palabra en aleman"),
+                plural: None,
+                niveau_id: 1,
+                example_de: String::from("Beispiel auf Deutsch"),
+                example_es: String::from("Ejemplo en aleman"),
+                verb_aux: None,
+                trennbar: None,
+                reflexiv: None,
+            };
 
-        assert_eq!(
-            sql.gram_type_ids,
-            vec![
-                EnumGramType::VerbSeparable.id(),
-                EnumGramType::VerbMain.id(),
-                EnumGramType::PrefixSeparable.id(),
-            ]
-        );
+            // update_params ignores gram_types_ids
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(1));
+            assert_eq!(
+                to_value(params[1]),
+                Value::Text(String::from("Wort auf Deutsch"))
+            );
+            assert_eq!(
+                to_value(params[2]),
+                Value::Text(String::from("Palabra en aleman"))
+            );
+            assert_eq!(to_value(params[3]), Value::Null);
+            assert_eq!(to_value(params[4]), Value::Integer(1));
+            assert_eq!(
+                to_value(params[5]),
+                Value::Text(String::from("Beispiel auf Deutsch"))
+            );
+            assert_eq!(
+                to_value(params[6]),
+                Value::Text(String::from("Ejemplo en aleman"))
+            );
+            assert_eq!(to_value(params[7]), Value::Null);
+            assert_eq!(to_value(params[8]), Value::Null);
+            assert_eq!(to_value(params[9]), Value::Null);
+            assert_eq!(to_value(params[10]), Value::Integer(99));
+        }
     }
 }

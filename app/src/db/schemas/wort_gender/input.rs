@@ -1,4 +1,7 @@
-use crate::db::{schemas::wort_gender::EnumWortGender, traits::SqlNew};
+use crate::db::{
+    schemas::wort_gender::EnumWortGender,
+    traits::{SqlInsert, SqlUpdate},
+};
 
 pub struct SqlWortGender {
     pub id: i32,
@@ -21,24 +24,17 @@ impl From<InputWortGender> for SqlWortGender {
     }
 }
 
-impl SqlNew for SqlWortGender {
-    type Params<'a>
-        = (
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-        &'a dyn rusqlite::ToSql,
-    )
-    where
-        Self: 'a;
-
+impl SqlInsert for SqlWortGender {
     /// This orden:
     /// - id
     /// - gender
     /// - artikel
-    fn to_params<'a>(&'a self) -> Self::Params<'a> {
-        (&self.id, &self.gender, &self.artikel)
+    fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
+        vec![&self.id, &self.gender, &self.artikel]
     }
 }
+
+impl SqlUpdate for SqlWortGender {}
 
 #[cfg(test)]
 mod tests_sql_wort_gender {
@@ -70,7 +66,12 @@ mod tests_sql_wort_gender {
         }
     }
 
-    mod trait_sql_new {
+    mod sql_params {
+        use rusqlite::{
+            ToSql,
+            types::{ToSqlOutput, Value, ValueRef},
+        };
+
         use super::*;
 
         fn to_value(p: &dyn ToSql) -> Value {
@@ -88,18 +89,34 @@ mod tests_sql_wort_gender {
         }
 
         #[test]
-        fn expected_order() {
+        fn insert_params() {
             let s = SqlWortGender {
                 id: 0,
-                gender: "Maskuline",
-                artikel: "der",
+                gender: String::from("Maskuline"),
+                artikel: String::from("der"),
             };
 
-            let (p1, p2, p3) = s.to_params();
+            let params = s.insert_params();
 
-            assert_eq!(to_value(p1), Value::Integer(0));
-            assert_eq!(to_value(p2), Value::Text("Maskuline".to_string()));
-            assert_eq!(to_value(p3), Value::Text("der".to_string()));
+            assert_eq!(to_value(params[0]), Value::Integer(0));
+            assert_eq!(to_value(params[1]), Value::Text("Maskuline".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("der".to_string()));
+        }
+
+        #[test]
+        fn update_params() {
+            let s = SqlWortGender {
+                id: 0,
+                gender: String::from("Maskuline"),
+                artikel: String::from("der"),
+            };
+
+            let params = s.update_params(&99);
+
+            assert_eq!(to_value(params[0]), Value::Integer(0));
+            assert_eq!(to_value(params[1]), Value::Text("Maskuline".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("der".to_string()));
+            assert_eq!(to_value(params[3]), Value::Integer(99));
         }
     }
 }

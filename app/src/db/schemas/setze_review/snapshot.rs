@@ -112,6 +112,7 @@ mod tests {
     }
 
     mod from_schema {
+        use crate::helpers::time::string_2_datetime;
 
         use super::*;
 
@@ -133,23 +134,23 @@ mod tests {
                 interval,
                 ease_factor,
                 repetitions,
-                last_review,
-                next_review,
-                created_at,
-                deleted_at,
+                last_review: last_review.clone(),
+                next_review: next_review.clone(),
+                created_at: created_at.clone(),
+                deleted_at: deleted_at.clone(),
             };
 
-            let snap: SnapshotSetzeAudio = schema.into();
+            let snap: SnapshotSetzeReview = schema.into();
 
             assert_eq!(snap.id, id);
             assert_eq!(snap.satz_id, satz_id);
             assert_eq!(snap.interval, interval);
             assert_eq!(snap.ease_factor, ease_factor);
             assert_eq!(snap.repetitions, repetitions);
-            assert_eq!(snap.last_review, last_review);
-            assert_eq!(snap.next_review, next_review);
+            assert_eq!(snap.last_review, string_2_datetime(last_review).unwrap());
+            assert_eq!(snap.next_review, string_2_datetime(next_review).unwrap());
             assert_eq!(snap.created_at, created_at);
-            assert_eq!(snap.deleted_at, deleted_at);
+            assert_eq!(snap.deleted_at, deleted_at.as_deref());
         }
 
         #[test]
@@ -177,7 +178,7 @@ mod tests {
             };
 
             let result = std::panic::catch_unwind(|| {
-                let _: SnapshotSetzeAudio = invalid.into();
+                let _: SnapshotSetzeReview = invalid.into();
             });
 
             assert!(
