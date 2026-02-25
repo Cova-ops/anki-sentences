@@ -1,9 +1,9 @@
-use rusqlite::{Connection, Transaction};
+use rusqlite::{Connection, Transaction, params_from_iter};
 
 use crate::{
     db::{
         schemas::niveau_liste::{InputNiveauListe, SchemaNiveauListe, SqlNiveauListe},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::error_handler::DbError,
 };
@@ -41,7 +41,11 @@ impl NiveauListeRepo {
         let mut vec_out = Vec::with_capacity(data.len());
         for d in data {
             let params: SqlNiveauListe = d.to_owned().into();
-            let raw = tx.query_one(sql, params.to_params(), SchemaNiveauListe::from_sql)?;
+            let raw = tx.query_one(
+                sql,
+                params_from_iter(params.insert_params()),
+                SchemaNiveauListe::from_sql,
+            )?;
             vec_out.push(raw)
         }
 

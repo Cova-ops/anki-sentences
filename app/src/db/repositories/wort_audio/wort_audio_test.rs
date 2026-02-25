@@ -17,13 +17,13 @@ mod test_wort_audio_repo {
         assert_eq!(res.len(), data.len());
 
         for (i, satz) in data.iter().enumerate() {
-            assert!(res[i].id > 0);
+            assert!(res[i].wort_id > 0);
 
             assert_eq!(res[i].wort_id, satz.wort_id);
             assert_eq!(res[i].audio_name_es, satz.audio_name_es);
             assert_eq!(res[i].audio_name_de, satz.audio_name_de);
 
-            assert!(string_2_datetime(res[i].created_at).is_ok());
+            assert!(string_2_datetime(&res[i].created_at).is_ok());
             assert!(res[i].deleted_at.is_none());
         }
     }
@@ -206,10 +206,10 @@ mod test_wort_audio_repo {
             let data = scenario_wort_audio().initial;
             let res = WortAudioRepo::fetch_all_ids(&mut conn, 100_000, 0)?;
 
-            assert_iter(&res, &data);
+            let data: Vec<i32> = data.into_iter().map(|d| d.wort_id).collect();
+            assert_eq!(&res, &data);
 
-            let snapshot: Vec<SnapshotWortAudio> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortAudioRepo::fetch_all_ids] - all_data", snapshot);
+            insta::assert_debug_snapshot!("[WortAudioRepo::fetch_all_ids] - all_data", res);
 
             Ok(())
         }
@@ -229,17 +229,14 @@ mod test_wort_audio_repo {
                     break;
                 }
 
-                last_id = res.last().unwrap().wort_id;
+                last_id = *res.last().unwrap();
                 vec_out.append(&mut res);
             }
 
-            assert_iter(&vec_out, &data);
+            let data: Vec<i32> = data.into_iter().map(|d| d.wort_id).collect();
+            assert_eq!(&vec_out, &data);
 
-            let snapshot: Vec<SnapshotWortAudio> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!(
-                "[WortAudioRepo::fetch_all_ids] - offset_logic",
-                snapshot
-            );
+            insta::assert_debug_snapshot!("[WortAudioRepo::fetch_all_ids] - offset_logic", vec_out);
 
             Ok(())
         }
@@ -266,6 +263,8 @@ mod test_wort_audio_repo {
     }
 
     mod fetch_worte_without_audio {
+        use std::collections::HashMap;
+
         use super::*;
         use crate::{
             db::views::wort_audio_missing::SnapshotWortAudioMissing,
@@ -317,12 +316,26 @@ mod test_wort_audio_repo {
                 .filter(|f| f.audio_name_es.is_none() || f.audio_name_de.is_none())
                 .collect();
 
+            let mut hash_wort: HashMap<_, _> = scenario_wort()
+                .initial
+                .into_iter()
+                .enumerate()
+                .map(|(idx, w)| (idx, w))
+                .collect();
+
             assert_eq!(res.len(), data.len());
-            for (i, wort) in data.iter().enumerate() {
-                assert_eq!(res[i].wort_es, wort.worte_es);
-                assert_eq!(res[i].wort_de, wort.worte_de);
-                assert_eq!(res[i].audio_name_es, wort.audio_name_es);
-                assert_eq!(res[i].audio_name_de, wort.audio_name_de);
+            for (i, wort_audio) in data.iter().enumerate() {
+                let wort = hash_wort
+                    .remove(&(res[i].id as usize))
+                    .expect("id_wort in scenario_wort_audio, musst exist in scenario_wort");
+
+                let wort_es = wort.worte_es;
+                let wort_de = wort.worte_de;
+
+                assert_eq!(res[i].wort_es, wort_es);
+                assert_eq!(res[i].wort_de, wort_de);
+                assert_eq!(res[i].audio_name_es, wort_audio.audio_name_es);
+                assert_eq!(res[i].audio_name_de, wort_audio.audio_name_de);
             }
 
             let snapshot: Vec<SnapshotWortAudioMissing> = res.into_iter().map(Into::into).collect();
@@ -409,8 +422,7 @@ mod test_wort_audio_repo {
 
             assert_eq!(fetch_before, fetch_after);
 
-            let snapshot: Vec<SnapshotWortAudio> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - empty", snapshot);
+            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - empty", res);
 
             Ok(())
         }
@@ -433,8 +445,7 @@ mod test_wort_audio_repo {
             let fetch_after = fetch_all_data(&conn)?;
             assert_eq!(fetch_after, vec![]);
 
-            let snapshot: Vec<SnapshotWortAudio> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - delete_all", snapshot);
+            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - delete_all", res);
 
             Ok(())
         }
@@ -463,8 +474,7 @@ mod test_wort_audio_repo {
 
             assert_eq!(fetch_before, fetch_after);
 
-            let snapshot: Vec<SnapshotWortAudio> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - delete_one", snapshot);
+            insta::assert_debug_snapshot!("[WortAudioRepo::delete_by_id] - delete_one", res);
 
             Ok(())
         }

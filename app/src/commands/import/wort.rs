@@ -1,22 +1,26 @@
 use std::{env, path::Path};
 
-use color_eyre::eyre::{Context, OptionExt, Result};
-
 use crate::{
     console::cli::TypeFile,
     db::{
         get_conn,
         schemas::{
-            niveau_liste::NiveauListeSchema,
-            worte::{NewWorteSchema, WorteSchema},
-            worte_audio::NewWorteAudioSchema,
-            worte_gender::WorteGenderSchema,
+            niveau_liste::EnumNiveauListe,
+            wort::{InputWort, ModelWort},
+            wort_audio::InputWortAudio,
+            wort_gender::EnumWortGender,
         },
-        worte::WorteRepo,
-        worte_audio::WorteAudioRepo,
-        worte_gram_type::WorteGramTypeRepo,
+        wort::WortRepo,
+        wort_audio::WortAudioRepo,
+        wort_gram_type::WortGramTypeRepo,
     },
-    helpers::{self, audios::ManageAudios, csv, toml::AppConfig},
+    helpers::{
+        self,
+        audios::ManageAudios,
+        csv,
+        error_handler::{AppError, DbError},
+        toml::AppConfig,
+    },
     services::tts::{self, eleven_labs::LanguageVoice},
     utils,
 };
@@ -125,7 +129,7 @@ fn process_audio(
     wort_id: i32,
     manage_audios: &ManageAudios,
     lang: LanguageVoice,
-) -> Result<String> {
+) -> Result<String, AppError> {
     let audio_bytes: Vec<u8> = tts::eleven_labs::generate_tts(text, lang)?;
     let audio_path = manage_audios.save_audio_worte(audio_bytes, wort_id, lang)?;
     let audio_name = utils::path::get_filename_from_path(&audio_path)?;
@@ -139,10 +143,7 @@ fn try_audio(
     wort_id: i32,
     manage_audios: &ManageAudios,
 ) -> (Option<String>, Option<String>) {
-    let path_es = match process_audio(text_es, wort_id, manage_audios, LanguageVoice::Spanisch)
-        .wrap_err_with(|| {
-            format!("processing wort_id={wort_id}, lang=LanguageVoice::Spanisch, text={text_es}")
-        }) {
+    let path_es = match process_audio(text_es, wort_id, manage_audios, LanguageVoice::Spanisch) {
         Ok(name) => Some(name),
         Err(err) => {
             eprintln!("{:#?}", err);
@@ -150,10 +151,7 @@ fn try_audio(
         }
     };
 
-    let path_de = match process_audio(text_de, wort_id, manage_audios, LanguageVoice::Deutsch)
-        .wrap_err_with(|| {
-            format!("processing wort_id={wort_id}, lang=LanguageVoice::Deutsch, text={text_de}")
-        }) {
+    let path_de = match process_audio(text_de, wort_id, manage_audios, LanguageVoice::Deutsch) {
         Ok(name) => Some(name),
         Err(err) => {
             eprintln!("{:#?}", err);
@@ -171,32 +169,31 @@ enum ManageWortRepeatedResponse {
 }
 
 fn manage_wort_repeated(
-    old: &WorteSchema,
-    new: &NewWorteSchema,
-) -> Result<ManageWortRepeatedResponse> {
+    old: &ModelWort,
+    new: &InputWort,
+) -> Result<ManageWortRepeatedResponse, AppError> {
     utils::console::clean_screen();
 
     // vec<(field, old, new)>
     let mut diffs: Vec<(String, String, String)> = vec![];
 
-    fn fmt_gender(id: Option<i32>) -> Result<String> {
-        Ok(match id {
-            Some(id) => {
-                let artikel = WorteGenderSchema::from_id(id)?.artikel;
-                format!("{id} ({artikel})")
+    fn fmt_gender(v: Option<EnumWortGender>) -> String {
+        match v {
+            Some(v) => {
+                format!("{} ({})", v.id(), v.artikel())
             }
             None => "<None>".to_owned(),
-        })
+        }
     }
 
-    let old_gender_id = old.gender_id.as_ref().map(|g| g.id); // Option<i32>
-    let new_gender_id = new.gender_id; // Option<i32>
+    let old_gender_id = old.gender;
+    let new_gender_id = new.gender; // Option<i32>
 
     if old_gender_id != new_gender_id {
         diffs.push((
             "gender ".to_owned(),
-            fmt_gender(old_gender_id)?,
-            fmt_gender(new_gender_id)?,
+            fmt_gender(old_gender_id),
+            fmt_gender(new_gender_id),
         ));
     }
 
@@ -220,19 +217,18 @@ fn manage_wort_repeated(
         ));
     }
 
-    fn fmt_niveau(id: i32) -> Result<String> {
-        let niveau = NiveauListeSchema::from_id(id)?.niveau;
-        Ok(format!("{id} ({niveau})"))
+    fn fmt_niveau(v: EnumNiveauListe) -> String {
+        format!("{} ({})", v.id(), v.as_str())
     }
 
-    let old_niveau_id = old.niveau_id.id; // i32
-    let new_niveau_id = new.niveau_id; // i32
+    let old_niveau_id = old.niveau;
+    let new_niveau_id = new.niveau;
 
     if old_niveau_id != new_niveau_id {
         diffs.push((
             "niveau".to_owned(),
-            fmt_niveau(old_niveau_id)?,
-            fmt_niveau(new_niveau_id)?,
+            fmt_niveau(old_niveau_id),
+            fmt_niveau(new_niveau_id),
         ));
     }
 
@@ -335,7 +331,7 @@ fn manage_wort_repeated(
     println!("  [q] Cancel import");
 
     loop {
-        let input = helpers::ui::prompt_nonempty("> ")?.ok_or_eyre("prompt returned None")?;
+        let input = helpers::ui::prompt_nonempty("> ")?.unwrap_or_default();
 
         return match input.trim().to_lowercase().as_str() {
             "r" | "replace" => Ok(ManageWortRepeatedResponse::ReplaceData(old.id)),
@@ -346,7 +342,7 @@ fn manage_wort_repeated(
     }
 }
 
-pub fn run<P>(config: &AppConfig, path: P, type_file: TypeFile) -> Result<()>
+pub fn run<P>(config: &AppConfig, path: P, type_file: TypeFile) -> Result<(), AppError>
 where
     P: AsRef<Path>,
 {
@@ -366,11 +362,12 @@ where
     println!("Procesando {} nuevas palabras.", new_data.len());
     let mut conn = get_conn(config.get_database_path()?)?;
 
-    let mut vec_new_worte: Vec<NewWorteSchema> = vec![];
-    let mut vec_update_worte: Vec<(i32, NewWorteSchema)> = vec![];
+    let mut vec_new_worte: Vec<InputWort> = vec![];
+    let mut vec_update_worte: Vec<(i32, InputWort)> = vec![];
     for n in new_data.into_iter() {
         let data = &[(n.worte_es.clone(), n.worte_de.clone())];
-        let worte_repeated = WorteRepo::fetch_by_wort(&conn, data)?;
+        let worte_repeated = WortRepo::fetch_by_wort(&conn, data)?;
+        let worte_repeated = ModelWort::try_from_iter(worte_repeated)?;
 
         if worte_repeated.is_empty() {
             vec_new_worte.push(n);
@@ -388,14 +385,15 @@ where
 
     // update words
     for (id, new_worte) in vec_update_worte {
-        let tx = conn.transaction()?;
-        WorteGramTypeRepo::delete_by_wort_id_tx(&tx, &[id])?;
-        WorteRepo::bulk_update_tx(&tx, &[(id, new_worte)])?;
-        tx.commit()?;
+        let tx = conn.transaction().map_err(DbError::from)?;
+        WortGramTypeRepo::delete_by_wort_id_tx(&tx, &[id])?;
+        WortRepo::bulk_update_tx(&tx, &[(id, new_worte)])?;
+        tx.commit().map_err(DbError::from)?;
     }
 
     // insert new words
-    let res = WorteRepo::bulk_insert(&mut conn, &vec_new_worte)?;
+    let res = WortRepo::bulk_insert(&mut conn, &vec_new_worte)?;
+    let res = ModelWort::try_from_iter(res)?;
 
     if !config.is_audio_enable()? {
         println!("The Worte are added/updated, audio download is disable");
@@ -417,9 +415,9 @@ where
             continue;
         }
 
-        WorteAudioRepo::bulk_upsert(
+        WortAudioRepo::bulk_upsert(
             &mut conn,
-            &[NewWorteAudioSchema {
+            &[InputWortAudio {
                 wort_id: wort.id,
                 audio_name_es,
                 audio_name_de,

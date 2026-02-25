@@ -1,5 +1,7 @@
 use rusqlite::Connection;
 
+use crate::helpers::error_handler::DbError;
+
 pub mod gram_type;
 pub mod niveau_liste;
 pub mod setze;
@@ -11,7 +13,7 @@ pub mod wort_gender;
 pub mod wort_gram_type;
 pub mod wort_review;
 
-pub fn init_schemas(conn: &mut Connection) -> Result<(), rusqlite::Error> {
+pub fn init_schemas(conn: &mut Connection) -> Result<(), DbError> {
     // Active foreign keys
     conn.execute_batch("PRAGMA foreign_keys = ON")?;
 

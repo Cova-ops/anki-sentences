@@ -88,7 +88,7 @@ impl TryFrom<SchemaSetzeReview> for ModelSetzeReview {
 }
 
 impl ModelSetzeReview {
-    fn try_from_iter(
+    pub fn try_from_iter(
         value: impl IntoIterator<Item = SchemaSetzeReview>,
     ) -> Result<Vec<ModelSetzeReview>, Vec<InvalidValueError>> {
         let mut errs = vec![];

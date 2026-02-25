@@ -2,6 +2,7 @@
 mod test_worte_review_repo {
     use crate::{
         db::{
+            init_data, init_schemas,
             schemas::wort_review::{InputWortReview, SchemaWortReview, SnapshotWortReview},
             wort::WortRepo,
             wort_review::WortReviewRepo,
@@ -79,7 +80,7 @@ mod test_worte_review_repo {
             WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             let data = scenario_wort_review().update;
-            let res = WortReviewRepo::bulk_upsert(&mut conn, &sc.update)?;
+            let res = WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             assert_iter(&res, &data);
 
@@ -222,22 +223,20 @@ mod test_worte_review_repo {
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::ES2DE)?;
             assert_eq!(res, data_es);
 
-            let ss: Vec<SnapshotWortReview> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_es_before",
-                ss
+                res
             );
 
             WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             let res =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::ES2DE)?;
-            assert_eq!(res, []);
+            assert_eq!(res, Vec::<i32>::new());
 
-            let ss: Vec<SnapshotWortReview> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_es_after",
-                ss
+                res
             );
 
             Ok(())
@@ -259,22 +258,20 @@ mod test_worte_review_repo {
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::DE2ES)?;
             assert_eq!(res, data_de);
 
-            let ss: Vec<SnapshotWortReview> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_de_before",
-                ss
+                res
             );
 
             WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             let res =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::DE2ES)?;
-            assert_eq!(res, []);
+            assert_eq!(res, Vec::<i32>::new());
 
-            let ss: Vec<SnapshotWortReview> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_de_after",
-                ss
+                res
             );
 
             Ok(())
@@ -304,13 +301,13 @@ mod test_worte_review_repo {
     }
 
     mod fetch_review_wort_id_by_day {
-        use chrono::{Duration, Utc};
+        use chrono::{DateTime, Duration, Utc};
 
         use crate::db::schemas::wort_review::EnumReviewDirection;
 
         use super::*;
 
-        fn fetch_all(conn: &mut Connection, date: Datetime<Utc>) -> Result<Vec<i32>, DbError> {
+        fn fetch_all(conn: &mut Connection, date: DateTime<Utc>) -> Result<Vec<i32>, DbError> {
             let res_1 = WortReviewRepo::fetch_review_wort_id_by_day(
                 conn,
                 date,
@@ -434,7 +431,7 @@ mod test_worte_review_repo {
             WortReviewRepo::bulk_upsert(&mut conn, &data_updated)?;
 
             let res = fetch_all(&mut conn, today)?;
-            assert_eq!(res, []);
+            assert_eq!(res, Vec::<i32>::new());
 
             insta::assert_debug_snapshot!("[WortReview::fetch_review_wort_id_by_day] - empty", res);
 
@@ -484,11 +481,11 @@ mod test_worte_review_repo {
 
         #[test]
         fn empty() -> Result<(), DbError> {
-            let mut conn = init_conn()?;
+            let conn = init_conn()?;
 
             // The table is empty, so this should be empty
             let res = WortReviewRepo::fetch_all_ids(&conn, 100_000, 0)?;
-            assert_eq!(res, []);
+            assert_eq!(res, Vec::<i32>::new());
 
             insta::assert_debug_snapshot!("[WortReview::fetch_all] - empty", res);
 
@@ -513,7 +510,7 @@ mod test_worte_review_repo {
                     break;
                 }
 
-                last_id = res.iter().last().unwrap();
+                last_id = *res.iter().last().unwrap();
                 vec_out.extend(res);
             }
 
@@ -521,7 +518,7 @@ mod test_worte_review_repo {
 
             assert_eq!(vec_out, data);
 
-            insta::assert_debug_snapshot!("[WortReview::fetch_all] - offset_logic", res);
+            insta::assert_debug_snapshot!("[WortReview::fetch_all] - offset_logic", vec_out);
 
             Ok(())
         }

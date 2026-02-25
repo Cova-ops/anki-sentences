@@ -100,7 +100,7 @@ impl TryFrom<SchemaWortReview> for ModelWortReview {
 }
 
 impl ModelWortReview {
-    fn try_from_iter(
+    pub fn try_from_iter(
         value: impl IntoIterator<Item = SchemaWortReview>,
     ) -> Result<Vec<ModelWortReview>, Vec<InvalidValueError>> {
         let mut errs = vec![];

@@ -6,6 +6,10 @@ mod tests_niveau_liste_repo_bulk_upsert {
         init_schemas,
         niveau_liste::{InputNiveauListe, SchemaNiveauListe, SnapshotNiveauListe},
     };
+    use crate::{
+        db::niveau_liste::NiveauListeRepo, helpers::error_handler::DbError,
+        test_utils::scenarios::scenario_niveau_liste,
+    };
 
     fn assert_iter(res: &[SchemaNiveauListe], data: &[InputNiveauListe]) {
         assert_eq!(res.len(), data.len());
@@ -17,10 +21,6 @@ mod tests_niveau_liste_repo_bulk_upsert {
     }
 
     mod bulk_upsert {
-
-        use crate::{
-            db::niveau_liste::NiveauListeRepo, test_utils::scenarios::scenario_niveau_liste,
-        };
 
         use super::*;
 

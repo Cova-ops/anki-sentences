@@ -4,17 +4,19 @@ use crate::{
     console::cli::ReviewWorteSection,
     db::{
         get_conn,
-        schemas::worte_review::{NewWorteReviewSchema, ReviewDirection, WorteReviewSchema},
-        worte_audio::WorteAudioRepo,
-        worte_review::WorteReviewRepo,
+        schemas::{
+            wort_audio::ModelWortAudio,
+            wort_review::{EnumReviewDirection, InputWortReview, ModelWortReview},
+        },
+        wort_audio::WortAudioRepo,
+        wort_review::WortReviewRepo,
     },
-    helpers::{self, review_state::ReviewState, time, toml::AppConfig},
+    helpers::{self, error_handler::AppError, review_state::ReviewState, toml::AppConfig},
     services::tts::eleven_labs::LanguageVoice,
     utils,
 };
 
 use chrono::Utc;
-use color_eyre::Result;
 use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
@@ -25,15 +27,15 @@ enum TypeExercise {
 
 fn get_review_new_ids(
     conn: &Connection,
-    date_review: String,
+    date_review: chrono::DateTime<Utc>,
     lang: LanguageVoice,
-) -> Result<Vec<i32>> {
-    let lang = ReviewDirection::from_lang(lang);
+) -> Result<Vec<i32>, AppError> {
+    let lang: EnumReviewDirection = lang.into();
 
     let mut vec_ids =
-        WorteReviewRepo::fetch_review_wort_id_by_day(&conn, date_review, lang.clone())?;
+        WortReviewRepo::fetch_review_wort_id_by_day(&conn, date_review, lang.clone())?;
 
-    vec_ids.append(&mut WorteReviewRepo::fetch_new_wort_id_4_review(
+    vec_ids.append(&mut WortReviewRepo::fetch_new_wort_id_4_review(
         &conn, lang,
     )?);
     vec_ids.sort_unstable();
@@ -48,18 +50,19 @@ pub fn run(
     batch: usize,
     no_shuffle: bool,
     lang: LanguageVoice,
-) -> Result<()> {
+) -> Result<(), AppError> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
-    let today = time::today_local_string(1);
-    let review_direction = ReviewDirection::from_lang(lang);
+    let today = helpers::time::utc_datetime(1);
+    let review_direction: EnumReviewDirection = lang.into();
+
     let mut ids_worte: Vec<i32> = match section {
         ReviewWorteSection::NewAndReview => get_review_new_ids(&conn, today, lang)?,
         ReviewWorteSection::OnlyNew => {
-            WorteReviewRepo::fetch_new_wort_id_4_review(&conn, review_direction)?
+            WortReviewRepo::fetch_new_wort_id_4_review(&conn, review_direction)?
         }
         ReviewWorteSection::OnlyReview => {
-            WorteReviewRepo::fetch_review_wort_id_by_day(&conn, today, review_direction)?
+            WortReviewRepo::fetch_review_wort_id_by_day(&conn, today, review_direction)?
         }
         _ => todo!("Aguantame papito"),
     };
@@ -69,11 +72,12 @@ pub fn run(
         LanguageVoice::Spanisch => TypeExercise::Write,
     };
 
-    let ids_audios = if config.is_audio_enable()? {
-        WorteAudioRepo::fetch_by_id(&conn, &ids_worte)?
+    let vec: Vec<_> = if config.is_audio_enable()? {
+        WortAudioRepo::fetch_by_id(&conn, &ids_worte)?
     } else {
         Vec::new()
     };
+    let ids_audios: Vec<_> = ModelWortAudio::try_from_iter(vec)?;
     let hash_audios: HashSet<i32> = ids_audios.iter().map(|ia| ia.wort_id).collect();
 
     if no_shuffle {
@@ -111,15 +115,16 @@ pub fn run(
     let wort_ids: Vec<i32> = result_review.1.iter().map(|(id, _)| *id).collect();
 
     // Obtenemos si estas palabras ya tenian informacion hsitorica de revisiones anteriores
-    let vec_worte_review = WorteReviewRepo::fetch_by_wort_id(&conn, &wort_ids)?;
+    let vec: Vec<_> = WortReviewRepo::fetch_by_wort_id(&conn, &wort_ids)?;
+    let vec_worte_review: Vec<_> = ModelWortReview::try_from_iter(vec)?;
 
-    let hash_worte_review: HashMap<i32, WorteReviewSchema> = vec_worte_review
+    let hash_worte_review: HashMap<i32, ModelWortReview> = vec_worte_review
         .into_iter()
-        .filter(|f| f.direction == ReviewDirection::from_lang(lang))
+        .filter(|f| f.direction == EnumReviewDirection::from(lang))
         .map(|wr| (wr.wort_id, wr))
         .collect();
 
-    let mut vec_new_worte_review: Vec<NewWorteReviewSchema> = vec![];
+    let mut vec_new_worte_review: Vec<InputWortReview> = vec![];
     let now = Utc::now();
 
     // Recorremos el arreglo de palabras que respondio el usuario
@@ -137,19 +142,19 @@ pub fn run(
         // generamos el arreglo para guardar las revisiones para un futuro
         let review_state = review_state.review(quality);
         let next = review_state.next_review_date_from(now);
-        vec_new_worte_review.push(NewWorteReviewSchema {
+        vec_new_worte_review.push(InputWortReview {
             wort_id,
-            direction: ReviewDirection::from_lang(lang).to_string(),
+            direction: EnumReviewDirection::from(lang),
             interval: review_state.interval,
             ease_factor: review_state.ease_factor,
             repetitions: review_state.repetitions,
-            last_review: helpers::time::datetime_2_string(now),
-            next_review: helpers::time::datetime_2_string(next),
+            last_review: now,
+            next_review: next,
         })
     }
 
     // guardamos en db la info de las revisiones
-    WorteReviewRepo::bulk_upsert(&mut conn, &vec_new_worte_review)?;
+    WortReviewRepo::bulk_upsert(&mut conn, &vec_new_worte_review)?;
 
     if result_review.0 == 1 {
         return Ok(());

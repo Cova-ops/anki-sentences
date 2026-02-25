@@ -1,4 +1,4 @@
-use crate::db::schemas::wort_audio::InputWortAudio;
+use crate::{db::schemas::wort_audio::InputWortAudio, test_utils::scenarios::Scenario};
 
 pub fn scenario_wort_audio() -> Scenario<InputWortAudio> {
     Scenario {
@@ -6,17 +6,17 @@ pub fn scenario_wort_audio() -> Scenario<InputWortAudio> {
             InputWortAudio {
                 wort_id: 1,
                 audio_name_es: None,
-                audio_name_de: Some("audio_de_1"),
+                audio_name_de: Some(String::from("audio_de_1")),
             },
             InputWortAudio {
                 wort_id: 2,
-                audio_name_es: Some("audio_es_2"),
+                audio_name_es: Some(String::from("audio_es_2")),
                 audio_name_de: None,
             },
             InputWortAudio {
                 wort_id: 3,
-                audio_name_es: Some("audio_es_3"),
-                audio_name_de: Some("audio_de_3"),
+                audio_name_es: Some(String::from("audio_es_3")),
+                audio_name_de: Some(String::from("audio_de_3")),
             },
             InputWortAudio {
                 wort_id: 4,
@@ -27,18 +27,18 @@ pub fn scenario_wort_audio() -> Scenario<InputWortAudio> {
         update: vec![
             InputWortAudio {
                 wort_id: 1,
-                audio_name_es: Some("audio_es_1_test"),
-                audio_name_de: Some("audio_de_1_test"),
+                audio_name_es: Some(String::from("audio_es_1_test")),
+                audio_name_de: Some(String::from("audio_de_1_test")),
             },
             InputWortAudio {
                 wort_id: 2,
-                audio_name_es: Some("audio_es_2_test"),
-                audio_name_de: Some("audio_de_2_test"),
+                audio_name_es: Some(String::from("audio_es_2_test")),
+                audio_name_de: Some(String::from("audio_de_2_test")),
             },
             InputWortAudio {
                 wort_id: 3,
-                audio_name_es: Some("audio_es_3_test"),
-                audio_name_de: Some("audio_de_3_test"),
+                audio_name_es: Some(String::from("audio_es_3_test")),
+                audio_name_de: Some(String::from("audio_de_3_test")),
             },
             InputWortAudio {
                 wort_id: 4,
@@ -46,5 +46,6 @@ pub fn scenario_wort_audio() -> Scenario<InputWortAudio> {
                 audio_name_de: None,
             },
         ],
+        update_id: vec![],
     }
 }

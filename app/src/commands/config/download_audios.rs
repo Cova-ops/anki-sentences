@@ -1,8 +1,9 @@
-use color_eyre::eyre::{Context, Result};
-
 use crate::{
-    db::{get_conn, schemas::worte_audio::NewWorteAudioSchema, worte_audio::WorteAudioRepo},
-    helpers::{audios::ManageAudios, toml::AppConfig},
+    db::{
+        get_conn, schemas::wort_audio::InputWortAudio,
+        views::wort_audio_missing::ModelWortAudioMissing, wort_audio::WortAudioRepo,
+    },
+    helpers::{audios::ManageAudios, error_handler::AppError, toml::AppConfig},
     services::tts::{self, eleven_labs::LanguageVoice},
     utils,
 };
@@ -13,7 +14,7 @@ fn process_audio(
     wort_id: i32,
     manage_audios: &ManageAudios,
     lang: LanguageVoice,
-) -> Result<String> {
+) -> Result<String, AppError> {
     let res = if let Some(name) = audio_name {
         name
     } else {
@@ -34,9 +35,7 @@ fn try_audio(
     manage_audios: &ManageAudios,
     lang: LanguageVoice,
 ) -> Option<String> {
-    match process_audio(audio_name, text, wort_id, manage_audios, lang)
-        .wrap_err_with(|| format!("processing wort_id={wort_id}, lang={lang:?}, text={text}"))
-    {
+    match process_audio(audio_name, text, wort_id, manage_audios, lang) {
         Ok(name) => Some(name),
         Err(err) => {
             eprintln!("{:#?}", err);
@@ -45,10 +44,15 @@ fn try_audio(
     }
 }
 
-pub fn run(config: &AppConfig) -> Result<()> {
+pub fn run(config: &AppConfig) -> Result<(), AppError> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
-    let worte_without_audio = WorteAudioRepo::fetch_worte_without_audio(&conn)?;
+    let worte_without_audio = WortAudioRepo::fetch_worte_without_audio(&conn)?;
+    let worte_without_audio: Vec<ModelWortAudioMissing> = worte_without_audio
+        .into_iter()
+        .map(TryInto::try_into)
+        .collect::<Result<_, _>>()?;
+
     let len_vec = worte_without_audio.len();
 
     let manage_audios = ManageAudios::new(
@@ -78,9 +82,9 @@ pub fn run(config: &AppConfig) -> Result<()> {
             continue;
         }
 
-        WorteAudioRepo::bulk_upsert(
+        WortAudioRepo::bulk_upsert(
             &mut conn,
-            &[NewWorteAudioSchema {
+            &[InputWortAudio {
                 wort_id: wort.id,
                 audio_name_es,
                 audio_name_de,

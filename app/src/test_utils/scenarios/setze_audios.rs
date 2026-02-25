@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{
     db::schemas::setze_audio::InputSetzeAudio, services::tts::eleven_labs::EnumVoiceIDElevenLabs,
     test_utils::scenarios::Scenario,
@@ -29,5 +31,6 @@ pub fn scenario_setze_audio() -> Scenario<InputSetzeAudio> {
                 voice: EnumVoiceIDElevenLabs::GermanMan,
             },
         ],
+        update_id: vec![],
     }
 }

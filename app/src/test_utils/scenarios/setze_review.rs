@@ -41,5 +41,6 @@ pub fn scenario_setze_review() -> Scenario<InputSetzeReview> {
                 next_review: string_2_datetime("2037-12-02 20:00:00").unwrap(),
             },
         ],
+        update_id: vec![],
     }
 }

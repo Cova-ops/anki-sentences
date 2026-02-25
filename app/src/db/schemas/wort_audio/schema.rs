@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SchemaWortAudio {
     pub wort_id: i32,
     pub audio_name_es: Option<String>,

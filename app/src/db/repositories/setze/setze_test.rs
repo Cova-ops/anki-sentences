@@ -2,9 +2,10 @@
 mod test_setze_repo {
     use crate::{
         db::{
+            init_schemas,
             schemas::{
                 niveau_liste::EnumNiveauListe,
-                setze::{InputSetze, SnapshotSetze},
+                setze::{InputSetze, SchemaSetze, SnapshotSetze},
             },
             seeders::init_data,
             setze::SetzeRepo,
@@ -56,7 +57,7 @@ mod test_setze_repo {
             let mut conn = init_conn()?;
 
             let data = scenario_setze().initial;
-            let res = SetzeRepo::bulk_insert(&tx, &data)?;
+            let res = SetzeRepo::bulk_insert(&mut conn, &data)?;
 
             // A couple of hard asserts so we don't rely only on snapshots
             assert!(res[0].id > 0);
@@ -176,8 +177,70 @@ mod test_setze_repo {
         }
     }
 
+    mod fetch_one {
+        use super::*;
+
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
+
+            let data = scenario_setze().initial;
+            SetzeRepo::bulk_insert(&mut conn, &data)?;
+
+            Ok(conn)
+        }
+
+        #[test]
+        fn with_data() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let data = scenario_setze().initial.into_iter().next().unwrap();
+            let res = SetzeRepo::fetch_one(&conn, 1)?.unwrap();
+
+            assert_iter(&[res.clone()], &[data]);
+
+            let res: SnapshotSetze = res.into();
+            insta::assert_debug_snapshot!("[Setze::fetch_one] - with_data", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn not_exists() -> Result<(), DbError> {
+            let conn = init_conn()?;
+
+            let res = SetzeRepo::fetch_one(&conn, -1)?;
+            assert!(res.is_none());
+
+            insta::assert_debug_snapshot!("[Setze::fetch_one] - not_exists", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = SetzeRepo::fetch_one(&mut conn, 1).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
+    }
+
     mod fetch_id_neue_sentences {
-        use crate::db::schemas::setze_review::InputSetzeReview;
+        use crate::db::{schemas::setze_review::InputSetzeReview, setze_review::SetzeReviewRepo};
 
         use super::*;
 
@@ -194,7 +257,7 @@ mod test_setze_repo {
 
         #[test]
         fn valid_modified() -> Result<(), DbError> {
-            let conn = init_conn()?;
+            let mut conn = init_conn()?;
 
             let res = SetzeRepo::fetch_id_neue_sentences(&conn)?;
 

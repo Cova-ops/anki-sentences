@@ -9,7 +9,7 @@ use crate::{
         schemas::{
             gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_gender::EnumWortGender,
         },
-        worte_gender::WorteGenderRepo,
+        wort_gender::WortGenderRepo,
     },
     helpers::error_handler::DbError,
 };
@@ -19,7 +19,7 @@ pub fn init_data(conn: &mut Connection) -> Result<(), DbError> {
 
     // GenderWorte
     let seed: Vec<_> = EnumWortGender::ALL.iter().map(|d| d.to_new()).collect();
-    WorteGenderRepo::bulk_upsert_tx(&tx, &seed)?;
+    WortGenderRepo::bulk_upsert_tx(&tx, &seed)?;
 
     // NiveauWorte
     let seed: Vec<_> = EnumNiveauListe::ALL.iter().map(|d| d.to_new()).collect();

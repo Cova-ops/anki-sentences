@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SchemaSetze {
     pub id: i32,
 

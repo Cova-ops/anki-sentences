@@ -3,7 +3,7 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use crate::{
     db::{
         schemas::wort_audio::{InputWortAudio, SchemaWortAudio, SqlWortAudio},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
         views::wort_audio_missing::SchemaWortAudioMissing,
     },
     helpers::error_handler::DbError,
@@ -46,7 +46,10 @@ impl WortAudioRepo {
         for d in data {
             let params: SqlWortAudio = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaWortAudio::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaWortAudio::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);

@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fmt::{self},
     path::PathBuf,
 };
@@ -20,14 +21,90 @@ impl From<std::io::Error> for AppError {
     }
 }
 
-impl From<rusqlite::Error> for AppError {
-    fn from(e: rusqlite::Error) -> Self {
-        AppError {
-            kind: AppErrorKind::Db(DbError {
-                sql: None,
-                message: "db error".into(),
-                source: Some(e),
+impl From<Vec<InvalidValueError>> for AppError {
+    fn from(value: Vec<InvalidValueError>) -> Self {
+        Self {
+            kind: AppErrorKind::Validation(ValidationError {
+                issues: value
+                    .into_iter()
+                    .map(|v| FieldIssue {
+                        row: None,
+                        invalid: v,
+                    })
+                    .collect(),
             }),
+            context: vec![],
+        }
+    }
+}
+
+impl From<toml::de::Error> for AppError {
+    fn from(value: toml::de::Error) -> Self {
+        Self {
+            kind: AppErrorKind::Toml(TomlErrors::DE(value)),
+            context: vec![],
+        }
+    }
+}
+
+impl From<toml::ser::Error> for AppError {
+    fn from(value: toml::ser::Error) -> Self {
+        Self {
+            kind: AppErrorKind::Toml(TomlErrors::SER(value)),
+            context: vec![],
+        }
+    }
+}
+
+impl From<DbError> for AppError {
+    fn from(value: DbError) -> Self {
+        Self {
+            kind: AppErrorKind::Db(value),
+            context: vec![],
+        }
+    }
+}
+
+impl From<ConfigError> for AppError {
+    fn from(value: ConfigError) -> Self {
+        Self {
+            kind: AppErrorKind::Config(value),
+            context: vec![],
+        }
+    }
+}
+
+impl From<CsvParseError> for AppError {
+    fn from(value: CsvParseError) -> Self {
+        Self {
+            kind: AppErrorKind::Csv(value),
+            context: vec![],
+        }
+    }
+}
+
+impl From<AppErrorKind> for AppError {
+    fn from(value: AppErrorKind) -> Self {
+        Self {
+            kind: value,
+            context: vec![],
+        }
+    }
+}
+
+impl From<ApiError> for AppError {
+    fn from(value: ApiError) -> Self {
+        Self {
+            kind: AppErrorKind::Api(value),
+            context: vec![],
+        }
+    }
+}
+
+impl From<dotenvy::Error> for AppError {
+    fn from(value: dotenvy::Error) -> Self {
+        Self {
+            kind: AppErrorKind::Internal(format!("Error loading env: {value}")),
             context: vec![],
         }
     }
@@ -46,11 +123,41 @@ impl AppError {
 #[derive(Debug)]
 pub enum AppErrorKind {
     Io(std::io::Error),
+    Toml(TomlErrors),
     Csv(CsvParseError),
     Validation(ValidationError),
     Db(DbError),
-    Config(String),
+    Config(ConfigError),
     Internal(String),
+    Audio(AudioError),
+    Api(ApiError),
+}
+
+#[derive(Debug, Clone)]
+pub struct ApiError {
+    pub url: Option<String>,
+    pub headers: HashMap<String, String>,
+    pub method: String,
+    pub payload: Option<String>,
+    pub response: Option<String>,
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub enum AudioError {
+    Decoder(rodio::decoder::DecoderError),
+}
+
+#[derive(Debug, Clone)]
+pub struct ConfigError {
+    pub message: String,
+    pub action: String,
+}
+
+#[derive(Debug, Clone)]
+pub enum TomlErrors {
+    DE(toml::de::Error),
+    SER(toml::ser::Error),
 }
 
 #[derive(Debug, Clone)]
@@ -62,7 +169,7 @@ pub struct ErrorContext {
 #[derive(Debug)]
 pub struct CsvParseError {
     pub file: PathBuf,
-    pub row: Option<usize>, // 1-based si quieres
+    pub row: Option<usize>, // 1-based for users
     pub column: Option<&'static str>,
     pub message: String,
 }

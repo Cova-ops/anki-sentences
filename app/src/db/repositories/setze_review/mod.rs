@@ -4,7 +4,7 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use crate::{
     db::{
         schemas::setze_review::{InputSetzeReview, SchemaSetzeReview, SqlSetzeReview},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::{error_handler::DbError, time::datetime_2_string},
 };
@@ -52,7 +52,10 @@ impl SetzeReviewRepo {
         for d in data {
             let params: SqlSetzeReview = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaSetzeReview::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaSetzeReview::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw)

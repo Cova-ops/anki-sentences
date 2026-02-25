@@ -6,7 +6,7 @@ use crate::{
         schemas::wort_review::{
             EnumReviewDirection, InputWortReview, SchemaWortReview, SqlWortReview,
         },
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::{error_handler::DbError, time::datetime_2_string},
 };
@@ -73,7 +73,10 @@ impl WortReviewRepo {
         for d in data {
             let params: SqlWortReview = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaWortReview::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaWortReview::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw)

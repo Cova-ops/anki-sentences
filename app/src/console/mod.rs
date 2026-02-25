@@ -1,15 +1,14 @@
-use clap::Parser;
-use color_eyre::eyre::Result;
-
 use crate::{
     commands,
     console::cli::{Cli, Command},
-    helpers::toml::AppConfig,
+    helpers::{error_handler::AppError, toml::AppConfig},
 };
+
+use clap::Parser;
 
 pub mod cli;
 
-pub fn menu_main(config: &mut AppConfig) -> Result<()> {
+pub fn menu_main(config: &mut AppConfig) -> Result<(), AppError> {
     // clean_screen();
 
     let cli = Cli::parse();

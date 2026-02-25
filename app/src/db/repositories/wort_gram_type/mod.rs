@@ -3,7 +3,7 @@ use rusqlite::{Connection, Transaction, params, params_from_iter};
 use crate::{
     db::{
         schemas::wort_gram_type::{InputWortGramType, SchemaWortGramType, SqlWortGramType},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::error_handler::DbError,
 };
@@ -44,7 +44,10 @@ impl WortGramTypeRepo {
         for d in data {
             let params: SqlWortGramType = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaWortGramType::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaWortGramType::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);

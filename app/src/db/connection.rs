@@ -2,7 +2,9 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
-pub fn get_conn(path: &Path) -> Result<Connection, rusqlite::Error> {
+use crate::helpers::error_handler::DbError;
+
+pub fn get_conn(path: &Path) -> Result<Connection, DbError> {
     let conn = Connection::open(path)?;
 
     conn.execute_batch(

@@ -1,7 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
-
+#[derive(Debug, Clone)]
 pub struct SchemaWort {
     pub id: i32,
     pub gender_id: Option<i32>,

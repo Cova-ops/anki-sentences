@@ -1,10 +1,9 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
-use color_eyre::eyre::Result;
-use reqwest::blocking::Client;
+use reqwest::{blocking::Client, header::HeaderMap};
 use serde::Serialize;
 
-use crate::helpers::error_handler::InvalidValueError;
+use crate::helpers::error_handler::{ApiError, AppError, AppErrorKind, InvalidValueError};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EnumVoiceIDElevenLabs {
@@ -71,7 +70,7 @@ impl LanguageVoice {
     }
 }
 
-pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> {
+pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>, AppError> {
     let voice = match voice_choice {
         LanguageVoice::Deutsch => EnumVoiceIDElevenLabs::GermanMan.get_key(),
         LanguageVoice::Spanisch => EnumVoiceIDElevenLabs::SpanishWoman.get_key(),
@@ -96,14 +95,58 @@ pub fn generate_tts(text: &str, voice_choice: LanguageVoice) -> Result<Vec<u8>> 
         },
     };
 
+    let api_key = std::env::var("ELEVENLABS_API_KEY").map_err(|e| AppError {
+        kind: AppErrorKind::Internal(format!("Unable to find ELEVENLABS_API_KEY on .env: {}", e)),
+        context: vec![],
+    })?;
+
+    let headers = HashMap::from([
+        (String::from("xi-api-key"), api_key),
+        (
+            String::from("Content-Type"),
+            String::from("application/json"),
+        ),
+    ]);
+
     let res = client
         .post(&url)
-        .header("xi-api-key", std::env::var("ELEVENLABS_API_KEY")?)
-        .header("Content-Type", "application/json")
+        .headers(HeaderMap::try_from(&headers).map_err(|e| AppError {
+            kind: AppErrorKind::Internal(format!("Error convertir HashMap to HeaderMap: {}", e)),
+            context: vec![],
+        })?)
         .json(&body)
-        .send()?
-        .error_for_status()?; // If fails, this make a pretty display error
+        .send()
+        .map_err(|e| ApiError {
+            url: Some(url.clone()),
+            headers: headers.clone(),
+            method: String::from("POST"),
+            payload: Some(
+                serde_json::to_string_pretty(&body)
+                    .map_err(|e| AppError {
+                        kind: AppErrorKind::Internal(format!("Error serialize json: {e}")),
+                        context: vec![],
+                    })
+                    .unwrap(),
+            ),
+            response: None,
+            status: e.status().map(|d| d.to_string()),
+        })?;
 
-    let bytes = res.bytes()?.to_vec();
-    Ok(bytes)
+    let bytes = res.bytes().map_err(|e| ApiError {
+        url: Some(url),
+        headers,
+        method: String::from("POST"),
+        payload: Some(
+            serde_json::to_string_pretty(&body)
+                .map_err(|e| AppError {
+                    kind: AppErrorKind::Internal(format!("Error serialize json: {e}")),
+                    context: vec![],
+                })
+                .unwrap(),
+        ),
+        response: None,
+        status: e.status().map(|d| d.to_string()),
+    })?;
+
+    Ok(bytes.to_vec())
 }

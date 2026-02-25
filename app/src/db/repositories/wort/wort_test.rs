@@ -1,13 +1,11 @@
 #[cfg(test)]
 mod test_worte_repo {
-    use std::collections::HashMap;
-
     use crate::{
         db::{
             schemas::{
                 init_schemas,
                 wort::{InputWort, SchemaWort, SnapshotWort},
-                wort_gram_type::{SchemaWortGramType, SnapshotWortGramType},
+                wort_gram_type::SchemaWortGramType,
             },
             seeders::init_data,
             wort::WortRepo,
@@ -17,34 +15,35 @@ mod test_worte_repo {
     };
     use rusqlite::Connection;
 
-    fn assert_iter(res: &[SchemaWort], hash: &HashMap<i32, Vec<SchemaWort>>, data: &[InputWort]) {
+    fn assert_iter(res: &[(SchemaWort, Vec<SchemaWortGramType>)], data: &[InputWort]) {
         assert_eq!(res.len(), data.len());
 
         for (i, wort) in data.iter().enumerate() {
-            assert!(res[i].id > 0);
+            let (res_wort, res_grams) = &res[i];
 
-            assert_eq!(res[i].gender_id, wort.gender.map(|d| d.id()));
-            assert_eq!(res[i].worte_de, wort.wort_de);
-            assert_eq!(res[i].worte_es, wort.wort_es);
-            assert_eq!(res[i].plural, wort.plural);
-            assert_eq!(res[i].niveau_id, wort.niveau.id());
-            assert_eq!(res[i].example_de, wort.example_de);
-            assert_eq!(res[i].example_es, wort.example_es);
-            assert_eq!(res[i].verb_aux, wort.verb_aux);
-            assert_eq!(res[i].trennbar, wort.trennbar);
-            assert_eq!(res[i].reflexiv, wort.reflexiv);
+            assert!(res_wort.id > 0);
 
-            let grams = hash.remove(res[i].id).unwrap();
-            let mut ids_grams: Vec<i32> = grams.into_iter().map(|d| d.id).collect();
-            ids_grams.sort_unstable();
+            assert_eq!(res_wort.gender_id, wort.gender.map(|d| d.id()));
+            assert_eq!(res_wort.worte_de, wort.worte_de);
+            assert_eq!(res_wort.worte_es, wort.worte_es);
+            assert_eq!(res_wort.plural, wort.plural);
+            assert_eq!(res_wort.niveau_id, wort.niveau.id());
+            assert_eq!(res_wort.example_de, wort.example_de);
+            assert_eq!(res_wort.example_es, wort.example_es);
+            assert_eq!(res_wort.verb_aux, wort.verb_aux);
+            assert_eq!(res_wort.trennbar, wort.trennbar);
+            assert_eq!(res_wort.reflexiv, wort.reflexiv);
 
-            let mut ids_data: Vec<i32> = data.iter().map(|d| d.gram_type).collect();
-            ids_data.sort_unstable();
+            let data_grams = &wort.gram_type;
 
-            assert_eq!(ids_grams, ids_data);
+            assert_eq!(res_grams.len(), data_grams.len());
+            for (data_gram, res_gram) in data_grams.iter().zip(res_grams.iter()) {
+                assert_eq!(res_wort.id, res_gram.id_worte);
+                assert_eq!(data_gram.id(), res_gram.id_gram_type);
+            }
 
-            assert!(string_2_datetime(res[i].created_at).is_ok());
-            assert!(res[i].deleted_at.is_none());
+            assert!(string_2_datetime(&res_wort.created_at).is_ok());
+            assert!(res_wort.deleted_at.is_none());
         }
     }
 
@@ -63,16 +62,12 @@ mod test_worte_repo {
         fn empty() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let (res, hash) = WortRepo::bulk_insert(&mut conn, &[])?;
+            let res = WortRepo::bulk_insert(&mut conn, &[])?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - empty (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - empty (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - empty", ss);
 
             Ok(())
         }
@@ -82,16 +77,14 @@ mod test_worte_repo {
             let mut conn = init_conn()?;
 
             let data = scenario_wort().initial;
-            let (res, hash) = WortRepo::bulk_insert(&mut conn, &data)?;
+            let res = WortRepo::bulk_insert(&mut conn, &data)?;
 
-            assert_iter(&res, &hash, &data);
+            assert_iter(&res, &data);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - insert (res)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - insert", ss);
 
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_insert] - insert (hash)", ss);
+            Ok(())
         }
 
         #[test]
@@ -134,16 +127,12 @@ mod test_worte_repo {
         fn empty() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let (res, hash) = WortRepo::bulk_update(&mut conn, &[])?;
+            let res = WortRepo::bulk_update(&mut conn, &[])?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - empty (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - empty (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - empty", ss);
 
             Ok(())
         }
@@ -152,17 +141,19 @@ mod test_worte_repo {
         fn update() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data = scenario_wort().update;
-            let (res, hash) = WortRepo::bulk_update(&mut conn, &data)?;
+            let data = scenario_wort().update_id;
+            let res = WortRepo::bulk_update(&mut conn, &data)?;
 
-            assert_iter(&res, &hash, &data);
+            let data_without_id: Vec<_> = scenario_wort()
+                .update_id
+                .iter()
+                .cloned()
+                .map(|d| d.1)
+                .collect();
+            assert_iter(&res, &data_without_id);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - update (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - update (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::bulk_update] - update", ss);
 
             Ok(())
         }
@@ -173,7 +164,7 @@ mod test_worte_repo {
             // This verifies DbError::with_sql(sql) is attaching the SQL.
             let mut conn = Connection::open_in_memory().unwrap();
 
-            let data = scenario_wort().initial;
+            let data = scenario_wort().update_id;
             let err = WortRepo::bulk_update(&mut conn, &data).unwrap_err();
 
             assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
@@ -207,16 +198,12 @@ mod test_worte_repo {
         fn empty() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &[])?;
+            let res = WortRepo::fetch_by_id(&mut conn, &[])?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - empty (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - empty (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - empty", ss);
 
             Ok(())
         }
@@ -225,17 +212,13 @@ mod test_worte_repo {
         fn data() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &[1, 2])?;
+            let res = WortRepo::fetch_by_id(&mut conn, &[1, 2])?;
 
             let data: Vec<_> = scenario_wort().initial.into_iter().take(2).collect();
-            assert_iter(&res, &hash, &data);
+            assert_iter(&res, &data);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - data (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - data (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - data", ss);
 
             Ok(())
         }
@@ -244,16 +227,12 @@ mod test_worte_repo {
         fn not_exists() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &[-1])?;
+            let res = WortRepo::fetch_by_id(&mut conn, &[-1])?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - not_exists (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - not_exists (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_by_id] - not_exists", ss);
 
             Ok(())
         }
@@ -265,6 +244,69 @@ mod test_worte_repo {
             let mut conn = Connection::open_in_memory().unwrap();
 
             let err = WortRepo::fetch_by_id(&mut conn, &[1]).unwrap_err();
+
+            assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
+            assert!(
+                err.message.to_lowercase().contains("no such table")
+                    || format!("{:?}", err)
+                        .to_lowercase()
+                        .contains("no such table"),
+                "unexpected error: {err:?}"
+            );
+
+            Ok(())
+        }
+    }
+
+    mod fetch_one {
+        use super::*;
+
+        fn init_conn() -> Result<Connection, DbError> {
+            let mut conn = Connection::open_in_memory()?;
+            init_schemas(&mut conn)?;
+            init_data(&mut conn)?;
+
+            let data = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
+
+            Ok(conn)
+        }
+
+        #[test]
+        fn data() -> Result<(), DbError> {
+            let mut conn = init_conn()?;
+
+            let res = WortRepo::fetch_one(&mut conn, 1)?.unwrap();
+
+            let data: _ = scenario_wort().initial.into_iter().next().unwrap();
+            assert_iter(&[res.clone()], &[data]);
+
+            let ss: SnapshotWort = res.into();
+            insta::assert_debug_snapshot!("[WortRepo::fetch_one] - data", ss);
+
+            Ok(())
+        }
+
+        #[test]
+        fn not_exists() -> Result<(), DbError> {
+            let mut conn = init_conn()?;
+
+            let res = WortRepo::fetch_one(&mut conn, -1)?;
+
+            assert!(res.is_none());
+
+            insta::assert_debug_snapshot!("[WortRepo::fetch_one] - not_exists", res);
+
+            Ok(())
+        }
+
+        #[test]
+        fn error() -> Result<(), DbError> {
+            // Use a raw in-memory conn without your schema to force a prepare/query failure.
+            // This verifies DbError::with_sql(sql) is attaching the SQL.
+            let mut conn = Connection::open_in_memory().unwrap();
+
+            let err = WortRepo::fetch_one(&mut conn, 1).unwrap_err();
 
             assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
             assert!(
@@ -292,14 +334,13 @@ mod test_worte_repo {
 
         #[test]
         fn empty() -> Result<(), DbError> {
-            let mut conn = init_conn()?;
+            let conn = init_conn()?;
 
-            let res = WortRepo::fetch_all_ids(&conn, 100, 0)?;
+            let res: Vec<i32> = WortRepo::fetch_all_ids(&conn, 100, 0)?;
 
-            assert_eq!(res, []);
+            assert_eq!(res, Vec::<i32>::new());
 
-            let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_all_ids] - empty", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_all_ids] - empty", res);
 
             Ok(())
         }
@@ -344,7 +385,7 @@ mod test_worte_repo {
                     break;
                 }
 
-                last_id = res.iter().last().unwrap();
+                last_id = *res.iter().last().unwrap();
                 vec_out.append(&mut res);
             }
 
@@ -395,11 +436,11 @@ mod test_worte_repo {
 
         #[test]
         fn empty() -> Result<(), DbError> {
-            let mut conn = init_conn()?;
+            let conn = init_conn()?;
 
-            let (res, hash) = WortRepo::fetch_by_wort(&conn, &[])?;
+            let res = WortRepo::fetch_by_wort(&conn, &[])?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - empty", ss);
@@ -418,16 +459,12 @@ mod test_worte_repo {
                 .iter()
                 .map(|d| (d.worte_es.clone(), d.worte_de.clone()))
                 .collect();
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &data_fetch)?;
+            let res = WortRepo::fetch_by_wort(&mut conn, &data_fetch)?;
 
-            assert_iter(&res, &hash, &data);
+            assert_iter(&res, &data);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - all_data (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - all_data (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - all_data", ss);
 
             Ok(())
         }
@@ -444,17 +481,13 @@ mod test_worte_repo {
                 .map(|d| (d.worte_es.clone(), d.worte_de.clone()))
                 .take(1)
                 .collect();
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &data_fetch)?;
+            let res = WortRepo::fetch_by_wort(&mut conn, &data_fetch)?;
 
             let data: Vec<_> = data.into_iter().take(1).collect();
-            assert_iter(&res, &hash, &data);
+            assert_iter(&res, &data);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - one_row (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - one_row (hash)", ss);
+            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - one_row", ss);
 
             Ok(())
         }
@@ -471,16 +504,12 @@ mod test_worte_repo {
                 String::from("NOT_VALID_VALUE"),
             )];
 
-            let (res, hash) = WortRepo::fetch_by_id(&mut conn, &data_fetch)?;
+            let res = WortRepo::fetch_by_wort(&mut conn, &data_fetch)?;
 
-            assert_iter(&res, &hash, &[]);
+            assert_iter(&res, &[]);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - not_exists (res)", ss);
-
-            let ss: Vec<SchemaWortGramType> = hash.into_values().flatten().collect(); // Make all the vecs into the same level
-            let ss: Vec<SnapshotWortGramType> = ss.into_iter().map(Into::into).collect();
-            insta::assert_debug_snapshot!("[WortRepo::fetch_by_wort] - not_exists (hash)", ss);
 
             Ok(())
         }

@@ -1,7 +1,6 @@
-use color_eyre::eyre::Result;
 use dotenvy;
 
-use crate::helpers::toml::AppConfig;
+use crate::helpers::{error_handler::AppError, toml::AppConfig};
 
 mod commands;
 mod console;
@@ -14,13 +13,12 @@ mod utils;
 #[cfg(test)]
 mod test_utils;
 
-fn main() -> Result<()> {
+fn main() -> Result<(), AppError> {
     dotenvy::dotenv()?;
-    color_eyre::install().unwrap();
     run()
 }
 
-fn run() -> Result<()> {
+fn run() -> Result<(), AppError> {
     let mut config = AppConfig::load_config()?;
     let name_db = config.get_database_path()?;
 

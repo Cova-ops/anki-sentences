@@ -4,10 +4,9 @@ use std::{
     path::PathBuf,
 };
 
-use color_eyre::eyre::{self, Context, OptionExt, Result};
-
 use crate::{
-    db::schemas::worte_gender::GenderGermanListe,
+    db::schemas::wort_gender::EnumWortGender,
+    helpers::error_handler::{AppError, AppErrorKind},
     services::{self, tts::eleven_labs::LanguageVoice},
 };
 
@@ -37,7 +36,7 @@ impl ManageAudios {
         }
     }
 
-    pub fn check_audios_artikel(&self) -> Result<()> {
+    pub fn check_audios_artikel(&self) -> Result<(), AppError> {
         let text = "der";
         let path = self.path_audios_artikel.join(format!("{text}.mp3"));
         if !path.exists() {
@@ -62,19 +61,13 @@ impl ManageAudios {
         Ok(())
     }
 
-    pub fn get_audio_artikel(&self, gender: GenderGermanListe) -> Result<File> {
+    pub fn get_audio_artikel(&self, gender: &EnumWortGender) -> Result<File, AppError> {
         let path = self
             .path_audios_artikel
-            .join(format!("{}.mp3", gender.to_string()));
+            .join(format!("{}.mp3", gender.artikel()));
 
-        let file = File::open(path);
-        match file {
-            Ok(s) => Ok(s),
-            _ => eyre::bail!(format!(
-                "No artikel audio founded for {}",
-                gender.to_string()
-            )),
-        }
+        let file = File::open(path)?;
+        Ok(file)
     }
 
     pub fn save_audio_setze(
@@ -82,7 +75,7 @@ impl ManageAudios {
         bytes: Vec<u8>,
         id: i32,
         lang: LanguageVoice,
-    ) -> Result<PathBuf> {
+    ) -> Result<PathBuf, AppError> {
         self.save_file(bytes, id, AudioKind::Satz, lang)
     }
 
@@ -91,7 +84,7 @@ impl ManageAudios {
         bytes: Vec<u8>,
         id: i32,
         lang: LanguageVoice,
-    ) -> Result<PathBuf> {
+    ) -> Result<PathBuf, AppError> {
         self.save_file(bytes, id, AudioKind::Wort, lang)
     }
 
@@ -101,7 +94,7 @@ impl ManageAudios {
         id: i32,
         type_file: AudioKind,
         lang: LanguageVoice,
-    ) -> Result<PathBuf> {
+    ) -> Result<PathBuf, AppError> {
         let path_final = match type_file {
             AudioKind::Wort => {
                 self.path_audios_worte
@@ -118,15 +111,20 @@ impl ManageAudios {
         Ok(path_final)
     }
 
-    pub fn get_audio_setze(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>> {
+    pub fn get_audio_setze(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>, AppError> {
         self.get_file(id, AudioKind::Satz, lang)
     }
 
-    pub fn get_audio_worte(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>> {
+    pub fn get_audio_worte(&self, id: i32, lang: LanguageVoice) -> Result<Option<File>, AppError> {
         self.get_file(id, AudioKind::Wort, lang)
     }
 
-    fn get_file(&self, id: i32, type_file: AudioKind, lang: LanguageVoice) -> Result<Option<File>> {
+    fn get_file(
+        &self,
+        id: i32,
+        type_file: AudioKind,
+        lang: LanguageVoice,
+    ) -> Result<Option<File>, AppError> {
         let path = match type_file {
             AudioKind::Wort => {
                 self.path_audios_worte
@@ -145,42 +143,17 @@ impl ManageAudios {
         }
     }
 
-    pub fn get_all_ids_files(&self) -> Result<(HashSet<i32>, HashSet<i32>)> {
+    pub fn get_all_ids_files(&self) -> Result<(HashSet<i32>, HashSet<i32>), AppError> {
         let mut hash_worte: HashSet<i32> = HashSet::new();
         let mut hash_setze: HashSet<i32> = HashSet::new();
 
         let audios_dir = self.path_audios_worte.read_dir()?;
         for audio in audios_dir {
-            let audio_name = audio?
-                .file_name()
-                .to_str()
-                .ok_or_eyre("Error converting OsStr to &str")?
-                .to_owned();
-
-            if !audio_name.ends_with(".mp3") {
-                println!("This file should be here: {}", audio_name);
-                continue;
-            }
-
-            let audio_id_str = audio_name
-                .strip_prefix("wort_")
-                .and_then(|r| {
-                    r.strip_suffix("_es.mp3")
-                        .or_else(|| r.strip_suffix("_de.mp3"))
-                })
-                .ok_or_eyre(format!("File not recognized: {}", audio_name))?;
-
-            let audio_id: i32 = audio_id_str.parse()?;
-            hash_worte.insert(audio_id);
-        }
-
-        let audios_dir = self.path_audios_setze.read_dir()?;
-        for audio in audios_dir {
-            let audio_name = audio?
-                .file_name()
-                .to_str()
-                .ok_or_eyre("Error converting OsStr to &str")?
-                .to_owned();
+            let audio_name = audio?.file_name().to_str().map(|d| d.to_owned());
+            let audio_name = audio_name.ok_or_else(|| AppError {
+                kind: AppErrorKind::Internal(String::from("File with name not valid")),
+                context: vec![],
+            })?;
 
             if !audio_name.ends_with(".mp3") {
                 println!("This file should be here: {}", audio_name);
@@ -190,17 +163,68 @@ impl ManageAudios {
             let audio_id_str = audio_name
                 .strip_prefix("wort_")
                 .and_then(|r| r.strip_suffix("_es.mp3"))
-                .and_then(|r| r.strip_suffix("_de.mp3"))
-                .unwrap();
+                .and_then(|r| r.strip_suffix("_de.mp3"));
 
-            let audio_id: i32 = audio_id_str.parse()?;
+            let audio_id_str = match audio_id_str {
+                Some(v) if v.trim().len() > 0 => v,
+                _ => {
+                    println!("This file should not be here: wort/{audio_name}");
+                    continue;
+                }
+            };
+
+            let audio_id: i32 = match audio_id_str.parse() {
+                Ok(v) => v,
+                _ => {
+                    println!("This file should not be here: wort/{audio_name}");
+                    continue;
+                }
+            };
+
+            hash_worte.insert(audio_id);
+        }
+
+        let audios_dir = self.path_audios_setze.read_dir()?;
+        for audio in audios_dir {
+            let audio_name = audio?.file_name().to_str().map(|d| d.to_owned());
+            let audio_name = audio_name.ok_or_else(|| AppError {
+                kind: AppErrorKind::Internal(String::from("File with name not valid")),
+                context: vec![],
+            })?;
+
+            if !audio_name.ends_with(".mp3") {
+                println!("This file should not be here: {}", audio_name);
+                continue;
+            }
+
+            let audio_id_str = audio_name
+                .strip_prefix("wort_")
+                .and_then(|r| r.strip_suffix("_es.mp3"))
+                .and_then(|r| r.strip_suffix("_de.mp3"));
+
+            let audio_id_str = match audio_id_str {
+                Some(v) if v.trim().len() > 0 => v,
+                _ => {
+                    println!("This file should not be here: wort/{audio_name}");
+                    continue;
+                }
+            };
+
+            let audio_id: i32 = match audio_id_str.parse() {
+                Ok(v) => v,
+                _ => {
+                    println!("This file should not be here: wort/{audio_name}");
+                    continue;
+                }
+            };
+
             hash_setze.insert(audio_id);
         }
 
         Ok((hash_worte, hash_setze))
     }
 
-    pub fn remove_audios<I>(&self, ids_files: I, type_file: AudioKind) -> Result<()>
+    pub fn remove_audios<I>(&self, ids_files: I, type_file: AudioKind) -> Result<(), AppError>
     where
         I: IntoIterator,
         I::Item: Copy + Into<i32>,
@@ -231,13 +255,13 @@ impl ManageAudios {
             match fs::remove_file(path_es) {
                 Ok(_) => println!("File removed: {}", file_es),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-                Err(e) => Err(e).wrap_err_with(|| format!("Couldn't remove file {}", file_es))?,
+                Err(e) => return Err(e.into()),
             };
 
             match fs::remove_file(path_de) {
                 Ok(_) => println!("File removed: {}", file_de),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-                Err(e) => Err(e).wrap_err_with(|| format!("Couldn't remove file {}", file_de))?,
+                Err(e) => return Err(e.into()),
             };
         }
 

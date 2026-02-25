@@ -1,9 +1,9 @@
-use rusqlite::{Connection, Transaction, params_from_iter};
+use rusqlite::{Connection, OptionalExtension, Transaction, params, params_from_iter};
 
 use crate::{
     db::{
         schemas::setze::{InputSetze, SchemaSetze, SqlSetze},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::error_handler::DbError,
 };
@@ -44,7 +44,10 @@ impl SetzeRepo {
         for d in data {
             let params: SqlSetze = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaSetze::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaSetze::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             out.push(raw);
@@ -107,6 +110,31 @@ impl SetzeRepo {
             .map_err(DbError::with_sql(&sql))?
             .mapped(SchemaSetze::from_sql)
             .collect::<Result<Vec<SchemaSetze>, _>>()
+            .map_err(DbError::with_sql(&sql))?;
+
+        Ok(rows)
+    }
+
+    pub fn fetch_one(conn: &Connection, id: i32) -> Result<Option<SchemaSetze>, DbError> {
+        let sql = format!(
+            "SELECT
+                id,
+                setze_spanisch,
+                setze_deutsch,
+                niveau_id,
+                thema,
+                created_at,
+                deleted_at
+            FROM setze
+            WHERE id = ?1 AND deleted_at is NULL
+            ORDER BY setze_deutsch"
+        );
+
+        let mut stmt = conn.prepare(&sql)?;
+
+        let rows = stmt
+            .query_one(params![id], SchemaSetze::from_sql)
+            .optional() // Catch if it doesn't exists
             .map_err(DbError::with_sql(&sql))?;
 
         Ok(rows)

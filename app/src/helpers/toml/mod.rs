@@ -4,10 +4,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use color_eyre::eyre::{OptionExt, Result, eyre};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{self, path::home_dir};
+use crate::{
+    helpers::error_handler::{AppError, AppErrorKind, ConfigError},
+    utils::{self, path::home_dir},
+};
 
 static DIR_CONFIG: &str = ".config/anki-sentences";
 static DIR_PROFILES: &str = "profiles";
@@ -56,7 +58,7 @@ impl Default for ProfileConfig {
 }
 
 impl ProfileConfig {
-    fn validate_dirs(&self) -> Result<()> {
+    fn validate_dirs(&self) -> Result<(), std::io::Error> {
         if !self.database_path.try_exists()? {
             fs::create_dir_all(&self.database_path)?;
         }
@@ -121,7 +123,7 @@ impl AppConfig {
         }
     }
 
-    pub fn load_config() -> Result<Self> {
+    pub fn load_config() -> Result<Self, AppError> {
         let folder = home_dir().join(DIR_CONFIG);
         if !folder.try_exists()? {
             fs::create_dir_all(folder.clone())?;
@@ -163,38 +165,46 @@ impl AppConfig {
         Ok(cfg)
     }
 
-    pub fn save_config(&self) -> Result<()> {
-        let file_path = self
-            .config_file_path
-            .as_deref()
-            .ok_or_else(|| eyre!("Config file not configurated yet"))?;
+    pub fn save_config(&self) -> Result<(), AppError> {
+        let file_path = self.config_file_path.as_deref().ok_or_else(|| AppError {
+            kind: AppErrorKind::Config(ConfigError {
+                message: String::from("Config file is not yet configurated"),
+                action: String::from("save_config"),
+            }),
+            context: vec![],
+        })?;
 
         let content = toml::to_string_pretty(self)?;
         fs::write(&file_path, content)?;
         Ok(())
     }
 
-    fn get_profile(&self, profile: &str) -> Result<&ProfileConfig> {
-        self.profiles.get(profile).ok_or_eyre(format!(
-            r#"Profile {profile} not founded. Try with "anki-sentences db use <name_profile>""#
-        ))
+    fn get_profile(&self, profile: &str) -> Result<&ProfileConfig, ConfigError> {
+        self.profiles.get(profile).ok_or(0).map_err(|_| ConfigError {
+            message: String::from(
+                r#"Profile {profile} not founded. Try with "anki-sentences db use <name_profile>""#,
+            ),
+            action: String::from("get_profile"),
+        })
     }
 
-    fn get_actual_profile(&self) -> Result<&ProfileConfig> {
+    fn get_actual_profile(&self) -> Result<&ProfileConfig, ConfigError> {
         self.get_profile(&self.actual_profile)
     }
 
-    fn get_profile_mut(&mut self, profile: &str) -> Result<&mut ProfileConfig> {
-        self.profiles.get_mut(profile).ok_or_eyre(format!(
-            r#"Profile {profile} not founded. Try with "anki-sentences db use <name_profile>""#
-        ))
+    fn get_profile_mut(&mut self, profile: &str) -> Result<&mut ProfileConfig, ConfigError> {
+        self.profiles.get_mut(profile).ok_or(0).map_err(|_| ConfigError{
+message: String::from(
+            r#"Profile {profile} not founded. Try with "anki-sentences db use <name_profile>""#), action: String::from("get_profile_mut")
+        }
+        )
     }
 
-    fn get_actual_profile_mut(&mut self) -> Result<&mut ProfileConfig> {
+    fn get_actual_profile_mut(&mut self) -> Result<&mut ProfileConfig, ConfigError> {
         self.get_profile_mut(&self.actual_profile.clone())
     }
 
-    pub fn change_profile(&mut self, name_profile: &str) -> Result<()> {
+    pub fn change_profile(&mut self, name_profile: &str) -> Result<(), AppError> {
         self.get_profile(name_profile)?; // valid if this exists
         self.actual_profile = name_profile.to_string();
         self.get_actual_profile()?.validate_dirs()?;
@@ -203,7 +213,7 @@ impl AppConfig {
         Ok(())
     }
 
-    pub fn set_new_profile(&mut self, name_profile: &str) -> Result<()> {
+    pub fn set_new_profile(&mut self, name_profile: &str) -> Result<(), AppError> {
         let new_profile = ProfileConfig::new(name_profile);
         new_profile.validate_dirs()?;
 
@@ -214,31 +224,31 @@ impl AppConfig {
         Ok(())
     }
 
-    pub fn get_path_audios_artikel(&self) -> Result<&Path> {
+    pub fn get_path_audios_artikel(&self) -> Result<&Path, AppError> {
         Ok(&self.audio_artikel_path)
     }
 
     // INFORMATION FROM ACTUAL PROFILE
-    pub fn get_database_path(&self) -> Result<&Path> {
+    pub fn get_database_path(&self) -> Result<&Path, AppError> {
         Ok(&self.get_actual_profile()?.database_path)
     }
 
-    pub fn is_audio_enable(&self) -> Result<bool> {
+    pub fn is_audio_enable(&self) -> Result<bool, AppError> {
         Ok(self.get_actual_profile()?.audio_enabled)
     }
 
-    pub fn set_audio_enable(&mut self, new_value: bool) -> Result<()> {
+    pub fn set_audio_enable(&mut self, new_value: bool) -> Result<(), AppError> {
         self.get_actual_profile_mut()?.audio_enabled = new_value;
         self.save_config()?;
 
         Ok(())
     }
 
-    pub fn get_path_audios_worte(&self) -> Result<&Path> {
+    pub fn get_path_audios_worte(&self) -> Result<&Path, AppError> {
         Ok(&self.get_actual_profile()?.audios_worte_path)
     }
 
-    pub fn get_path_audios_setze(&self) -> Result<&Path> {
+    pub fn get_path_audios_setze(&self) -> Result<&Path, AppError> {
         Ok(&self.get_actual_profile()?.audios_setze_path)
     }
 }

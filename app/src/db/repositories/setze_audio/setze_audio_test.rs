@@ -45,7 +45,7 @@ mod test_setze_audio_repo {
             let mut conn = init_conn()?;
 
             let data: Vec<_> = scenario_setze_audio().initial;
-            let res: Vec<_> = SetzeAudioRepo::bulk_upsert(&tx, &data)?;
+            let res: Vec<_> = SetzeAudioRepo::bulk_upsert(&mut conn, &data)?;
 
             // A couple of hard asserts so we don't rely only on snapshots
             assert_eq!(res.len(), data.len());
@@ -197,4 +197,3 @@ mod test_setze_audio_repo {
         }
     }
 }
-

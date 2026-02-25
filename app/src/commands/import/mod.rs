@@ -1,16 +1,14 @@
-use color_eyre::Result;
-
 use crate::{
     console::cli::ExportImportCmd,
-    helpers::toml::AppConfig,
+    helpers::{error_handler::AppError, toml::AppConfig},
 };
 
 // mod setze;
-mod worte;
+mod wort;
 
-pub fn run(cmd: ExportImportCmd, config: &AppConfig) -> Result<()> {
+pub fn run(cmd: ExportImportCmd, config: &AppConfig) -> Result<(), AppError> {
     match cmd {
-        ExportImportCmd::Worte { path, type_file } => worte::run(config, path, type_file)?,
+        ExportImportCmd::Worte { path, type_file } => wort::run(config, path, type_file)?,
         _ => todo!("Aguantame papito"),
     };
 

@@ -1,24 +1,24 @@
-use color_eyre::Result;
-
 use crate::{
-    console::cli::ReviewCmd, helpers::toml::AppConfig, services::tts::eleven_labs::LanguageVoice,
+    console::cli::ReviewCmd,
+    helpers::{error_handler::AppError, toml::AppConfig},
+    services::tts::eleven_labs::LanguageVoice,
 };
 
 mod setze;
-mod worte;
+mod wort;
 
-pub fn run(cmd: ReviewCmd, config: &AppConfig) -> Result<()> {
+pub fn run(cmd: ReviewCmd, config: &AppConfig) -> Result<(), AppError> {
     match cmd {
         ReviewCmd::WorteEs {
             section,
             batch,
             no_shuffle,
-        } => worte::run(config, section, batch, no_shuffle, LanguageVoice::Spanisch)?,
+        } => wort::run(config, section, batch, no_shuffle, LanguageVoice::Spanisch)?,
         ReviewCmd::WorteDe {
             section,
             batch,
             no_shuffle,
-        } => worte::run(config, section, batch, no_shuffle, LanguageVoice::Deutsch)?,
+        } => wort::run(config, section, batch, no_shuffle, LanguageVoice::Deutsch)?,
         ReviewCmd::Setze {
             section,
             batch,

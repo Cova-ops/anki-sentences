@@ -1,12 +1,12 @@
-use color_eyre::eyre::{Context, Result, bail, eyre};
-use csv::ReaderBuilder;
-use std::{fs::File, path::Path};
+use csv::{ReaderBuilder, StringRecord};
+use std::{fs::File, path::Path, str::FromStr};
 
 use crate::{
     db::schemas::{
-        gram_type::GramTypeSchema, niveau_liste::NiveauListeSchema, setze::NewSetzeSchema,
-        worte::NewWorteSchema, worte_gender::WorteGenderSchema,
+        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, setze::InputSetze, wort::InputWort,
+        wort_gender::EnumWortGender,
     },
+    helpers::error_handler::{AppError, CsvParseError},
     traits::string::StringConvertion,
 };
 
@@ -37,12 +37,12 @@ static HEADER_WORTE_CSV: [&str; 11] = [
 ///
 /// return:
 /// Regresa un Result ó Report segun el caso
-pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<()> {
-    let file = File::open(path).with_context(|| {
-        format!(
-            "[is_csv_valid] - No se puede abrir el archivo: {:?}",
-            path.display()
-        )
+pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<Vec<StringRecord>, AppError> {
+    let file = File::open(path).map_err(|e| CsvParseError {
+        file: path.to_owned(),
+        row: None,
+        column: None,
+        message: format!("File cannot be open: {}", e),
     })?;
 
     let header_csv: &'static [&'static str] = match type_file {
@@ -51,133 +51,280 @@ pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<()> {
     };
 
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
-    let headers = reader
-        .headers()
-        .context("[is_csv_valid] - Error en encabezados")?;
+    let headers = reader.headers().map_err(|e| CsvParseError {
+        file: path.to_owned(),
+        row: None,
+        column: None,
+        message: format!("Headers are required: {}", e),
+    })?;
 
     if headers.len() != header_csv.len() {
-        return Err(eyre!(
-            "[is_csv_valid] - Número de columnas inválido esperado {}, recibido {}",
-            header_csv.len(),
-            headers.len()
-        ));
+        return Err(CsvParseError {
+            file: path.to_owned(),
+            row: None,
+            column: None,
+            message: format!(
+                "Columns expected: {}, founded: {}",
+                header_csv.len(),
+                headers.len()
+            ),
+        }
+        .into());
     }
 
     for (i, h) in headers.iter().enumerate() {
         if h != header_csv[i] {
-            return Err(eyre!(
-                "[is_csv_valid] - La cabera {} no corresponde con {} (pos {})",
-                h,
-                header_csv[i],
-                i
-            ));
+            return Err(CsvParseError {
+                file: path.to_owned(),
+                row: None,
+                column: None,
+                message: format!(
+                    "Header {} doesn't match with {}, (position {})",
+                    h, header_csv[i], i
+                ),
+            }
+            .into());
         }
     }
 
+    let mut vec_out = vec![];
     for (i, result) in reader.records().enumerate() {
-        result.with_context(|| format!("[is_csv_valid] - Error en la línea {}", i + 1))?;
+        let line = result.map_err(|e| CsvParseError {
+            file: path.to_owned(),
+            row: Some(i + 1),
+            column: None,
+            message: format!("Error on line: {}", e),
+        })?;
+        vec_out.push(line);
     }
 
-    Ok(())
+    Ok(vec_out)
 }
 
-pub fn extract_sentences_csv(path: &Path) -> Result<Vec<NewSetzeSchema>> {
-    let file = File::open(path).with_context(|| {
-        format!(
-            "[extract_sentences_from] - No se puede abrir el archivo: {}",
-            path.display()
-        )
-    })?;
-    let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
+pub fn extract_sentences_csv(path: &Path) -> Result<Vec<InputSetze>, AppError> {
+    let records = is_csv_valid(path, CsvType::Setze)?;
 
-    let mut r: Vec<NewSetzeSchema> = Vec::new();
-    for (i, result) in reader.records().enumerate() {
-        let value = result
-            .with_context(|| format!("[extract_sentences_from] - Error en la línea {}", i + 1))?;
-
-        let col3_value = value.get(3).unwrap_or("1").to_string();
-        let schwirig_id = if let Ok(col3) = col3_value.parse::<i32>() {
-            NiveauListeSchema::from_id(col3)
-        } else {
-            NiveauListeSchema::from_niveau(&col3_value)
+    let mut vec_out: Vec<InputSetze> = Vec::new();
+    for (i, value) in records.into_iter().enumerate() {
+        let setze_spanisch = match value.get(0) {
+            Some(v) if v.trim().len() > 0 => v.to_owned(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("setze_spanisch"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
 
-        let span = value.get(0).unwrap_or("").to_string();
-        let deut = value.get(1).unwrap_or("").to_string();
-        let them = value.get(2).unwrap_or("").to_string();
+        let setze_deutsch = match value.get(1) {
+            Some(v) if v.trim().len() > 0 => v.to_owned(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("setze_deutsch"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
 
-        r.push(NewSetzeSchema::new(span, deut, them, schwirig_id?.id));
+        let thema = match value.get(2) {
+            Some(v) if v.trim().len() > 0 => v.to_owned(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("thema"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
+
+        let niveau = match value.get(3) {
+            Some(v) if v.trim().len() > 0 => v.to_owned(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("thema"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
+
+        let niveau = match niveau.parse::<i32>() {
+            Ok(v) => EnumNiveauListe::try_from(v),
+            Err(_) => EnumNiveauListe::from_str(&niveau),
+        }
+        .map_err(|e| CsvParseError {
+            file: path.to_owned(),
+            row: Some(i + 1),
+            column: Some("niveau"),
+            message: e.message,
+        })?;
+
+        let satz = InputSetze {
+            setze_spanisch,
+            setze_deutsch,
+            thema,
+            niveau,
+        };
+
+        vec_out.push(satz);
     }
 
-    Ok(r)
+    Ok(vec_out)
 }
 
-pub fn extract_worte_csv(path: &Path) -> Result<Vec<NewWorteSchema>> {
-    let file = File::open(path)?;
-    let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
+pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
+    let records = is_csv_valid(path, CsvType::Setze)?;
 
-    let mut vec_result: Vec<NewWorteSchema> = Vec::new();
-    for (i, result) in reader.records().enumerate() {
-        let value = result.with_context(|| format!("Error on line: {}", i + 1))?;
-
+    let mut vec_result: Vec<InputWort> = Vec::new();
+    for (i, value) in records.into_iter().enumerate() {
         if value.is_empty() {
             continue;
         }
 
         let gram_type_list = match value.get(0) {
-            Some(v) => v.to_string(),
-            None => bail!("gram_type should not be empty, line: {}", i),
+            Some(v) if !v.trim().is_empty() => v.to_owned(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("gram_type"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
 
         let split_gram_type: Vec<&str> = gram_type_list.split(',').collect();
-        let mut vec_gram_type: Vec<i32> = Vec::with_capacity(split_gram_type.len());
+        let mut vec_gram_type: Vec<EnumGramType> = Vec::with_capacity(split_gram_type.len());
         for gt in split_gram_type {
             if gt.is_empty() {
-                bail!("gram_type should not be empty, line: {}", i)
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("gram_type"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
             }
 
-            let gram_type = GramTypeSchema::from_code(gt)?;
-            vec_gram_type.push(gram_type.id);
+            let gram_type = EnumGramType::from_str(gt).map_err(|e| CsvParseError {
+                file: path.to_owned(),
+                row: Some(i + 1),
+                column: Some("gram_type"),
+                message: e.message,
+            })?;
+            vec_gram_type.push(gram_type);
         }
 
-        let gender_id = match value.get(1) {
+        let gender = match value.get(1) {
             Some(v) if v.trim().is_empty() => None,
-            Some(v) => Some(WorteGenderSchema::from_gender(v)?.id),
+            Some(v) => Some(EnumWortGender::from_str(v).map_err(|e| CsvParseError {
+                file: path.to_owned(),
+                row: Some(i + 1),
+                column: Some("gender_id"),
+                message: e.message,
+            })?),
             None => None,
         };
+
         let worte_de = match value.get(2) {
-            Some(v) => v.to_string(),
-            None => bail!("worte_de should not be empty, line: {}", i),
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("worte_de"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
+
         let worte_es = match value.get(3) {
-            Some(v) => v.to_string(),
-            None => bail!("worte_es should not be empty, line: {}", i),
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("worte_es"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
-        let plural = value.get(4).map(|s| s.to_string());
-        let niveau_id = match value.get(5) {
-            Some(v) => NiveauListeSchema::from_niveau(v)?.id,
-            None => bail!("niveau should not be empty, line: {}", i),
+
+        let plural = match value.get(4) {
+            Some(v) if v.trim().len() > 0 => Some(v.to_owned()),
+            _ => None,
         };
+
+        let niveau = match value.get(5) {
+            Some(v) if v.trim().len() > 0 => {
+                EnumNiveauListe::from_str(v).map_err(|e| CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("niveau"),
+                    message: e.message,
+                })?
+            }
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("niveau"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
+
         let example_de = match value.get(6) {
-            Some(v) => v.to_string(),
-            None => bail!("example_de should not be empty, line: {}", i),
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("niveau"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
+
         let example_es = match value.get(7) {
-            Some(v) => v.to_string(),
-            None => bail!("example_es should not be empty, line: {}", i),
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("niveau"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
         };
 
         let verb_aux = value.get(8).map(|s| s.to_string());
         let trennbar = value.get(9).map(|s| s.to_bool());
         let reflexiv = value.get(10).map(|s| s.to_bool());
 
-        vec_result.push(NewWorteSchema {
+        vec_result.push(InputWort {
             gram_type: vec_gram_type,
-            gender_id,
+            gender,
             worte_de,
             worte_es,
             plural,
-            niveau_id,
+            niveau,
             example_de,
             example_es,
             verb_aux,

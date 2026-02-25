@@ -67,6 +67,21 @@ impl TryFrom<SchemaSetze> for ModelSetze {
     }
 }
 
+impl TryFrom<Option<SchemaSetze>> for ModelSetze {
+    type Error = Vec<InvalidValueError>;
+
+    fn try_from(value: Option<SchemaSetze>) -> Result<Self, Self::Error> {
+        match value {
+            Some(v) => Ok(v.try_into()?),
+            None => Err(vec![InvalidValueError {
+                message: String::from("Try to conver a None value"),
+                field: "SchemaSetze",
+                valid_options: None,
+            }]),
+        }
+    }
+}
+
 impl ModelSetze {
     pub fn try_from_iter(
         value: impl IntoIterator<Item = SchemaSetze>,
@@ -89,110 +104,183 @@ impl ModelSetze {
 mod tests_model_setze {
     use super::*;
 
-    fn schema_ok(deleted_at: Option<&str>) -> SchemaSetze {
-        SchemaSetze {
-            id: 1,
-            setze_spanisch: "Hola".to_string(),
-            setze_deutsch: "Hallo".to_string(),
-            niveau_id: 0, // A1
-            thema: "Saludos".to_string(),
-            created_at: "2025-12-09 20:30:00".to_string(),
-            deleted_at: deleted_at.map(|s| s.to_string()),
+    mod try_from_schema {
+        use super::*;
+
+        fn schema_ok(deleted_at: Option<&str>) -> SchemaSetze {
+            SchemaSetze {
+                id: 1,
+                setze_spanisch: "Hola".to_string(),
+                setze_deutsch: "Hallo".to_string(),
+                niveau_id: 0, // A1
+                thema: "Saludos".to_string(),
+                created_at: "2025-12-09 20:30:00".to_string(),
+                deleted_at: deleted_at.map(|s| s.to_string()),
+            }
+        }
+
+        #[test]
+        fn try_from_ok_without_deleted_at() {
+            let s = schema_ok(None);
+            let m = ModelSetze::try_from(s).expect("should build ModelSetze");
+
+            assert_eq!(m.id, 1);
+            assert_eq!(m.setze_spanisch, "Hola");
+            assert_eq!(m.setze_deutsch, "Hallo");
+            assert_eq!(m.niveau, EnumNiveauListe::A1);
+            assert_eq!(m.thema, "Saludos");
+
+            // sanity: created_at parsed
+            assert_eq!(m.created_at.to_rfc3339(), "2025-12-09T20:30:00+00:00");
+            assert!(m.deleted_at.is_none());
+        }
+
+        #[test]
+        fn try_from_ok_with_deleted_at() {
+            let s = schema_ok(Some("2025-12-10 10:00:00"));
+            let m = ModelSetze::try_from(s).expect("should build ModelSetze");
+
+            assert!(m.deleted_at.is_some());
+            assert_eq!(
+                m.deleted_at.unwrap().to_rfc3339(),
+                "2025-12-10T10:00:00+00:00"
+            );
+        }
+
+        #[test]
+        fn try_from_err_invalid_niveau_id() {
+            let mut s = schema_ok(None);
+            s.niveau_id = 999;
+
+            let err = ModelSetze::try_from(s).unwrap_err();
+            assert!(!err.is_empty());
+            assert!(err.iter().any(|e| e.field == "NiveauListe"));
+        }
+
+        #[test]
+        fn try_from_err_invalid_created_at() {
+            let mut s = schema_ok(None);
+            s.created_at = "not-a-date".to_string();
+
+            let err = ModelSetze::try_from(s).unwrap_err();
+            assert!(!err.is_empty());
+            assert!(err.iter().any(|e| e.field == "datetime"));
+        }
+
+        #[test]
+        fn try_from_err_invalid_deleted_at() {
+            let mut s = schema_ok(Some("2025-12-10 10:00:00"));
+            s.deleted_at = Some("bad-date".to_string());
+
+            let err = ModelSetze::try_from(s).unwrap_err();
+            assert!(!err.is_empty());
+            assert!(err.iter().any(|e| e.field == "datetime"));
+        }
+
+        #[test]
+        fn try_from_err_accumulates_multiple_errors() {
+            let mut s = schema_ok(Some("bad-date"));
+            s.niveau_id = 999;
+            s.created_at = "also-bad".to_string();
+
+            let err = ModelSetze::try_from(s).unwrap_err();
+            // should include niveau + created_at + deleted_at
+            assert!(err.len() >= 3);
+            assert!(err.iter().any(|e| e.field == "NiveauListe"));
+            assert!(err.iter().filter(|e| e.field == "datetime").count() >= 2);
         }
     }
 
-    #[test]
-    fn try_from_ok_without_deleted_at() {
-        let s = schema_ok(None);
-        let m = ModelSetze::try_from(s).expect("should build ModelSetze");
+    mod try_from_iter {
+        use super::*;
 
-        assert_eq!(m.id, 1);
-        assert_eq!(m.setze_spanisch, "Hola");
-        assert_eq!(m.setze_deutsch, "Hallo");
-        assert_eq!(m.niveau, EnumNiveauListe::A1);
-        assert_eq!(m.thema, "Saludos");
+        fn schema_ok(deleted_at: Option<&str>) -> SchemaSetze {
+            SchemaSetze {
+                id: 1,
+                setze_spanisch: "Hola".to_string(),
+                setze_deutsch: "Hallo".to_string(),
+                niveau_id: 0, // A1
+                thema: "Saludos".to_string(),
+                created_at: "2025-12-09 20:30:00".to_string(),
+                deleted_at: deleted_at.map(|s| s.to_string()),
+            }
+        }
 
-        // sanity: created_at parsed
-        assert_eq!(m.created_at.to_rfc3339(), "2025-12-09T20:30:00+00:00");
-        assert!(m.deleted_at.is_none());
+        #[test]
+        fn try_from_iter_ok() {
+            let v = vec![schema_ok(None), schema_ok(Some("2025-12-10 10:00:00"))];
+            let out = ModelSetze::try_from_iter(v).expect("should build vec of models");
+            assert_eq!(out.len(), 2);
+            assert_eq!(out[0].niveau, EnumNiveauListe::A1);
+            assert!(out[0].deleted_at.is_none());
+            assert!(out[1].deleted_at.is_some());
+        }
+
+        #[test]
+        fn try_from_iter_err_accumulates_all_errors() {
+            let mut a = schema_ok(None);
+            a.niveau_id = 999;
+
+            let mut b = schema_ok(None);
+            b.created_at = "bad".to_string();
+
+            let err = ModelSetze::try_from_iter(vec![a, b]).unwrap_err();
+            assert!(err.len() >= 2);
+            assert!(err.iter().any(|e| e.field == "NiveauListe"));
+            assert!(err.iter().any(|e| e.field == "datetime"));
+        }
     }
 
-    #[test]
-    fn try_from_ok_with_deleted_at() {
-        let s = schema_ok(Some("2025-12-10 10:00:00"));
-        let m = ModelSetze::try_from(s).expect("should build ModelSetze");
+    mod try_from_optional_schema {
+        use super::*;
 
-        assert!(m.deleted_at.is_some());
-        assert_eq!(
-            m.deleted_at.unwrap().to_rfc3339(),
-            "2025-12-10T10:00:00+00:00"
-        );
-    }
+        #[test]
+        fn valid() {
+            let schema = Some(SchemaSetze {
+                id: 1,
+                setze_spanisch: "Hola".to_string(),
+                setze_deutsch: "Hallo".to_string(),
+                niveau_id: 0, // A1
+                thema: "Saludos".to_string(),
+                created_at: "2025-12-09 20:30:00".to_string(),
+                deleted_at: None,
+            });
 
-    #[test]
-    fn try_from_err_invalid_niveau_id() {
-        let mut s = schema_ok(None);
-        s.niveau_id = 999;
+            let model: ModelSetze = schema.try_into().unwrap();
 
-        let err = ModelSetze::try_from(s).unwrap_err();
-        assert!(!err.is_empty());
-        assert!(err.iter().any(|e| e.field == "NiveauListe"));
-    }
+            assert_eq!(model.id, 1);
+            assert_eq!(model.setze_spanisch, String::from("Hola"));
+            assert_eq!(model.setze_deutsch, String::from("Hallo"));
+            assert_eq!(model.niveau, EnumNiveauListe::A1);
+            assert_eq!(model.thema, String::from("Saludos"));
+            assert_eq!(
+                model.created_at,
+                string_2_datetime("2025-12-09 20:30:00").unwrap()
+            );
+            assert_eq!(model.deleted_at, None);
+        }
 
-    #[test]
-    fn try_from_err_invalid_created_at() {
-        let mut s = schema_ok(None);
-        s.created_at = "not-a-date".to_string();
+        #[test]
+        #[should_panic]
+        fn invalid() {
+            let schema = Some(SchemaSetze {
+                id: 1,
+                setze_spanisch: "Hola".to_string(),
+                setze_deutsch: "Hallo".to_string(),
+                niveau_id: 99, // Invalid
+                thema: "Saludos".to_string(),
+                created_at: "2025-12-09 20:30:00".to_string(),
+                deleted_at: None,
+            });
 
-        let err = ModelSetze::try_from(s).unwrap_err();
-        assert!(!err.is_empty());
-        assert!(err.iter().any(|e| e.field == "datetime"));
-    }
+            let _: ModelSetze = schema.try_into().unwrap(); // Should panic here
+        }
 
-    #[test]
-    fn try_from_err_invalid_deleted_at() {
-        let mut s = schema_ok(Some("2025-12-10 10:00:00"));
-        s.deleted_at = Some("bad-date".to_string());
-
-        let err = ModelSetze::try_from(s).unwrap_err();
-        assert!(!err.is_empty());
-        assert!(err.iter().any(|e| e.field == "datetime"));
-    }
-
-    #[test]
-    fn try_from_err_accumulates_multiple_errors() {
-        let mut s = schema_ok(Some("bad-date"));
-        s.niveau_id = 999;
-        s.created_at = "also-bad".to_string();
-
-        let err = ModelSetze::try_from(s).unwrap_err();
-        // should include niveau + created_at + deleted_at
-        assert!(err.len() >= 3);
-        assert!(err.iter().any(|e| e.field == "NiveauListe"));
-        assert!(err.iter().filter(|e| e.field == "datetime").count() >= 2);
-    }
-
-    #[test]
-    fn try_from_iter_ok() {
-        let v = vec![schema_ok(None), schema_ok(Some("2025-12-10 10:00:00"))];
-        let out = ModelSetze::try_from_iter(v).expect("should build vec of models");
-        assert_eq!(out.len(), 2);
-        assert_eq!(out[0].niveau, EnumNiveauListe::A1);
-        assert!(out[0].deleted_at.is_none());
-        assert!(out[1].deleted_at.is_some());
-    }
-
-    #[test]
-    fn try_from_iter_err_accumulates_all_errors() {
-        let mut a = schema_ok(None);
-        a.niveau_id = 999;
-
-        let mut b = schema_ok(None);
-        b.created_at = "bad".to_string();
-
-        let err = ModelSetze::try_from_iter(vec![a, b]).unwrap_err();
-        assert!(err.len() >= 2);
-        assert!(err.iter().any(|e| e.field == "NiveauListe"));
-        assert!(err.iter().any(|e| e.field == "datetime"));
+        #[test]
+        #[should_panic]
+        fn none_value() {
+            let schema = None;
+            let _: ModelSetze = schema.try_into().unwrap(); // Should panic here
+        }
     }
 }

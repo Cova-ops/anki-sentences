@@ -45,18 +45,7 @@ pub fn datetime_2_string(dt: DateTime<Utc>) -> String {
     dt.naive_utc().format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
-#[inline]
-pub fn today_local_string(offset: i64) -> String {
-    let today_local = Local::now().date_naive();
-    let today_local_naive: NaiveDateTime = (today_local + Duration::days(offset))
-        .and_hms_opt(0, 0, 0)
-        .unwrap();
-
-    let target_local = Local
-        .from_local_datetime(&today_local_naive)
-        .single()
-        .expect("local date not defined / impossible");
-
-    let target_utc = target_local.with_timezone(&Utc);
-    target_utc.format("%Y-%m-%d %H:%M:%S").to_string()
+pub fn utc_datetime(offset: i64) -> DateTime<Utc> {
+    let date = Utc::now().date_naive() + Duration::days(offset);
+    Utc.from_utc_datetime(&date.and_hms_opt(0, 0, 0).unwrap())
 }

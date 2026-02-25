@@ -20,5 +20,6 @@ pub fn scenario_setze() -> Scenario<InputSetze> {
             },
         ],
         update: vec![],
+        update_id: vec![],
     }
 }

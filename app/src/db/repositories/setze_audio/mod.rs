@@ -3,7 +3,7 @@ use rusqlite::{Connection, Transaction, params_from_iter};
 use crate::{
     db::{
         schemas::setze_audio::{InputSetzeAudio, SchemaSetzeAudio, SqlSetzeAudio},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::error_handler::DbError,
 };
@@ -45,7 +45,10 @@ impl SetzeAudioRepo {
         for d in data {
             let params: SqlSetzeAudio = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaSetzeAudio::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaSetzeAudio::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);

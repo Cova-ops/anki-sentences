@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SchemaWortAudioMissing {
     pub id: i32,
     pub wort_es: String,
@@ -24,6 +24,11 @@ impl FromSql for SchemaWortAudioMissing {
 #[cfg(test)]
 mod tests_schema_wort_audio_missing {
     use rusqlite::Connection;
+
+    use crate::{
+        db::{traits::FromSql, views::wort_audio_missing::SchemaWortAudioMissing},
+        helpers::error_handler::DbError,
+    };
 
     fn setup_db() -> Result<Connection, DbError> {
         let conn = Connection::open_in_memory()?;

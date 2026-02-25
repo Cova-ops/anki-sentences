@@ -4,9 +4,11 @@ mod test_worte_gram_type_repo {
 
     use crate::{
         db::{
+            init_data, init_schemas,
             schemas::wort_gram_type::{
                 InputWortGramType, SchemaWortGramType, SnapshotWortGramType,
             },
+            wort::WortRepo,
             wort_gram_type::WortGramTypeRepo,
         },
         helpers::error_handler::DbError,
@@ -40,7 +42,7 @@ mod test_worte_gram_type_repo {
                 .into_iter()
                 .map(|d| InputWort {
                     gram_type: vec![],
-                    ..s
+                    ..d
                 })
                 .collect();
             WortRepo::bulk_insert(&mut conn, &data)?;
@@ -197,18 +199,15 @@ mod test_worte_gram_type_repo {
             let conn = init_conn()?;
 
             let data = scenario_wort_gram_type().initial;
-            let mut res = WortGramTypeRepo::fetch_all_worte_id(&conn, 100, 0)?;
+            let res = WortGramTypeRepo::fetch_all_worte_id(&conn, 100, 0)?;
 
             let mut data_compared: Vec<i32> = data.into_iter().map(|w| w.id_worte).collect();
             data_compared.sort_unstable();
             data_compared.dedup();
 
-            assert_eq!(vec_res, data_compared);
+            assert_eq!(res, data_compared);
 
-            insta::assert_debug_snapshot!(
-                "[WortGramType::fetch_all_worte_id] - happy_path",
-                vec_res
-            );
+            insta::assert_debug_snapshot!("[WortGramType::fetch_all_worte_id] - happy_path", res);
 
             Ok(())
         }
@@ -273,7 +272,6 @@ mod test_worte_gram_type_repo {
         use super::*;
 
         use crate::db::traits::FromSql;
-        use rusqlite::params_from_iter;
 
         fn init_conn() -> Result<Connection, DbError> {
             let mut conn = Connection::open_in_memory()?;
@@ -299,7 +297,7 @@ mod test_worte_gram_type_repo {
 
             let mut stmt = conn.prepare(sql).map_err(DbError::with_sql(sql))?;
             let raw = stmt
-                .query(params_from_iter(ids))
+                .query([])
                 .map_err(DbError::with_sql(sql))?
                 .mapped(SchemaWortGramType::from_sql)
                 .collect::<Result<Vec<_>, _>>()

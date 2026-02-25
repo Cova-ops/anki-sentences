@@ -1,9 +1,9 @@
-use rusqlite::{Connection, Transaction};
+use rusqlite::{Connection, Transaction, params_from_iter};
 
 use crate::{
     db::{
         schemas::wort_gender::{InputWortGender, SchemaWortGender, SqlWortGender},
-        traits::{FromSql, SqlNew},
+        traits::{FromSql, SqlInsert},
     },
     helpers::error_handler::DbError,
 };
@@ -47,7 +47,10 @@ impl WortGenderRepo {
         for d in data {
             let params: SqlWortGender = d.to_owned().into();
             let raw = stmt
-                .query_one(params.to_params(), SchemaWortGender::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaWortGender::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);

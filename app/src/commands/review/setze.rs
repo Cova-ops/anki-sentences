@@ -4,17 +4,19 @@ use crate::{
     console::cli::ReviewSetzeSection,
     db::{
         get_conn,
-        schemas::setze_review::{NewSetzeReviewSchema, SetzeReviewSchema},
+        schemas::{
+            setze_audio::ModelSetzeAudio,
+            setze_review::{InputSetzeReview, ModelSetzeReview},
+        },
         setze::SetzeRepo,
         setze_audio::SetzeAudioRepo,
         setze_review::SetzeReviewRepo,
     },
-    helpers::{self, review_state::ReviewState, toml::AppConfig},
+    helpers::{self, error_handler::AppError, review_state::ReviewState, toml::AppConfig},
     utils,
 };
 
 use chrono::Utc;
-use color_eyre::Result;
 use rand::seq::SliceRandom;
 
 pub fn run(
@@ -22,7 +24,7 @@ pub fn run(
     section: ReviewSetzeSection,
     batch: usize,
     no_shuffle: bool,
-) -> Result<()> {
+) -> Result<(), AppError> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
     let mut ids_setze: Vec<i32> = match section {
@@ -35,6 +37,8 @@ pub fn run(
     } else {
         Vec::new()
     };
+    let ids_audios = ModelSetzeAudio::try_from_iter(ids_audios)?;
+
     let hash_audios: HashSet<i32> = ids_audios.iter().map(|ia| ia.satz_id).collect();
 
     if !no_shuffle {
@@ -59,14 +63,15 @@ pub fn run(
     let setze_ids: Vec<i32> = r.1.iter().map(|(id, _)| *id).collect();
 
     // Obtenemos si estas oraciones ya tenian informacion hsitorica de revisiones anteriores
-    let vec_setze_review = SetzeReviewRepo::fetch_by_satz_id(&conn, &setze_ids)?;
+    let vec: Vec<_> = SetzeReviewRepo::fetch_by_satz_id(&conn, &setze_ids)?;
+    let vec_setze_review: Vec<_> = ModelSetzeReview::try_from_iter(vec)?;
 
-    let hash_setze_review: HashMap<i32, SetzeReviewSchema> = vec_setze_review
+    let hash_setze_review: HashMap<i32, ModelSetzeReview> = vec_setze_review
         .into_iter()
         .map(|sr| (sr.satz_id, sr))
         .collect();
 
-    let mut vec_new_setze_review: Vec<NewSetzeReviewSchema> = vec![];
+    let mut vec_new_setze_review: Vec<InputSetzeReview> = vec![];
     let now = Utc::now();
 
     // Recorremos el arreglo de palabras que respondio el usuario
@@ -84,13 +89,13 @@ pub fn run(
         // generamos el arreglo para guardar las revisiones para un futuro
         let review_state = review_state.review(quality);
         let next = review_state.next_review_date_from(now);
-        vec_new_setze_review.push(NewSetzeReviewSchema {
+        vec_new_setze_review.push(InputSetzeReview {
             satz_id,
             interval: review_state.interval,
             ease_factor: review_state.ease_factor,
             repetitions: review_state.repetitions,
-            last_review: helpers::time::datetime_2_string(now),
-            next_review: helpers::time::datetime_2_string(next),
+            last_review: now,
+            next_review: next,
         })
     }
 

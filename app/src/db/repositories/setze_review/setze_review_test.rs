@@ -14,7 +14,7 @@ mod test_setze_review_repo {
             error_handler::DbError,
             time::{datetime_2_string, string_2_datetime},
         },
-        test_utils::scenarios::{scenario_setze, scenario_setze_review},
+        test_utils::scenarios::{scenario_setze, scenario_setze_audio, scenario_setze_review},
     };
 
     use rusqlite::Connection;
@@ -63,8 +63,8 @@ mod test_setze_review_repo {
         fn insert() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data: Vec<_> = scenario_setze_audio().initial;
-            let res: Vec<_> = SetzeReviewRepo::bulk_upsert(&tx, &data)?;
+            let data: Vec<_> = scenario_setze_review().initial;
+            let res: Vec<_> = SetzeReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             assert_iter(&res, &data);
 
@@ -78,10 +78,10 @@ mod test_setze_review_repo {
         fn update() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data: Vec<_> = scenario_setze_audio().initial;
+            let data: Vec<_> = scenario_setze_review().initial;
             SetzeReviewRepo::bulk_upsert(&mut conn, &data)?;
 
-            let data: Vec<_> = scenario_setze_audio().update;
+            let data: Vec<_> = scenario_setze_review().update;
             let res: Vec<_> = SetzeReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             assert_iter(&res, &data);

@@ -1,13 +1,17 @@
 use std::collections::{HashMap, HashSet};
 
-use color_eyre::eyre::Result;
 use rand::seq::SliceRandom;
 use rusqlite::Connection;
 
 use crate::{
-    db::{schemas::worte_gender::GenderGermanListe, setze::SetzeRepo, worte::WorteRepo},
+    db::{
+        schemas::{setze::ModelSetze, wort::ModelWort},
+        setze::SetzeRepo,
+        wort::WortRepo,
+    },
     helpers::{
         audios::{ManageAudios, audio_player::AudioPlayer},
+        error_handler::AppError,
         ui,
     },
     services::tts::eleven_labs::LanguageVoice,
@@ -67,7 +71,7 @@ pub fn make_setze_exercise_repeat(
     hash_audios: HashSet<i32>,
     manage_audio: &ManageAudios,
     batch: usize,
-) -> Result<(i32, Vec<(i32, u8)>)> {
+) -> Result<(i32, Vec<(i32, u8)>), AppError> {
     let mut ids_setze = ids_setze;
 
     let mut vec_out: Vec<(i32, u8)> = vec![];
@@ -78,7 +82,8 @@ pub fn make_setze_exercise_repeat(
     let aux_ids: Vec<i32> = ids_setze.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
-    let mut setze_correct = SetzeRepo::fetch_by_id(conn, &aux_ids)?;
+    let setze_correct = SetzeRepo::fetch_by_id(conn, &aux_ids)?;
+    let mut setze_correct = ModelSetze::try_from_iter(setze_correct)?;
 
     let player = AudioPlayer::new();
     while !setze_correct.is_empty() {
@@ -128,8 +133,9 @@ pub fn make_setze_exercise_repeat(
                     if !ids_setze.is_empty() {
                         // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                         let id_new = ids_setze.remove(0);
-                        let satz_new = SetzeRepo::fetch_by_id(conn, &[id_new])?;
-                        setze_correct.push(satz_new[0].clone());
+                        let satz_new: ModelSetze =
+                            SetzeRepo::fetch_one(conn, id_new)?.try_into()?;
+                        setze_correct.push(satz_new.clone());
                     }
 
                     // limpiamos el hashmap de la palabra que ya no se va a repetir
@@ -144,8 +150,8 @@ pub fn make_setze_exercise_repeat(
                 if !ids_setze.is_empty() {
                     // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                     let id_new = ids_setze.remove(0);
-                    let satz_new = SetzeRepo::fetch_by_id(conn, &[id_new])?;
-                    setze_correct.push(satz_new[0].clone());
+                    let satz_new: ModelSetze = SetzeRepo::fetch_one(conn, id_new)?.try_into()?;
+                    setze_correct.push(satz_new.clone());
                 }
             }
 
@@ -215,7 +221,7 @@ pub fn make_worte_exercise_write(
     batch: usize,
     no_shuffle: bool,
     lang: LanguageVoice,
-) -> Result<(i32, Vec<(i32, u8)>)> {
+) -> Result<(i32, Vec<(i32, u8)>), AppError> {
     let mut ids_worte = ids_worte;
 
     let mut vec_out: Vec<(i32, u8)> = vec![];
@@ -231,7 +237,9 @@ pub fn make_worte_exercise_write(
     let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
-    let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    let worte_correct = WortRepo::fetch_by_id(conn, &aux_ids)?;
+    let mut worte_correct = ModelWort::try_from_iter(worte_correct)?;
+
     if no_shuffle {
         let mut rng = rand::rng();
         worte_correct.shuffle(&mut rng);
@@ -245,8 +253,8 @@ pub fn make_worte_exercise_write(
         let worte_remaining = worte_correct.len() + ids_worte.len();
         let worte = match lang {
             LanguageVoice::Spanisch => &w.worte_es,
-            LanguageVoice::Deutsch => match w.gender_id.as_ref() {
-                Some(v) => &format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+            LanguageVoice::Deutsch => match w.gender.as_ref() {
+                Some(v) => &format!("{} {}", v.artikel().to_lowercase(), w.worte_de),
                 None => &w.worte_de,
             },
         };
@@ -257,9 +265,9 @@ pub fn make_worte_exercise_write(
                 .replace("{remainding}", &worte_remaining.to_string())
                 .replace(
                     "{gram_type}",
-                    &w.gram_type_id
+                    &w.gram_type
                         .into_iter()
-                        .map(|r| format!("{} ", r.name))
+                        .map(|r| format!("{} ", r.to_name()))
                         .collect::<Vec<_>>()
                         .join(",")
                 )
@@ -268,9 +276,8 @@ pub fn make_worte_exercise_write(
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
             if lang == LanguageVoice::Deutsch {
-                if let Some(gender) = w.gender_id.as_ref() {
-                    let path_artikel = manage_audio
-                        .get_audio_artikel(GenderGermanListe::try_from(gender.artikel.as_str())?);
+                if let Some(gender) = w.gender.as_ref() {
+                    let path_artikel = manage_audio.get_audio_artikel(gender);
 
                     if let Ok(path) = path_artikel {
                         player.play(path)?;
@@ -294,8 +301,8 @@ pub fn make_worte_exercise_write(
         }
 
         let correct_answer: Vec<String> = if lang == LanguageVoice::Spanisch {
-            let out = match w.gender_id.as_ref() {
-                Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+            let out = match w.gender.as_ref() {
+                Some(v) => format!("{} {}", v.artikel().to_lowercase(), w.worte_de),
                 None => w.worte_de.clone(),
             };
             vec![out]
@@ -344,8 +351,9 @@ pub fn make_worte_exercise_write(
                     if !ids_worte.is_empty() {
                         // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                         let id_new = ids_worte.remove(0);
-                        let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
-                        worte_correct.push(wort_new[0].clone());
+                        let wort_new = WortRepo::fetch_one(conn, id_new)?.unwrap();
+                        let wort_new: ModelWort = wort_new.try_into()?;
+                        worte_correct.push(wort_new);
                     }
 
                     // limpiamos el hashmap de la palabra que ya no se va a repetir
@@ -360,8 +368,9 @@ pub fn make_worte_exercise_write(
                 if !ids_worte.is_empty() {
                     // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                     let id_new = ids_worte.remove(0);
-                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
-                    worte_correct.push(wort_new[0].clone());
+                    let wort_new = WortRepo::fetch_one(conn, id_new)?.unwrap();
+                    let wort_new: ModelWort = wort_new.try_into()?;
+                    worte_correct.push(wort_new);
                 }
             }
 
@@ -385,9 +394,8 @@ pub fn make_worte_exercise_write(
         #[allow(clippy::collapsible_if)]
         if let Some(audio) = hash_audios.get(&w.id) {
             if lang_second_audio == LanguageVoice::Deutsch {
-                if let Some(gender) = w.gender_id.as_ref() {
-                    let path_artikel = manage_audio
-                        .get_audio_artikel(GenderGermanListe::try_from(gender.artikel.as_str())?)?;
+                if let Some(gender) = w.gender.as_ref() {
+                    let path_artikel = manage_audio.get_audio_artikel(gender)?;
 
                     player.play(path_artikel)?;
                 }
@@ -451,7 +459,7 @@ pub fn make_worte_exercise_speak(
     batch: usize,
     no_shuffle: bool,
     lang: LanguageVoice,
-) -> Result<(i32, Vec<(i32, u8)>)> {
+) -> Result<(i32, Vec<(i32, u8)>), AppError> {
     let mut ids_worte = ids_worte;
 
     let mut vec_out: Vec<(i32, u8)> = vec![];
@@ -467,7 +475,9 @@ pub fn make_worte_exercise_speak(
     let aux_ids: Vec<i32> = ids_worte.drain(..take).collect();
 
     // Obtenemos toda la info del bloque de palabras que vamos a usar
-    let mut worte_correct = WorteRepo::fetch_by_id(conn, &aux_ids)?;
+    let worte_correct = WortRepo::fetch_by_id(conn, &aux_ids)?;
+    let mut worte_correct: Vec<ModelWort> = ModelWort::try_from_iter(worte_correct)?;
+
     if no_shuffle {
         let mut rng = rand::rng();
         worte_correct.shuffle(&mut rng);
@@ -481,8 +491,8 @@ pub fn make_worte_exercise_speak(
         let worte_remaining = worte_correct.len() + ids_worte.len();
         let worte = match lang {
             LanguageVoice::Spanisch => &w.worte_es,
-            LanguageVoice::Deutsch => match w.gender_id.as_ref() {
-                Some(v) => &format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+            LanguageVoice::Deutsch => match w.gender.as_ref() {
+                Some(v) => &format!("{} {}", v.artikel().to_lowercase(), w.worte_de),
                 None => &w.worte_de,
             },
         };
@@ -493,15 +503,15 @@ pub fn make_worte_exercise_speak(
                 .replace("{remaining}", &worte_remaining.to_string())
                 .replace(
                     "{gram_type}",
-                    &w.gram_type_id
+                    &w.gram_type
                         .into_iter()
-                        .map(|r| format!("{} ", r.name))
+                        .map(|r| format!("{} ", r.to_name()))
                         .collect::<Vec<_>>()
                         .join(",")
                 )
         );
 
-        player.play_from_path(manage_audio, hash_audios.get(&w.id), &w.gender_id, lang)?;
+        player.play_from_path(manage_audio, hash_audios.get(&w.id), &w.gender, lang)?;
 
         let input: String = loop {
             let Some(input) = ui::prompt_nonempty("> ")? else {
@@ -511,12 +521,7 @@ pub fn make_worte_exercise_speak(
             match input.as_ref() {
                 "1" | "q" | "0" | "exit" => break input,
                 "r" => {
-                    player.play_from_path(
-                        manage_audio,
-                        hash_audios.get(&w.id),
-                        &w.gender_id,
-                        lang,
-                    )?;
+                    player.play_from_path(manage_audio, hash_audios.get(&w.id), &w.gender, lang)?;
                 }
                 _ => {}
             }
@@ -528,8 +533,8 @@ pub fn make_worte_exercise_speak(
         }
 
         let correct_answer: Vec<String> = if lang == LanguageVoice::Spanisch {
-            let out = match w.gender_id.as_ref() {
-                Some(v) => format!("{} {}", v.artikel.to_lowercase(), w.worte_de),
+            let out = match w.gender.as_ref() {
+                Some(v) => format!("{} {}", v.artikel().to_lowercase(), w.worte_de),
                 None => w.worte_de.clone(),
             };
             vec![out]
@@ -579,8 +584,10 @@ pub fn make_worte_exercise_speak(
                     if !ids_worte.is_empty() {
                         // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                         let id_new = ids_worte.remove(0);
-                        let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
-                        worte_correct.push(wort_new[0].clone());
+                        let wort_new: ModelWort =
+                            WortRepo::fetch_one(conn, id_new)?.unwrap().try_into()?;
+
+                        worte_correct.push(wort_new);
                     }
 
                     // limpiamos el hashmap de la palabra que ya no se va a repetir
@@ -595,8 +602,10 @@ pub fn make_worte_exercise_speak(
                 if !ids_worte.is_empty() {
                     // Consultamos una nueva palabra y la añadimos al arreglo para su estudio
                     let id_new = ids_worte.remove(0);
-                    let wort_new = WorteRepo::fetch_by_id(conn, &[id_new])?;
-                    worte_correct.push(wort_new[0].clone());
+                    let wort_new: ModelWort =
+                        WortRepo::fetch_one(conn, id_new)?.unwrap().try_into()?;
+
+                    worte_correct.push(wort_new);
                 }
             }
 
@@ -621,7 +630,7 @@ pub fn make_worte_exercise_speak(
         player.play_from_path(
             manage_audio,
             hash_audios.get(&w.id),
-            &w.gender_id,
+            &w.gender,
             lang_second_audio,
         )?;
 
@@ -641,12 +650,7 @@ pub fn make_worte_exercise_speak(
                     break;
                 }
                 "r" => {
-                    player.play_from_path(
-                        manage_audio,
-                        hash_audios.get(&w.id),
-                        &w.gender_id,
-                        lang,
-                    )?;
+                    player.play_from_path(manage_audio, hash_audios.get(&w.id), &w.gender, lang)?;
                 }
                 _ => {}
             }

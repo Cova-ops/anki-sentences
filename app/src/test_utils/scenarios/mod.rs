@@ -24,4 +24,5 @@ pub use wort_review::*;
 pub struct Scenario<T> {
     pub initial: Vec<T>,
     pub update: Vec<T>,
+    pub update_id: Vec<(i32, T)>,
 }

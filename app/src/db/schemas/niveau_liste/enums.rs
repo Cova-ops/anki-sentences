@@ -4,7 +4,7 @@ use crate::{
     db::schemas::niveau_liste::InputNiveauListe, helpers::error_handler::InvalidValueError,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EnumNiveauListe {
     A1,
     A2,

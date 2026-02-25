@@ -1,15 +1,14 @@
-use std::collections::HashSet;
-
-use color_eyre::eyre::Result;
 use rusqlite::Connection;
+use std::collections::HashSet;
 
 use crate::{
     db::{
-        get_conn, wort_gram_type::WortGramTypeRepo, worte::WorteRepo, worte_audio::WorteAudioRepo,
-        worte_review::WorteReviewRepo,
+        get_conn, wort::WortRepo, wort_audio::WortAudioRepo, wort_gram_type::WortGramTypeRepo,
+        wort_review::WortReviewRepo,
     },
     helpers::{
         audios::{AudioKind, ManageAudios},
+        error_handler::{AppError, DbError},
         toml::AppConfig,
     },
 };
@@ -20,9 +19,9 @@ fn collect_orphans<F>(
     existing: &HashSet<i32>,
     out_remove: &mut HashSet<i32>,
     mut fetch_ids: F,
-) -> Result<()>
+) -> Result<(), DbError>
 where
-    F: FnMut(&Connection, usize, i32) -> Result<Vec<i32>>,
+    F: FnMut(&Connection, usize, i32) -> Result<Vec<i32>, DbError>,
 {
     let mut last_id = 0;
     loop {
@@ -43,7 +42,7 @@ where
     Ok(())
 }
 
-pub fn run(config: &AppConfig) -> Result<()> {
+pub fn run(config: &AppConfig) -> Result<(), AppError> {
     let mut conn = get_conn(config.get_database_path()?)?;
 
     let limit = 1000;
@@ -51,7 +50,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
     let mut hash_ids: HashSet<i32> = HashSet::new();
 
     loop {
-        let vec_ids = WorteRepo::fetch_all_ids(&conn, limit, last_id)?;
+        let vec_ids = WortRepo::fetch_all_ids(&conn, limit, last_id)?;
 
         if vec_ids.is_empty() {
             break;
@@ -68,7 +67,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
         limit,
         &hash_ids,
         &mut hash_ids_remove,
-        WorteAudioRepo::fetch_all_ids,
+        WortAudioRepo::fetch_all_ids,
     )?;
 
     collect_orphans(
@@ -76,7 +75,7 @@ pub fn run(config: &AppConfig) -> Result<()> {
         limit,
         &hash_ids,
         &mut hash_ids_remove,
-        WorteReviewRepo::fetch_all_ids,
+        WortReviewRepo::fetch_all_ids,
     )?;
 
     collect_orphans(
@@ -84,21 +83,19 @@ pub fn run(config: &AppConfig) -> Result<()> {
         limit,
         &hash_ids,
         &mut hash_ids_remove,
-        WorteGramTypeRepo::fetch_all_worte_id,
+        WortGramTypeRepo::fetch_all_worte_id,
     )?;
 
     let ids_remove: Vec<i32> = hash_ids_remove.into_iter().collect();
 
-    let rows_affected = WorteAudioRepo::delete_by_id(&conn, &ids_remove)?;
+    let rows_affected = WortAudioRepo::delete_by_id(&mut conn, &ids_remove)?;
     println!("Rows affected on table worte_audio: {}", rows_affected);
 
-    let rows_affected = WorteReviewRepo::delete_by_id(&conn, &ids_remove)?;
+    let rows_affected = WortReviewRepo::delete_by_id(&mut conn, &ids_remove)?;
     println!("Rows affected on table worte_review: {}", rows_affected);
 
-    let rows_affected = WorteGramTypeRepo::delete_by_wort_id(&mut conn, &ids_remove)?;
+    let rows_affected = WortGramTypeRepo::delete_by_wort_id(&mut conn, &ids_remove)?;
     println!("Rows affected on table worte_gram_type: {}", rows_affected);
-
-    // TODO: tambien valdiar los audios locales
 
     let manage_audios = ManageAudios::new(
         config.get_path_audios_worte()?,

@@ -15,6 +15,8 @@ pub struct ModelWortAudioMissing {
 impl TryFrom<SchemaWortAudioMissing> for ModelWortAudioMissing {
     type Error = Vec<InvalidValueError>;
 
+    // SAFETY: ModelWortAudioMissing::try_from is infallible (always returns Ok).
+    // The Result signature is kept only for consistency with other models.
     fn try_from(value: SchemaWortAudioMissing) -> Result<Self, Self::Error> {
         Ok(Self {
             id: value.id,

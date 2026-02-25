@@ -1,8 +1,9 @@
 // ui.rs
-use color_eyre::eyre::{Context, Result};
 use once_cell::sync::Lazy;
 use rustyline::{DefaultEditor, error::ReadlineError};
 use std::sync::Mutex;
+
+use crate::helpers::error_handler::{AppError, AppErrorKind};
 
 /// Editor global para conservar historial en todo el programa.
 static RL: Lazy<Mutex<DefaultEditor>> = Lazy::new(|| {
@@ -13,7 +14,7 @@ static RL: Lazy<Mutex<DefaultEditor>> = Lazy::new(|| {
 /// Ok(Some(s))  -> línea ingresada
 /// Ok(None)    -> usuario terminó (EOF / "exit" opcional)
 /// Err(e)      -> error real
-pub fn prompt(prompt: &str) -> Result<Option<String>> {
+pub fn prompt(prompt: &str) -> Result<Option<String>, AppError> {
     let mut rl = RL.lock().expect("Poisoned mutex");
     match rl.readline(prompt) {
         Ok(line) => {
@@ -27,12 +28,15 @@ pub fn prompt(prompt: &str) -> Result<Option<String>> {
         }
         Err(ReadlineError::Eof) => Ok(None), // Ctrl+D
         Err(ReadlineError::Interrupted) => Ok(Some(String::new())), // Ctrl+C -> línea vacía
-        Err(e) => Err(e).context("[ui::prompt] - Error de entrada"),
+        Err(e) => Err(AppError {
+            kind: AppErrorKind::Internal(format!("readline error: {e}")),
+            context: vec![],
+        }),
     }
 }
 
 // Variante que obliga a texto no vacío. Devuelve None en EOF.
-pub fn prompt_nonempty(text: &str) -> Result<Option<String>> {
+pub fn prompt_nonempty(text: &str) -> Result<Option<String>, AppError> {
     loop {
         match prompt(text)? {
             Some(s) if !s.trim().is_empty() => return Ok(Some(s)),

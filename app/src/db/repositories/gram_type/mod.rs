@@ -1,4 +1,4 @@
-use rusqlite::{Connection, Transaction};
+use rusqlite::{Connection, Transaction, params_from_iter};
 
 use crate::{
     db::{
@@ -47,7 +47,10 @@ impl GramTypeRepo {
         for d in data {
             let params: SqlGramType = d.to_owned().into();
             let raw = stmt
-                .query_one(params.insert_params(), SchemaGramType::from_sql)
+                .query_one(
+                    params_from_iter(params.insert_params()),
+                    SchemaGramType::from_sql,
+                )
                 .map_err(DbError::with_sql(sql))?;
 
             vec_out.push(raw);

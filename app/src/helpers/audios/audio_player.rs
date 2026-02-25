@@ -1,9 +1,15 @@
 use std::{fs::File, io::BufReader};
 
-use color_eyre::eyre::Result;
 use rodio::{Decoder, OutputStream, OutputStreamBuilder, Sink};
 
-use crate::{helpers::audios::ManageAudios, services::tts::eleven_labs::LanguageVoice};
+use crate::{
+    db::schemas::wort_gender::EnumWortGender,
+    helpers::{
+        audios::ManageAudios,
+        error_handler::{AppError, AppErrorKind, AudioError},
+    },
+    services::tts::eleven_labs::LanguageVoice,
+};
 
 pub struct AudioPlayer {
     stream: OutputStream,
@@ -16,11 +22,14 @@ impl AudioPlayer {
         Self { stream }
     }
 
-    pub fn play(&self, file: File) -> Result<()> {
+    pub fn play(&self, file: File) -> Result<(), AppError> {
         let sink = Sink::connect_new(self.stream.mixer());
 
         // Abre el archivo mp3
-        let source = Decoder::new(BufReader::new(file))?;
+        let source = Decoder::new(BufReader::new(file)).map_err(|e| AppError {
+            kind: AppErrorKind::Audio(AudioError::Decoder(e)),
+            context: vec![],
+        })?;
 
         // Lo mandas al sink
         sink.append(source);
@@ -35,9 +44,9 @@ impl AudioPlayer {
         &self,
         manage_audio: &ManageAudios,
         id_wort: Option<&i32>,
-        gender: &Option<WorteGenderSchema>,
+        gender: &Option<EnumWortGender>,
         lang: LanguageVoice,
-    ) -> Result<()> {
+    ) -> Result<(), AppError> {
         if id_wort.is_none() {
             return Ok(());
         }
@@ -45,8 +54,7 @@ impl AudioPlayer {
         let id_wort = id_wort.unwrap();
         if lang == LanguageVoice::Deutsch {
             if let Some(gender) = gender.as_ref() {
-                let path_artikel = manage_audio
-                    .get_audio_artikel(GenderGermanListe::try_from(gender.artikel.as_str())?);
+                let path_artikel = manage_audio.get_audio_artikel(gender);
 
                 if let Ok(path) = path_artikel {
                     self.play(path)?;

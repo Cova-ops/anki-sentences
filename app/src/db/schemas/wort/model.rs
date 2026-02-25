@@ -2,10 +2,8 @@ use chrono::{DateTime, Utc};
 
 use crate::{
     db::schemas::{
-        gram_type::{EnumGramType, SchemaGramType},
-        niveau_liste::EnumNiveauListe,
-        wort::SchemaWort,
-        wort_gender::EnumWortGender,
+        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort::SchemaWort,
+        wort_gender::EnumWortGender, wort_gram_type::SchemaWortGramType,
     },
     helpers::{error_handler::InvalidValueError, time::string_2_datetime},
 };
@@ -32,16 +30,16 @@ pub struct ModelWort {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-impl TryFrom<(SchemaWort, Vec<SchemaGramType>)> for ModelWort {
+impl TryFrom<(SchemaWort, Vec<SchemaWortGramType>)> for ModelWort {
     type Error = Vec<InvalidValueError>;
 
-    fn try_from((wort, grams): (SchemaWort, Vec<SchemaGramType>)) -> Result<Self, Self::Error> {
+    fn try_from((wort, grams): (SchemaWort, Vec<SchemaWortGramType>)) -> Result<Self, Self::Error> {
         let mut errs: Vec<InvalidValueError> = vec![];
 
         // gram types
         let mut gram_type: Vec<EnumGramType> = Vec::with_capacity(grams.len());
         for g in grams.into_iter() {
-            match EnumGramType::try_from(g) {
+            match EnumGramType::try_from(g.id_gram_type) {
                 Ok(v) => gram_type.push(v),
                 Err(e) => errs.push(e),
             }
@@ -113,7 +111,7 @@ impl TryFrom<(SchemaWort, Vec<SchemaGramType>)> for ModelWort {
 
 impl ModelWort {
     pub fn try_from_iter(
-        value: impl IntoIterator<Item = (SchemaWort, Vec<SchemaGramType>)>,
+        value: Vec<(SchemaWort, Vec<SchemaWortGramType>)>,
     ) -> Result<Vec<ModelWort>, Vec<InvalidValueError>> {
         let mut errs = vec![];
         let mut oks = vec![];
@@ -152,15 +150,17 @@ mod tests_model_wort {
         }
     }
 
-    fn grams_ok() -> Vec<SchemaGramType> {
+    fn wort_grams_ok() -> Vec<SchemaWortGramType> {
         vec![
-            SchemaGramType {
-                code: "noun_common".into(),
+            SchemaWortGramType {
+                id_worte: 1,
+                id_gram_type: 1,
                 created_at: "2025-12-09 20:30:00".into(),
                 deleted_at: None,
             },
-            SchemaGramType {
-                code: "adjective".into(),
+            SchemaWortGramType {
+                id_worte: 1,
+                id_gram_type: 2,
                 created_at: "2025-12-09 20:30:00".into(),
                 deleted_at: None,
             },
@@ -170,7 +170,7 @@ mod tests_model_wort {
     #[test]
     fn try_from_ok() -> Result<(), Box<dyn std::error::Error>> {
         let wort = schema_wort_base();
-        let grams = grams_ok();
+        let grams = wort_grams_ok();
 
         let model = ModelWort::try_from((wort, grams)).expect("should build");
 
@@ -195,9 +195,10 @@ mod tests_model_wort {
         wort.created_at = "not-a-date".into(); // invalid
         wort.deleted_at = Some("also-not-a-date".into()); // invalid
 
-        let mut grams = grams_ok();
-        grams.push(SchemaGramType {
-            code: "not_a_gram_type".into(), // invalid
+        let mut grams = wort_grams_ok();
+        grams.push(SchemaWortGramType {
+            id_gram_type: -1, // Invalid
+            id_worte: 100,
             created_at: "2025-12-09 20:30:00".into(),
             deleted_at: None,
         });
@@ -220,7 +221,7 @@ mod tests_model_wort {
     #[test]
     fn try_from_iter_ok_all() {
         let data = vec![
-            (schema_wort_base(), grams_ok()),
+            (schema_wort_base(), wort_grams_ok()),
             (
                 {
                     let mut w = schema_wort_base();
@@ -229,7 +230,7 @@ mod tests_model_wort {
                     w.worte_es = "Gato".into();
                     w
                 },
-                grams_ok(),
+                wort_grams_ok(),
             ),
         ];
 
@@ -241,16 +242,17 @@ mod tests_model_wort {
 
     #[test]
     fn try_from_iter_collects_errors_from_multiple_items() {
-        let ok = (schema_wort_base(), grams_ok());
+        let ok = (schema_wort_base(), wort_grams_ok());
 
         let mut bad_wort = schema_wort_base();
         bad_wort.id = 99;
         bad_wort.niveau_id = 999;
         bad_wort.created_at = "bad".into();
 
-        let mut bad_grams = grams_ok();
-        bad_grams.push(SchemaGramType {
-            code: "bad_gram".into(),
+        let mut bad_grams = wort_grams_ok();
+        bad_grams.push(SchemaWortGramType {
+            id_gram_type: -1, // Invalid
+            id_worte: 100,
             created_at: "2025-12-09 20:30:00".into(),
             deleted_at: None,
         });

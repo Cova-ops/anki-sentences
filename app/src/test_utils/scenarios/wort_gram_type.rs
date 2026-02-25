@@ -17,5 +17,6 @@ pub fn scenario_wort_gram_type() -> Scenario<InputWortGramType> {
             },
         ],
         update: vec![],
+        update_id: vec![],
     }
 }

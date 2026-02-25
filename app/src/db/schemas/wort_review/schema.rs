@@ -1,6 +1,6 @@
 use crate::db::traits::FromSql;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SchemaWortReview {
     pub id: i32,
     pub wort_id: i32,
