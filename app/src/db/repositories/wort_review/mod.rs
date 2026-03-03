@@ -56,7 +56,6 @@ impl WortReviewRepo {
                 next_review   = excluded.next_review
 
             RETURNING
-                id,
                 wort_id,
                 direction,
                 interval,
@@ -94,7 +93,6 @@ impl WortReviewRepo {
         let sql = format!(
             "
                 SELECT 
-                    id,
                     wort_id,
                     direction,
                     interval,
@@ -110,7 +108,7 @@ impl WortReviewRepo {
                     wr.deleted_at is NULL
                     AND wr.wort_id in ({placeholders})
                 ORDER BY
-                    wr.id ASC;
+                    wr.wort_id ASC;
             "
         );
 
@@ -163,26 +161,24 @@ impl WortReviewRepo {
         date_review: DateTime<Utc>,
         lang: EnumReviewDirection,
     ) -> Result<Vec<i32>, DbError> {
-        let sql = format!(
-            r#"
+        let sql = r#"
                 SELECT wort_id
                 FROM worte_review
                 WHERE next_review < ?1
-                    AND direction = "{}"
+                    AND direction = ?2
                     AND deleted_at IS NULL
                 ORDER BY next_review ASC;
-            "#,
-            lang.as_str()
-        );
+            "#;
+
+        let mut stmt = conn.prepare(sql).map_err(DbError::with_sql(sql))?;
 
         let date = datetime_2_string(date_review);
-        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(&sql))?;
         let vec_ids: Vec<i32> = stmt
-            .query(params![date])
-            .map_err(DbError::with_sql(&sql))?
+            .query(params![date, lang.as_str()])
+            .map_err(DbError::with_sql(sql))?
             .mapped(|r| r.get(0))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(DbError::with_sql(&sql))?;
+            .collect::<Result<_, _>>()
+            .map_err(DbError::with_sql(sql))?;
 
         Ok(vec_ids)
     }

@@ -35,17 +35,19 @@ impl NiveauListeRepo {
             INSERT INTO niveau_liste (id, niveau)
                 VALUES (?1, ?2)
             ON CONFLICT(id) DO UPDATE SET niveau = ?2
-            RETURNING id,  niveau, created_at, deleted_at;
+            RETURNING niveau, created_at, deleted_at;
         "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
         for d in data {
             let params: SqlNiveauListe = d.to_owned().into();
-            let raw = tx.query_one(
-                sql,
-                params_from_iter(params.insert_params()),
-                SchemaNiveauListe::from_sql,
-            )?;
+            let raw = tx
+                .query_one(
+                    sql,
+                    params_from_iter(params.insert_params()),
+                    SchemaNiveauListe::from_sql,
+                )
+                .map_err(DbError::with_sql(sql))?;
             vec_out.push(raw)
         }
 

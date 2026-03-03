@@ -1,0 +1,8 @@
+---
+source: app/src/db/repositories/setze_review/setze_review_test.rs
+expression: res
+---
+[
+    1,
+    2,
+]

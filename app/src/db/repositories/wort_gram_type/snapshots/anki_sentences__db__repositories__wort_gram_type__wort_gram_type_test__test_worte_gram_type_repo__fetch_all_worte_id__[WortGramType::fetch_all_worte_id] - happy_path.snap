@@ -1,0 +1,8 @@
+---
+source: app/src/db/repositories/wort_gram_type/wort_gram_type_test.rs
+expression: res
+---
+[
+    1,
+    2,
+]

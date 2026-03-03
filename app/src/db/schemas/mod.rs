@@ -39,7 +39,7 @@ pub fn init_schemas(conn: &mut Connection) -> Result<(), DbError> {
     conn.execute_batch(setze_audio::CREATE_STR_TABLE_SETZE_AUDIO)?;
     conn.execute_batch(setze_audio::CREATE_STR_INDEX_SETZE_AUDIO)?;
 
-    // Palabras
+    // Words
     conn.execute_batch(wort::CREATE_STR_TABLE_WORTE)?;
     conn.execute_batch(wort::CREATE_STR_INDEX_WORTE)?;
 

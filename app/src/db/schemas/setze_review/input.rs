@@ -1,15 +1,19 @@
 use chrono::{DateTime, Utc};
 
 use crate::{
-    db::traits::{SqlInsert, SqlUpdate},
+    db::{
+        schemas::wort_review::EnumReviewDirection,
+        traits::{SqlInsert, SqlUpdate},
+    },
     helpers::time::datetime_2_string,
 };
 
 #[derive(Debug)]
 pub struct SqlSetzeReview {
     pub satz_id: i32,
+    pub direction: String, // EnumReviewDirection
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: String, // DateTime<Utc>
     pub next_review: String, // DateTime<Utc>
@@ -18,8 +22,9 @@ pub struct SqlSetzeReview {
 #[derive(Debug, Clone)]
 pub struct InputSetzeReview {
     pub satz_id: i32,
+    pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -29,6 +34,7 @@ impl From<InputSetzeReview> for SqlSetzeReview {
     fn from(value: InputSetzeReview) -> Self {
         Self {
             satz_id: value.satz_id,
+            direction: value.direction.as_str().to_string(),
             interval: value.interval,
             ease_factor: value.ease_factor,
             repetitions: value.repetitions,
@@ -41,6 +47,7 @@ impl From<InputSetzeReview> for SqlSetzeReview {
 impl SqlInsert for SqlSetzeReview {
     /// This orden:
     /// - satz_id
+    /// - direction
     /// - interval
     /// - ease_factor
     /// - repetitions
@@ -49,6 +56,7 @@ impl SqlInsert for SqlSetzeReview {
     fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
         vec![
             &self.satz_id,
+            &self.direction,
             &self.interval,
             &self.ease_factor,
             &self.repetitions,
@@ -75,6 +83,7 @@ mod tests_sql_setze_review {
 
             let input = InputSetzeReview {
                 satz_id: 42,
+                direction: EnumReviewDirection::ES2DE,
                 interval: 5,
                 ease_factor: 2.5,
                 repetitions: 3,
@@ -85,6 +94,7 @@ mod tests_sql_setze_review {
             let sql: SqlSetzeReview = input.into();
 
             assert_eq!(sql.satz_id, 42);
+            assert_eq!(sql.direction, EnumReviewDirection::ES2DE.as_str());
             assert_eq!(sql.interval, 5);
             assert_eq!(sql.ease_factor, 2.5);
             assert_eq!(sql.repetitions, 3);
@@ -119,6 +129,7 @@ mod tests_sql_setze_review {
         fn insert_params() {
             let s = SqlSetzeReview {
                 satz_id: 42,
+                direction: String::from("es_to_de"),
                 interval: 5,
                 ease_factor: 2.5,
                 repetitions: 3,
@@ -129,15 +140,16 @@ mod tests_sql_setze_review {
             let params = s.insert_params();
 
             assert_eq!(to_value(params[0]), Value::Integer(42));
-            assert_eq!(to_value(params[1]), Value::Integer(5));
-            assert_eq!(to_value(params[2]), Value::Real(2.5));
-            assert_eq!(to_value(params[3]), Value::Integer(3));
+            assert_eq!(to_value(params[1]), Value::Text(format!("es_to_de")));
+            assert_eq!(to_value(params[2]), Value::Integer(5));
+            assert_eq!(to_value(params[3]), Value::Real(2.5));
+            assert_eq!(to_value(params[4]), Value::Integer(3));
             assert_eq!(
-                to_value(params[4]),
+                to_value(params[5]),
                 Value::Text(String::from("2026-01-02 06:50:00"))
             );
             assert_eq!(
-                to_value(params[5]),
+                to_value(params[6]),
                 Value::Text(String::from("2026-01-03 06:50:00"))
             );
         }
@@ -146,6 +158,7 @@ mod tests_sql_setze_review {
         fn update_params() {
             let s = SqlSetzeReview {
                 satz_id: 42,
+                direction: format!("es_to_de"),
                 interval: 5,
                 ease_factor: 2.5,
                 repetitions: 3,
@@ -156,18 +169,19 @@ mod tests_sql_setze_review {
             let params = s.update_params(&99);
 
             assert_eq!(to_value(params[0]), Value::Integer(42));
-            assert_eq!(to_value(params[1]), Value::Integer(5));
-            assert_eq!(to_value(params[2]), Value::Real(2.5));
-            assert_eq!(to_value(params[3]), Value::Integer(3));
+            assert_eq!(to_value(params[1]), Value::Text(format!("es_to_de")));
+            assert_eq!(to_value(params[2]), Value::Integer(5));
+            assert_eq!(to_value(params[3]), Value::Real(2.5));
+            assert_eq!(to_value(params[4]), Value::Integer(3));
             assert_eq!(
-                to_value(params[4]),
+                to_value(params[5]),
                 Value::Text(String::from("2026-01-02 06:50:00"))
             );
             assert_eq!(
-                to_value(params[5]),
+                to_value(params[6]),
                 Value::Text(String::from("2026-01-03 06:50:00"))
             );
-            assert_eq!(to_value(params[6]), Value::Integer(99));
+            assert_eq!(to_value(params[7]), Value::Integer(99));
         }
     }
 }

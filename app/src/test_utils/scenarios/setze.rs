@@ -18,6 +18,18 @@ pub fn scenario_setze() -> Scenario<InputSetze> {
                 niveau: EnumNiveauListe::B1,
                 thema: "work".into(),
             },
+            InputSetze {
+                setze_spanisch: "Nos vemos mañana.".into(),
+                setze_deutsch: "Wir sehen uns morgen.".into(),
+                niveau: EnumNiveauListe::A1,
+                thema: "daily_life".into(),
+            },
+            InputSetze {
+                setze_spanisch: "¿Puedes ayudarme con esto?".into(),
+                setze_deutsch: "Kannst du mir damit helfen?".into(),
+                niveau: EnumNiveauListe::B2,
+                thema: "communication".into(),
+            },
         ],
         update: vec![],
         update_id: vec![],

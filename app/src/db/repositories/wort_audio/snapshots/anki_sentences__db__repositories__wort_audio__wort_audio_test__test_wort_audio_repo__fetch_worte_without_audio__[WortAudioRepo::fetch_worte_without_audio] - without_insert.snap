@@ -1,0 +1,83 @@
+---
+source: app/src/db/repositories/wort_audio/wort_audio_test.rs
+expression: snapshot
+---
+[
+    SnapshotWortAudioMissing {
+        id: 1,
+        wort_es: "seguir",
+        wort_de: "weitergehen",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 2,
+        wort_es: "ponerse cansado",
+        wort_de: "müde werden",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 3,
+        wort_es: "plazo (de entrega)",
+        wort_de: "Frist",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 4,
+        wort_es: "salir",
+        wort_de: "rausgehen",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 5,
+        wort_es: "varios",
+        wort_de: "mehrere",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 6,
+        wort_es: "totalmente desconocido",
+        wort_de: "wildfremd",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 7,
+        wort_es: "ladrar",
+        wort_de: "bellen",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 8,
+        wort_es: "regresa sano y salvo",
+        wort_de: "komm heile zurück",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 9,
+        wort_es: "oportunidad",
+        wort_de: "Möglichkeit",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 10,
+        wort_es: "pánico",
+        wort_de: "Schiss",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+    SnapshotWortAudioMissing {
+        id: 11,
+        wort_es: "ahorrar",
+        wort_de: "sparen",
+        audio_name_es: None,
+        audio_name_de: None,
+    },
+]

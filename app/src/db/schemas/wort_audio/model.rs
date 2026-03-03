@@ -82,88 +82,97 @@ impl ModelWortAudio {
 mod tests {
     use super::*;
 
-    fn schema_ok(deleted_at: Option<&str>) -> SchemaWortAudio {
-        SchemaWortAudio {
-            wort_id: 10,
-            audio_name_es: Some("wort_000010_es.mp3".to_string()),
-            audio_name_de: Some("wort_000010_de.mp3".to_string()),
-            created_at: "2025-01-01 10:00:00".to_string(),
-            deleted_at: deleted_at.map(|s| s.to_string()),
+    mod try_from_schema {
+        use super::*;
+
+        fn schema_ok(deleted_at: Option<&str>) -> SchemaWortAudio {
+            SchemaWortAudio {
+                wort_id: 10,
+                audio_name_es: Some("wort_000010_es.mp3".to_string()),
+                audio_name_de: Some("wort_000010_de.mp3".to_string()),
+                created_at: "2025-01-01 10:00:00".to_string(),
+                deleted_at: deleted_at.map(|s| s.to_string()),
+            }
+        }
+
+        #[test]
+        fn ok_with_deleted_at() {
+            let s = schema_ok(Some("2025-01-02 10:00:00"));
+
+            let m = ModelWortAudio::try_from(s).expect("should convert");
+
+            assert_eq!(m.wort_id, 10);
+            assert_eq!(m.audio_name_es.as_deref(), Some("wort_000010_es.mp3"));
+            assert_eq!(m.audio_name_de.as_deref(), Some("wort_000010_de.mp3"));
+
+            // si quieres, puedes comparar el string formateado para evitar dudas de tz:
+            assert_eq!(m.created_at.to_rfc3339(), "2025-01-01T10:00:00+00:00");
+            assert_eq!(
+                m.deleted_at.unwrap().to_rfc3339(),
+                "2025-01-02T10:00:00+00:00"
+            );
+        }
+
+        #[test]
+        fn ok_without_deleted_at() {
+            let s = schema_ok(None);
+
+            let m = ModelWortAudio::try_from(s).expect("should convert");
+            assert_eq!(m.wort_id, 10);
+            assert!(m.deleted_at.is_none());
+        }
+
+        #[test]
+        fn err_invalid() {
+            let mut s = schema_ok(None);
+            s.created_at = "NOT_A_DATE".to_string();
+
+            let err = ModelWortAudio::try_from(s).expect_err("should fail");
+            assert!(!err.is_empty(), "should return at least one error");
+
+            // opcional: si tu InvalidValueError tiene field/message:
+            assert!(err.iter().any(|e| e.field == "datetime"));
         }
     }
 
-    #[test]
-    fn try_from_ok_with_deleted_at() {
-        let s = schema_ok(Some("2025-01-02 10:00:00"));
+    mod try_from_iter {
+        use super::*;
 
-        let m = ModelWortAudio::try_from(s).expect("should convert");
+        fn schema_ok(deleted_at: Option<&str>) -> SchemaWortAudio {
+            SchemaWortAudio {
+                wort_id: 10,
+                audio_name_es: Some("wort_000010_es.mp3".to_string()),
+                audio_name_de: Some("wort_000010_de.mp3".to_string()),
+                created_at: "2025-01-01 10:00:00".to_string(),
+                deleted_at: deleted_at.map(|s| s.to_string()),
+            }
+        }
 
-        assert_eq!(m.wort_id, 10);
-        assert_eq!(m.audio_name_es.as_deref(), Some("wort_000010_es.mp3"));
-        assert_eq!(m.audio_name_de.as_deref(), Some("wort_000010_de.mp3"));
+        #[test]
+        fn try_from_iter_ok_all() {
+            let v = vec![schema_ok(None), schema_ok(Some("2025-01-02 10:00:00"))];
 
-        // si quieres, puedes comparar el string formateado para evitar dudas de tz:
-        assert_eq!(m.created_at.to_rfc3339(), "2025-01-01T10:00:00+00:00");
-        assert_eq!(
-            m.deleted_at.unwrap().to_rfc3339(),
-            "2025-01-02T10:00:00+00:00"
-        );
-    }
+            let out = ModelWortAudio::try_from_iter(v).expect("should convert all");
+            assert_eq!(out.len(), 2);
+            assert_eq!(out[0].wort_id, 10);
+            assert_eq!(out[1].wort_id, 10);
+        }
 
-    #[test]
-    fn try_from_ok_without_deleted_at() {
-        let s = schema_ok(None);
+        #[test]
+        fn try_from_iter_err_accumulates() {
+            let mut bad1 = schema_ok(None);
+            bad1.created_at = "BAD_CREATED".to_string();
 
-        let m = ModelWortAudio::try_from(s).expect("should convert");
-        assert_eq!(m.wort_id, 10);
-        assert!(m.deleted_at.is_none());
-    }
+            let bad2 = schema_ok(Some("BAD_DELETED"));
 
-    #[test]
-    fn try_from_err_when_created_at_invalid() {
-        let mut s = schema_ok(None);
-        s.created_at = "NOT_A_DATE".to_string();
+            let v = vec![schema_ok(None), bad1, bad2];
 
-        let err = ModelWortAudio::try_from(s).expect_err("should fail");
-        assert!(!err.is_empty(), "should return at least one error");
-
-        // opcional: si tu InvalidValueError tiene field/message:
-        assert!(err.iter().any(|e| e.field == "datetime"));
-    }
-
-    #[test]
-    fn try_from_err_when_deleted_at_invalid() {
-        let s = schema_ok(Some("NOT_A_DATE"));
-
-        let err = ModelWortAudio::try_from(s).expect_err("should fail");
-        assert!(!err.is_empty(), "should return at least one error");
-        assert!(err.iter().any(|e| e.field == "datetime"));
-    }
-
-    #[test]
-    fn try_from_iter_ok_all() {
-        let v = vec![schema_ok(None), schema_ok(Some("2025-01-02 10:00:00"))];
-
-        let out = ModelWortAudio::try_from_iter(v).expect("should convert all");
-        assert_eq!(out.len(), 2);
-        assert_eq!(out[0].wort_id, 10);
-        assert_eq!(out[1].wort_id, 10);
-    }
-
-    #[test]
-    fn try_from_iter_err_accumulates() {
-        let mut bad1 = schema_ok(None);
-        bad1.created_at = "BAD_CREATED".to_string();
-
-        let bad2 = schema_ok(Some("BAD_DELETED"));
-
-        let v = vec![schema_ok(None), bad1, bad2];
-
-        let err = ModelWortAudio::try_from_iter(v).expect_err("should fail");
-        assert!(
-            err.len() >= 2,
-            "should accumulate errors from multiple items"
-        );
-        assert!(err.iter().any(|e| e.field == "datetime"));
+            let err = ModelWortAudio::try_from_iter(v).expect_err("should fail");
+            assert!(
+                err.len() >= 2,
+                "should accumulate errors from multiple items"
+            );
+            assert!(err.iter().any(|e| e.field == "datetime"));
+        }
     }
 }

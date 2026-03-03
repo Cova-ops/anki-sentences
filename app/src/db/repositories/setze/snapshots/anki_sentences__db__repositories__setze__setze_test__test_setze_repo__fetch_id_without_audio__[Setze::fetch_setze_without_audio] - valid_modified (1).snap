@@ -1,0 +1,10 @@
+---
+source: app/src/db/repositories/setze/setze_test.rs
+expression: res
+---
+[
+    1,
+    2,
+    3,
+    4,
+]

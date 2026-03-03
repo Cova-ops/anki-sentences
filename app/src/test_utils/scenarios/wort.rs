@@ -165,7 +165,7 @@ pub fn scenario_wort() -> Scenario<InputWort> {
         update: vec![],
         update_id: vec![
             (
-                0,
+                1,
                 InputWort {
                     gram_type: vec![
                         EnumGramType::PronounInterrogative,
@@ -185,7 +185,7 @@ pub fn scenario_wort() -> Scenario<InputWort> {
                 },
             ),
             (
-                1,
+                2,
                 InputWort {
                     gram_type: vec![
                         EnumGramType::AdverbPlace,
@@ -205,7 +205,7 @@ pub fn scenario_wort() -> Scenario<InputWort> {
                 },
             ),
             (
-                2,
+                3,
                 InputWort {
                     gram_type: vec![EnumGramType::VerbAuxiliary],
                     gender: None,

@@ -1,0 +1,39 @@
+---
+source: app/src/db/repositories/wort_review/wort_review_test.rs
+expression: snapshot
+---
+[
+    SnapshotWortReview {
+        wort_id: 1,
+        direction: ES2DE,
+        interval: 1,
+        ease_factor: 2.5,
+        repetitions: 999,
+        last_review: 2025-01-10T12:00:00Z,
+        next_review: 2025-01-20T12:00:00Z,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortReview {
+        wort_id: 1,
+        direction: DE2ES,
+        interval: 12,
+        ease_factor: 3.5,
+        repetitions: 1,
+        last_review: 2025-01-10T12:00:00Z,
+        next_review: 2025-01-20T12:00:00Z,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortReview {
+        wort_id: 2,
+        direction: ES2DE,
+        interval: 1,
+        ease_factor: 2.5,
+        repetitions: 999,
+        last_review: 2025-01-10T12:00:00Z,
+        next_review: 2025-01-20T12:00:00Z,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

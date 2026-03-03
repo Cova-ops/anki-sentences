@@ -37,7 +37,7 @@ impl GramTypeRepo {
                 VALUES (?1, ?2, ?3) 
             ON CONFLICT(id) DO UPDATE SET code = ?2, name = ?3
             ON CONFLICT(code) DO UPDATE SET name = ?3
-            RETURNING id, code, name, created_at, deleted_at;
+            RETURNING code, created_at, deleted_at;
         "#;
 
         let mut stmt = tx.prepare_cached(sql).map_err(DbError::with_sql(sql))?;

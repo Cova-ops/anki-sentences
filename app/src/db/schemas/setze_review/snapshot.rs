@@ -1,14 +1,16 @@
 use chrono::{DateTime, Utc};
 
-use crate::db::schemas::setze_review::{ModelSetzeReview, SchemaSetzeReview};
+use crate::db::schemas::{
+    setze_review::{ModelSetzeReview, SchemaSetzeReview},
+    wort_review::EnumReviewDirection,
+};
 
 #[derive(Debug)]
 pub struct SnapshotSetzeReview {
-    pub id: i32,
-
     pub satz_id: i32,
+    pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -21,9 +23,8 @@ pub struct SnapshotSetzeReview {
 impl From<ModelSetzeReview> for SnapshotSetzeReview {
     fn from(value: ModelSetzeReview) -> Self {
         Self {
-            id: value.id,
-
             satz_id: value.satz_id,
+            direction: value.direction,
             interval: value.interval,
             ease_factor: value.ease_factor,
             repetitions: value.repetitions,
@@ -55,8 +56,8 @@ mod tests {
 
         fn model_ok(deleted: bool) -> ModelSetzeReview {
             ModelSetzeReview {
-                id: 1,
                 satz_id: 42,
+                direction: EnumReviewDirection::ES2DE,
                 interval: 4,
                 ease_factor: 2.5,
                 repetitions: 3,
@@ -76,8 +77,8 @@ mod tests {
             let model = model_ok(false);
             let snap = SnapshotSetzeReview::from(model);
 
-            assert_eq!(snap.id, 1);
             assert_eq!(snap.satz_id, 42);
+            assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 4);
             assert_eq!(snap.ease_factor, 2.5);
             assert_eq!(snap.repetitions, 3);
@@ -100,8 +101,8 @@ mod tests {
             let model = model_ok(true);
             let snap = SnapshotSetzeReview::from(model);
 
-            assert_eq!(snap.id, 1);
             assert_eq!(snap.satz_id, 42);
+            assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 4);
             assert_eq!(snap.ease_factor, 2.5);
             assert_eq!(snap.repetitions, 3);
@@ -118,8 +119,8 @@ mod tests {
 
         #[test]
         fn happy_path() {
-            let id = 1;
             let satz_id = 10;
+            let direction = EnumReviewDirection::ES2DE;
             let interval = 1;
             let ease_factor = 1.3;
             let repetitions = 10;
@@ -129,8 +130,8 @@ mod tests {
             let deleted_at = None;
 
             let schema = SchemaSetzeReview {
-                id,
                 satz_id,
+                direction: direction.as_str().to_string(),
                 interval,
                 ease_factor,
                 repetitions,
@@ -142,21 +143,20 @@ mod tests {
 
             let snap: SnapshotSetzeReview = schema.into();
 
-            assert_eq!(snap.id, id);
             assert_eq!(snap.satz_id, satz_id);
             assert_eq!(snap.interval, interval);
             assert_eq!(snap.ease_factor, ease_factor);
             assert_eq!(snap.repetitions, repetitions);
             assert_eq!(snap.last_review, string_2_datetime(last_review).unwrap());
             assert_eq!(snap.next_review, string_2_datetime(next_review).unwrap());
-            assert_eq!(snap.created_at, created_at);
+            assert_eq!(snap.created_at, "<created_at>");
             assert_eq!(snap.deleted_at, deleted_at.as_deref());
         }
 
         #[test]
         fn panics_on_invalid_schema() {
-            let id = 1;
             let satz_id = 10;
+            let direction = EnumReviewDirection::ES2DE;
             let interval = 1;
             let ease_factor = 1.3;
             let repetitions = 10;
@@ -166,8 +166,8 @@ mod tests {
             let deleted_at = None;
 
             let invalid = SchemaSetzeReview {
-                id,
                 satz_id,
+                direction: direction.as_str().to_string(),
                 interval,
                 ease_factor,
                 repetitions,

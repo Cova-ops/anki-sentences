@@ -1,0 +1,24 @@
+---
+source: app/src/db/repositories/setze/setze_test.rs
+expression: res
+---
+[
+    SnapshotSetze {
+        id: 1,
+        setze_spanisch: "Estoy aprendiendo alemán.",
+        setze_deutsch: "Ich lerne Deutsch.",
+        niveau: A2,
+        thema: "learning",
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotSetze {
+        id: 2,
+        setze_spanisch: "Ella trabaja aquí.",
+        setze_deutsch: "Sie arbeitet hier.",
+        niveau: B1,
+        thema: "work",
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

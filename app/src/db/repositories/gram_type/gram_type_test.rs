@@ -22,7 +22,6 @@ mod tests_gram_type_repo_bulk_upsert {
     }
 
     mod bulk_upsert {
-
         use super::*;
 
         fn init_conn() -> Result<Connection, DbError> {
@@ -50,8 +49,8 @@ mod tests_gram_type_repo_bulk_upsert {
         fn insert() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data = scenario_gram_type().initial;
-            let res = GramTypeRepo::bulk_upsert(&mut conn, &data)?;
+            let data: Vec<InputGramType> = scenario_gram_type().initial;
+            let res: Vec<SchemaGramType> = GramTypeRepo::bulk_upsert(&mut conn, &data)?;
 
             assert_iter(&res, &data);
 

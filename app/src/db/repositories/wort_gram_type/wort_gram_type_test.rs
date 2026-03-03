@@ -5,8 +5,9 @@ mod test_worte_gram_type_repo {
     use crate::{
         db::{
             init_data, init_schemas,
-            schemas::wort_gram_type::{
-                InputWortGramType, SchemaWortGramType, SnapshotWortGramType,
+            schemas::{
+                wort::InputWort,
+                wort_gram_type::{InputWortGramType, SchemaWortGramType, SnapshotWortGramType},
             },
             wort::WortRepo,
             wort_gram_type::WortGramTypeRepo,
@@ -26,8 +27,6 @@ mod test_worte_gram_type_repo {
     }
 
     mod bulk_insert {
-        use crate::db::{schemas::wort::InputWort, wort::WortRepo};
-
         use super::*;
 
         fn init_conn() -> Result<Connection, DbError> {
@@ -52,12 +51,11 @@ mod test_worte_gram_type_repo {
 
         #[test]
         fn empty() -> Result<(), DbError> {
-            let mut conn = init_conn()?;
+            let mut conn: Connection = init_conn()?;
 
-            let data = scenario_wort_gram_type().initial;
-            let res = WortGramTypeRepo::bulk_insert(&mut conn, &[])?;
+            let res: Vec<SchemaWortGramType> = WortGramTypeRepo::bulk_insert(&mut conn, &[])?;
 
-            assert_iter(&res, &data);
+            assert_iter(&res, &[]);
 
             let snapshot: Vec<SnapshotWortGramType> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!("[WortGramType::bulk_insert] - empty", snapshot);
@@ -110,7 +108,16 @@ mod test_worte_gram_type_repo {
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
 
-            let data = scenario_wort().initial;
+            // We need to change this, in other case the test will failed, cause there are information
+            // added that it is not in the ScenarioWortGramType
+            let data: Vec<_> = scenario_wort()
+                .initial
+                .into_iter()
+                .map(|d| InputWort {
+                    gram_type: vec![],
+                    ..d
+                })
+                .collect();
             WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;
@@ -185,7 +192,16 @@ mod test_worte_gram_type_repo {
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
 
-            let data = scenario_wort().initial;
+            // We need to change this, in other case the test will failed, cause there are information
+            // added that it is not in the ScenarioWortGramType
+            let data: Vec<_> = scenario_wort()
+                .initial
+                .into_iter()
+                .map(|d| InputWort {
+                    gram_type: vec![],
+                    ..d
+                })
+                .collect();
             WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;
@@ -278,7 +294,16 @@ mod test_worte_gram_type_repo {
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
 
-            let data = scenario_wort().initial;
+            // We need to change this, in other case the test will failed, cause there are information
+            // added that it is not in the ScenarioWortGramType
+            let data: Vec<_> = scenario_wort()
+                .initial
+                .into_iter()
+                .map(|d| InputWort {
+                    gram_type: vec![],
+                    ..d
+                })
+                .collect();
             WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_gram_type().initial;

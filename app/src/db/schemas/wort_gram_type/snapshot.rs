@@ -92,7 +92,7 @@ mod tests {
 
             assert_eq!(snap.id_worte, 12);
             assert_eq!(snap.id_gram_type, 3);
-            assert_eq!(snap.created_at, "2026-02-10 10:00:00");
+            assert_eq!(snap.created_at, "<created_at>");
             assert_eq!(snap.deleted_at, None);
         }
 
@@ -105,7 +105,6 @@ mod tests {
                 deleted_at: None,
             };
 
-            // Act + Assert: unwrap() inside From should panic
             let result = std::panic::catch_unwind(|| {
                 let _: SnapshotWortGramType = invalid.into();
             });

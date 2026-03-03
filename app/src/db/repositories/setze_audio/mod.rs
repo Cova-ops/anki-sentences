@@ -33,10 +33,13 @@ impl SetzeAudioRepo {
         }
 
         let sql = r#"
-            INSERT INTO setze_audio (satz_id, file_path, voice_id)
+            INSERT INTO setze_audio (satz_id, audio_name_es, audio_name_de)
                 VALUES (?1, ?2, ?3)
-            ON CONFLICT(satz_id) DO UPDATE SET file_path = ?2, voice_id = ?3
-            RETURNING satz_id, file_path, voice_id, created_at, deleted_at;
+            ON CONFLICT(satz_id)
+                DO UPDATE SET
+                    audio_name_es = ?2, audio_name_de = ?3
+            RETURNING
+                satz_id, audio_name_es, audio_name_de, created_at, deleted_at;
             "#;
 
         let mut vec_out = Vec::with_capacity(data.len());
@@ -44,6 +47,7 @@ impl SetzeAudioRepo {
 
         for d in data {
             let params: SqlSetzeAudio = d.to_owned().into();
+            println!("{params:#?}");
             let raw = stmt
                 .query_one(
                     params_from_iter(params.insert_params()),
@@ -65,7 +69,8 @@ impl SetzeAudioRepo {
         let placeholders = vec!["?"; ids.len()].join(",");
         let sql = format!(
             "
-            SELECT satz_id, file_path, voice_id, created_at, deleted_at
+            SELECT
+                satz_id, audio_name_es, audio_name_de, created_at, deleted_at
             FROM setze_audio
             WHERE satz_id in ({placeholders})
                 AND deleted_at is NULL

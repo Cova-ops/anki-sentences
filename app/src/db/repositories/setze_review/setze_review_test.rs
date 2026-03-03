@@ -196,6 +196,8 @@ mod test_setze_review_repo {
     }
 
     mod fetch_review_satz_id_by_day {
+        use chrono::{Duration, Utc};
+
         use super::*;
 
         fn init_conn() -> Result<Connection, DbError> {
@@ -206,7 +208,17 @@ mod test_setze_review_repo {
             let data = scenario_setze().initial;
             SetzeRepo::bulk_insert(&mut conn, &data)?;
 
-            let data = scenario_setze_review().initial;
+            let today = Utc::now();
+
+            // We modify the vec to make the test
+            let data: Vec<InputSetzeReview> = scenario_setze_review()
+                .initial
+                .into_iter()
+                .map(|d| InputSetzeReview {
+                    next_review: today,
+                    ..d
+                })
+                .collect();
             SetzeReviewRepo::bulk_upsert(&mut conn, &data)?;
 
             Ok(conn)
@@ -217,8 +229,8 @@ mod test_setze_review_repo {
             let conn = init_conn()?;
 
             // This date should not be on scenario_setze_review
-            let date = string_2_datetime("1980-01-01 20:00:00").unwrap();
-            let res = SetzeReviewRepo::fetch_review_satz_id_by_day(&conn, date)?;
+            let yesterday = Utc::now() - Duration::days(1);
+            let res = SetzeReviewRepo::fetch_review_satz_id_by_day(&conn, yesterday)?;
             assert_eq!(res.len(), 0);
 
             insta::assert_debug_snapshot!(
@@ -233,25 +245,15 @@ mod test_setze_review_repo {
         fn with_data() -> Result<(), DbError> {
             let conn = init_conn()?;
 
-            let data = scenario_setze_review().initial[0].clone();
-            let date = data.next_review;
-            let res = SetzeReviewRepo::fetch_review_satz_id_by_day(&conn, date)?;
-            assert_eq!(res.len(), 1);
-            assert_eq!(res, [data.satz_id]);
+            let today = Utc::now();
+            let data = scenario_setze_review().initial;
+
+            // It should bring all on scenario
+            let res: Vec<i32> = SetzeReviewRepo::fetch_review_satz_id_by_day(&conn, today)?;
+            assert_eq!(res.len(), data.len());
 
             insta::assert_debug_snapshot!(
-                "[SetzeReview::fetch_review_satz_id_by_day] - with_data (1)",
-                res
-            );
-
-            let data = scenario_setze_review().initial[1].clone();
-            let date = data.next_review;
-            let res = SetzeReviewRepo::fetch_review_satz_id_by_day(&conn, date)?;
-            assert_eq!(res.len(), 1);
-            assert_eq!(res, [data.satz_id]);
-
-            insta::assert_debug_snapshot!(
-                "[SetzeReview::fetch_review_satz_id_by_day] - with_data (2)",
+                "[SetzeReview::fetch_review_satz_id_by_day] - with_data",
                 res
             );
             Ok(())
@@ -263,8 +265,8 @@ mod test_setze_review_repo {
             // This verifies DbError::with_sql(sql) is attaching the SQL.
             let mut conn = Connection::open_in_memory().unwrap();
 
-            let date = string_2_datetime("1980-01-01 20:00:00").unwrap();
-            let err = SetzeReviewRepo::fetch_review_satz_id_by_day(&mut conn, date).unwrap_err();
+            let today = Utc::now();
+            let err = SetzeReviewRepo::fetch_review_satz_id_by_day(&mut conn, today).unwrap_err();
 
             assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
             assert!(

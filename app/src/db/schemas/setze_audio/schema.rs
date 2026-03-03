@@ -3,8 +3,8 @@ use crate::db::traits::FromSql;
 #[derive(Debug)]
 pub struct SchemaSetzeAudio {
     pub satz_id: i32,
-    pub file_path: String,
-    pub voice_id: String,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 
     // Generic
     pub created_at: String,
@@ -12,122 +12,106 @@ pub struct SchemaSetzeAudio {
 }
 
 impl FromSql for SchemaSetzeAudio {
+    /// Orden:
+    /// - satz_id
+    /// - audio_name_es
+    /// - audio_name_de
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             satz_id: r.get(0)?,
-            file_path: r.get(1)?,
-            voice_id: r.get(2)?,
+            audio_name_es: r.get(1)?,
+            audio_name_de: r.get(2)?,
             created_at: r.get(3)?,
             deleted_at: r.get(4)?,
         })
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use crate::helpers::error_handler::DbError;
-
     use super::*;
-    use rusqlite::{Connection, params};
 
-    fn setup_conn() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
+    use crate::helpers::error_handler::DbError;
+    use rusqlite::Connection;
 
-        conn.execute(
-            r#"
-            CREATE TABLE setze_audio (
-                satz_id     INTEGER NOT NULL,
-                file_path   TEXT NOT NULL,
-                voice_id    TEXT NOT NULL,
-                created_at  TEXT NOT NULL,
-                deleted_at  TEXT
-            );
-            "#,
-            [],
-        )?;
+    mod from_sql {
+        use super::*;
 
-        Ok(conn)
-    }
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-    #[test]
-    fn from_sql_maps_row_correctly() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+            let mut stmt =
+                conn.prepare("SELECT 5, 'casa.mp3', NULL, '2025-12-04 20:00:00', NULL; ")?;
 
-        conn.execute(
-            r#"
-            INSERT INTO setze_audio
-                (satz_id, file_path, voice_id, created_at, deleted_at)
-            VALUES
-                (?1, ?2, ?3, ?4, ?5);
-            "#,
-            params![
-                10,
-                "audios/setze/10.mp3",
-                "voice_de",
-                "2025-01-01 12:00:00",
-                Option::<String>::None
-            ],
-        )?;
+            let out: SchemaSetzeAudio = stmt.query_one([], SchemaSetzeAudio::from_sql)?;
 
-        let sql = r#"
-            SELECT
-                satz_id,
-                file_path,
-                voice_id,
-                created_at,
-                deleted_at
-            FROM setze_audio;
-        "#;
+            assert_eq!(out.satz_id, 5);
+            assert_eq!(out.audio_name_es.as_deref(), Some("casa.mp3"));
+            assert_eq!(out.audio_name_de, None);
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
-        let schema: SchemaSetzeAudio = conn.query_one(sql, [], SchemaSetzeAudio::from_sql)?;
+            Ok(())
+        }
 
-        assert_eq!(schema.satz_id, 10);
-        assert_eq!(schema.file_path, "audios/setze/10.mp3");
-        assert_eq!(schema.voice_id, "voice_de");
-        assert_eq!(schema.created_at, "2025-01-01 12:00:00");
-        assert_eq!(schema.deleted_at, None);
+        #[test]
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
-    }
+            let mut stmt = conn.prepare("SELECT 6, 'haus_es.mp3', 'haus_de.mp3', '2025-12-04 20:00:00', '2025-12-31 00:00:00';")?;
 
-    #[test]
-    fn from_sql_with_deleted_at() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+            let out: SchemaSetzeAudio = stmt.query_one([], SchemaSetzeAudio::from_sql)?;
 
-        conn.execute(
-            r#"
-            INSERT INTO setze_audio
-                (satz_id, file_path, voice_id, created_at, deleted_at)
-            VALUES
-                (?1, ?2, ?3, ?4, ?5);
-            "#,
-            params![
-                11,
-                "audios/setze/11.mp3",
-                "voice_es",
-                "2025-01-02 10:00:00",
-                "2025-01-10 00:00:00"
-            ],
-        )?;
+            assert_eq!(out.satz_id, 6);
+            assert_eq!(out.audio_name_es.as_deref(), Some("haus_es.mp3"));
+            assert_eq!(out.audio_name_de.as_deref(), Some("haus_de.mp3"));
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
 
-        let sql = r#"
-            SELECT
-                satz_id,
-                file_path,
-                voice_id,
-                created_at,
-                deleted_at
-            FROM setze_audio;
-        "#;
+            Ok(())
+        }
 
-        let schema: SchemaSetzeAudio = conn.query_one(sql, [], SchemaSetzeAudio::from_sql)?;
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        assert_eq!(schema.satz_id, 11);
-        assert_eq!(schema.file_path, "audios/setze/11.mp3");
-        assert_eq!(schema.voice_id, "voice_es");
-        assert_eq!(schema.created_at, "2025-01-02 10:00:00");
-        assert_eq!(schema.deleted_at.as_deref(), Some("2025-01-10 00:00:00"));
+            // satz_id should be INTEGER but we pass TEXT
+            let mut stmt =
+                conn.prepare("SELECT 'wrong', 'casa.mp3', NULL, '2025-12-04 20:00:00', NULL;")?;
 
-        Ok(())
+            let out: Result<SchemaSetzeAudio, _> = stmt.query_one([], SchemaSetzeAudio::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing
+            let mut stmt = conn.prepare("SELECT 5, 'casa.mp3', NULL, '2025-12-04 20:00:00';")?;
+
+            let out: Result<SchemaSetzeAudio, _> = stmt.query_one([], SchemaSetzeAudio::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
     }
 }

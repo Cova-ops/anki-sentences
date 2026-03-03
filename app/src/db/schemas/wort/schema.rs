@@ -22,6 +22,20 @@ pub struct SchemaWort {
 }
 
 impl FromSql for SchemaWort {
+    /// Orden:
+    /// - id
+    /// - gender_id
+    /// - worte_de
+    /// - worte_es
+    /// - plural
+    /// - niveau_id
+    /// - example_de
+    /// - example_es
+    /// - verb_aux
+    /// - trennbar
+    /// - reflexiv
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id: r.get(0)?,
@@ -40,124 +54,165 @@ impl FromSql for SchemaWort {
         })
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use crate::helpers::error_handler::DbError;
-
     use super::*;
+
+    use crate::helpers::error_handler::DbError;
     use rusqlite::Connection;
 
     mod from_sql {
         use super::*;
 
-        fn setup_db() -> Result<Connection, DbError> {
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
             let conn = Connection::open_in_memory()?;
 
-            conn.execute(
-                r#"
-            CREATE TABLE wort (
-                id INTEGER,
-                gender_id INTEGER,
-                worte_de TEXT NOT NULL,
-                worte_es TEXT NOT NULL,
-                plural TEXT,
-                niveau_id INTEGER NOT NULL,
-                example_de TEXT NOT NULL,
-                example_es TEXT NOT NULL,
-                verb_aux TEXT,
-                trennbar BOOLEAN,
-                reflexiv BOOLEAN,
-                created_at TEXT NOT NULL,
-                deleted_at TEXT
-            );
-            "#,
-                [],
+            // Mix of Some/NULL for Option fields, deleted_at = NULL
+            let mut stmt = conn.prepare(
+                "SELECT
+                    1,                      -- id
+                    1,                      -- gender_id
+                    'Haus',                 -- worte_de
+                    'casa',                 -- worte_es
+                    'Häuser',               -- plural
+                    2,                      -- niveau_id
+                    'Das Haus ist groß.',   -- example_de
+                    'La casa es grande.',   -- example_es
+                    NULL,                   -- verb_aux
+                    NULL,                   -- trennbar
+                    NULL,                   -- reflexiv
+                    '2025-12-04 20:00:00',  -- created_at
+                    NULL;                   -- deleted_at
+                ",
             )?;
 
-            Ok(conn)
-        }
+            let out: SchemaWort = stmt.query_one([], SchemaWort::from_sql)?;
 
-        #[test]
-        fn schema_wort_from_sql_full_row() -> Result<(), DbError> {
-            let conn = setup_db()?;
-
-            conn.execute(
-                r#"
-            INSERT INTO wort VALUES (
-                1,
-                0,
-                'Haus',
-                'Casa',
-                'Häuser',
-                2,
-                'Das Haus ist groß.',
-                'La casa es grande.',
-                'sein',
-                1,
-                0,
-                '2025-12-04 17:44:37',
-                NULL
-            );
-            "#,
-                [],
-            )?;
-
-            let schema: SchemaWort =
-                conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
-
-            assert_eq!(schema.id, 1);
-            assert_eq!(schema.gender_id, Some(0));
-            assert_eq!(schema.worte_de, "Haus");
-            assert_eq!(schema.worte_es, "Casa");
-            assert_eq!(schema.plural.as_deref(), Some("Häuser"));
-            assert_eq!(schema.niveau_id, 2);
-            assert_eq!(schema.example_de, "Das Haus ist groß.");
-            assert_eq!(schema.example_es, "La casa es grande.");
-            assert_eq!(schema.verb_aux.as_deref(), Some("sein"));
-            assert_eq!(schema.trennbar, Some(true));
-            assert_eq!(schema.reflexiv, Some(false));
-            assert_eq!(schema.created_at, "2025-12-04 17:44:37");
-            assert_eq!(schema.deleted_at, None);
+            assert_eq!(out.id, 1);
+            assert_eq!(out.gender_id, Some(1));
+            assert_eq!(out.worte_de, "Haus");
+            assert_eq!(out.worte_es, "casa");
+            assert_eq!(out.plural.as_deref(), Some("Häuser"));
+            assert_eq!(out.niveau_id, 2);
+            assert_eq!(out.example_de, "Das Haus ist groß.");
+            assert_eq!(out.example_es, "La casa es grande.");
+            assert_eq!(out.verb_aux, None);
+            assert_eq!(out.trennbar, None);
+            assert_eq!(out.reflexiv, None);
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
             Ok(())
         }
 
         #[test]
-        fn schema_wort_from_sql_with_null_optionals() -> Result<(), DbError> {
-            let conn = setup_db()?;
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-            conn.execute(
-                r#"
-            INSERT INTO wort VALUES (
-                2,
-                NULL,
-                'gehen',
-                'ir',
-                NULL,
-                1,
-                'Ich gehe nach Hause.',
-                'Voy a casa.',
-                NULL,
-                NULL,
-                NULL,
-                '2025-12-04 18:00:00',
-                '2025-12-05 10:00:00'
-            );
-            "#,
-                [],
+            // Verb-like row: verb_aux + booleans Some(...)
+            let mut stmt = conn.prepare(
+                "SELECT
+                    2,                      -- id
+                    NULL,                   -- gender_id
+                    'aufstehen',            -- worte_de
+                    'levantarse',           -- worte_es
+                    NULL,                   -- plural
+                    3,                      -- niveau_id
+                    'Ich stehe um 7 Uhr auf.', -- example_de
+                    'Me levanto a las 7.',   -- example_es
+                    'sein',                 -- verb_aux
+                    1,                      -- trennbar (true)
+                    0,                      -- reflexiv (false)
+                    '2025-12-04 20:00:00',  -- created_at
+                    '2025-12-31 00:00:00';  -- deleted_at
+                ",
             )?;
 
-            let schema: SchemaWort =
-                conn.query_one("SELECT * FROM wort", [], SchemaWort::from_sql)?;
+            let out: SchemaWort = stmt.query_one([], SchemaWort::from_sql)?;
 
-            assert_eq!(schema.id, 2);
-            assert_eq!(schema.gender_id, None);
-            assert_eq!(schema.plural, None);
-            assert_eq!(schema.verb_aux, None);
-            assert_eq!(schema.trennbar, None);
-            assert_eq!(schema.reflexiv, None);
-            assert_eq!(schema.deleted_at.as_deref(), Some("2025-12-05 10:00:00"));
+            assert_eq!(out.id, 2);
+            assert_eq!(out.gender_id, None);
+            assert_eq!(out.worte_de, "aufstehen");
+            assert_eq!(out.worte_es, "levantarse");
+            assert_eq!(out.plural, None);
+            assert_eq!(out.niveau_id, 3);
+            assert_eq!(out.example_de, "Ich stehe um 7 Uhr auf.");
+            assert_eq!(out.example_es, "Me levanto a las 7.");
+            assert_eq!(out.verb_aux.as_deref(), Some("sein"));
+            assert_eq!(out.trennbar, Some(true));
+            assert_eq!(out.reflexiv, Some(false));
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // niveau_id should be INTEGER (i32), but we provide TEXT
+            let mut stmt = conn.prepare(
+                "SELECT
+                    1,
+                    1,
+                    'Haus',
+                    'casa',
+                    'Häuser',
+                    'oops',                 -- niveau_id wrong type
+                    'Das Haus ist groß.',
+                    'La casa es grande.',
+                    NULL,
+                    NULL,
+                    NULL,
+                    '2025-12-04 20:00:00',
+                    NULL;
+                ",
+            )?;
+
+            let out: Result<SchemaWort, _> = stmt.query_one([], SchemaWort::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing (index 12)
+            let mut stmt = conn.prepare(
+                "SELECT
+                    1,
+                    1,
+                    'Haus',
+                    'casa',
+                    'Häuser',
+                    2,
+                    'Das Haus ist groß.',
+                    'La casa es grande.',
+                    NULL,
+                    NULL,
+                    NULL,
+                    '2025-12-04 20:00:00';
+                ",
+            )?;
+
+            let out: Result<SchemaWort, _> = stmt.query_one([], SchemaWort::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
 
             Ok(())
         }

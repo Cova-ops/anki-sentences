@@ -8,6 +8,10 @@ pub struct SchemaGramType {
 }
 
 impl FromSql for SchemaGramType {
+    /// Orden:
+    /// - code
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             code: r.get(0)?,
@@ -16,90 +20,89 @@ impl FromSql for SchemaGramType {
         })
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use crate::helpers::error_handler::DbError;
-
     use super::*;
-    use rusqlite::{Connection, params};
 
-    fn setup_db() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
+    use crate::helpers::error_handler::DbError;
+    use rusqlite::Connection;
 
-        conn.execute(
-            "CREATE TABLE gram_types (
-                code TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                deleted_at TEXT NULL
-            );",
-            [],
-        )?;
+    mod from_sql {
+        use super::*;
 
-        Ok(conn)
-    }
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-    #[test]
-    fn from_sql_reads_row_with_deleted_at_some() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            let mut stmt = conn.prepare("SELECT 'noun_common', '2025-12-04 20:00:00', NULL;")?;
+            let out: SchemaGramType = stmt.query_one([], SchemaGramType::from_sql)?;
 
-        conn.execute(
-            "INSERT INTO gram_types (code, created_at, deleted_at) VALUES (?1, ?2, ?3)",
-            params!["verb_main", "2026-02-05T00:00:00Z", "2026-02-06T00:00:00Z"],
-        )?;
+            assert_eq!(out.code, "noun_common");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
-        let schema: SchemaGramType = conn.query_one(
-            "SELECT code, created_at, deleted_at FROM gram_types LIMIT 1",
-            [],
-            |row| SchemaGramType::from_sql(row),
-        )?;
+            Ok(())
+        }
 
-        assert_eq!(schema.code, "verb_main");
-        assert_eq!(schema.created_at, "2026-02-05T00:00:00Z");
-        assert_eq!(schema.deleted_at.as_deref(), Some("2026-02-06T00:00:00Z"));
+        #[test]
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
-    }
+            let mut stmt = conn.prepare(
+                "SELECT
+                    'verb_main',
+                    '2025-12-04 20:00:00',
+                    '2025-12-31 00:00:00';
+                ",
+            )?;
 
-    #[test]
-    fn from_sql_reads_row_with_deleted_at_null_as_none() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            let out: SchemaGramType = stmt.query_one([], SchemaGramType::from_sql)?;
 
-        conn.execute(
-            "INSERT INTO gram_types (code, created_at, deleted_at) VALUES (?1, ?2, NULL)",
-            params!["verb_main", "2026-02-05T00:00:00Z"],
-        )?;
+            assert_eq!(out.code, "verb_main");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
 
-        let schema: SchemaGramType = conn.query_one(
-            "SELECT code, created_at, deleted_at FROM gram_types LIMIT 1",
-            [],
-            SchemaGramType::from_sql,
-        )?;
+            Ok(())
+        }
 
-        assert_eq!(schema.code, "verb_main");
-        assert_eq!(schema.created_at, "2026-02-05T00:00:00Z");
-        assert_eq!(schema.deleted_at, None);
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
-    }
+            // code should be TEXT but we provide INTEGER
+            let mut stmt = conn.prepare("SELECT 123, '2025-12-04 20:00:00', NULL;")?;
 
-    #[test]
-    fn from_sql_errors_if_query_doesnt_return_all_columns() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            let out: Result<SchemaGramType, _> = stmt.query_one([], SchemaGramType::from_sql);
 
-        conn.execute(
-            "INSERT INTO gram_types (code, created_at, deleted_at) VALUES (?1, ?2, NULL)",
-            params!["verb_main", "2026-02-05T00:00:00Z"],
-        )?;
+            assert!(out.is_err());
+            let err = out.unwrap_err();
 
-        let res: Result<SchemaGramType, _> = conn.query_one(
-            "SELECT code, created_at FROM gram_types LIMIT 1",
-            [],
-            SchemaGramType::from_sql,
-        );
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
 
-        assert!(res.is_err());
+            Ok(())
+        }
 
-        Ok(())
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing
+            let mut stmt = conn.prepare("SELECT 'noun_common', '2025-12-04 20:00:00';")?;
+
+            let out: Result<SchemaGramType, _> = stmt.query_one([], SchemaGramType::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
     }
 }

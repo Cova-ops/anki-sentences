@@ -70,32 +70,32 @@ impl WortRepo {
         let sql = r#"
             INSERT INTO worte
                 (
-                    gender_id
-                    wort_de
-                    wort_es
-                    plural
-                    niveau_id
-                    example_de
-                    example_es
-                    verb_aux
-                    trennbar
+                    gender_id,
+                    wort_de,
+                    wort_es,
+                    plural,
+                    niveau_id,
+                    example_de,
+                    example_es,
+                    verb_aux,
+                    trennbar,
                     reflexiv
                 )
             VALUES
                 (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
             RETURNING
-                id
-                gender_id
-                wort_de
-                wort_es
-                plural
-                niveau_id
-                example_de
-                example_es
-                verb_aux
-                trennbar
-                reflexiv
-                created_at
+                id,
+                gender_id,
+                wort_de,
+                wort_es,
+                plural,
+                niveau_id,
+                example_de,
+                example_es,
+                verb_aux,
+                trennbar,
+                reflexiv,
+                created_at,
                 deleted_at;
         "#;
 

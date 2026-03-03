@@ -240,7 +240,10 @@ mod test_setze_repo {
     }
 
     mod fetch_id_neue_sentences {
-        use crate::db::{schemas::setze_review::InputSetzeReview, setze_review::SetzeReviewRepo};
+        use crate::db::{
+            schemas::{setze_review::InputSetzeReview, wort_review::EnumReviewDirection},
+            setze_review::SetzeReviewRepo,
+        };
 
         use super::*;
 
@@ -260,9 +263,11 @@ mod test_setze_repo {
             let mut conn = init_conn()?;
 
             let res = SetzeRepo::fetch_id_neue_sentences(&conn)?;
+            let data = scenario_setze().initial;
+            let arr_ids: Vec<i32> = (1..=(data.len() as i32)).collect();
 
-            assert_eq!(res.len(), 2);
-            assert_eq!(res, [1, 2]);
+            assert_eq!(res.len(), data.len());
+            assert_eq!(res, arr_ids);
 
             insta::assert_debug_snapshot!(
                 "[Setze::fetch_id_neue_sentences] - valid_modified (1)",
@@ -273,6 +278,7 @@ mod test_setze_repo {
                 &mut conn,
                 &[InputSetzeReview {
                     satz_id: 1,
+                    direction: EnumReviewDirection::ES2DE,
                     repetitions: 1,
                     ease_factor: 2.0,
                     interval: 1,
@@ -283,8 +289,11 @@ mod test_setze_repo {
 
             let res = SetzeRepo::fetch_id_neue_sentences(&conn)?;
 
-            assert_eq!(res.len(), 1);
-            assert_eq!(res, [2]);
+            let data: Vec<InputSetze> = scenario_setze().initial.drain(1..).collect();
+            let arr_ids: Vec<i32> = (2..=(data.len() + 1) as i32).collect();
+
+            assert_eq!(res.len(), data.len());
+            assert_eq!(res, arr_ids);
 
             insta::assert_debug_snapshot!(
                 "[Setze::fetch_id_neue_sentences] - valid_modified (2)",
@@ -318,12 +327,7 @@ mod test_setze_repo {
     mod fetch_id_without_audio {
         use super::*;
 
-        use std::path::PathBuf;
-
-        use crate::{
-            db::{schemas::setze_audio::InputSetzeAudio, setze_audio::SetzeAudioRepo},
-            services::tts::eleven_labs::EnumVoiceIDElevenLabs,
-        };
+        use crate::db::{schemas::setze_audio::InputSetzeAudio, setze_audio::SetzeAudioRepo};
 
         fn init_conn() -> Result<Connection, DbError> {
             let mut conn = Connection::open_in_memory()?;
@@ -340,9 +344,14 @@ mod test_setze_repo {
         fn valid_modified() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
+            let data: Vec<InputSetze> = scenario_setze().initial;
             let res = SetzeRepo::fetch_id_without_audio(&conn)?;
-            assert_eq!(res.len(), 2);
-            assert_eq!(res, [1, 2]);
+
+            assert_eq!(res.len(), data.len());
+
+            let data: Vec<i32> = (1..=data.len()).map(|d| d as i32).collect();
+
+            assert_eq!(res, data);
 
             insta::assert_debug_snapshot!(
                 "[Setze::fetch_setze_without_audio] - valid_modified (1)",
@@ -353,14 +362,18 @@ mod test_setze_repo {
                 &mut conn,
                 &[InputSetzeAudio {
                     satz_id: 1,
-                    voice: EnumVoiceIDElevenLabs::GermanMan,
-                    file_path: PathBuf::from("abc"),
+                    audio_name_es: Some(format!("audio_es_test")),
+                    audio_name_de: None,
                 }],
             )?;
 
             let res = SetzeRepo::fetch_id_without_audio(&conn)?;
-            assert_eq!(res.len(), 1);
-            assert_eq!(res, [2]);
+
+            let data: Vec<InputSetze> = scenario_setze().initial;
+            assert_eq!(res.len(), data.len() - 1);
+
+            let data: Vec<i32> = (2..=data.len()).map(|d| d as i32).collect();
+            assert_eq!(res, data);
 
             insta::assert_debug_snapshot!(
                 "[Setze::fetch_id_neue_sentences] - valid_modified (2)",

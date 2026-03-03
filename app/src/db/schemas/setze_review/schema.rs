@@ -2,10 +2,10 @@ use crate::db::traits::FromSql;
 
 #[derive(Debug)]
 pub struct SchemaSetzeReview {
-    pub id: i32,
     pub satz_id: i32,
+    pub direction: String,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: String,
     pub next_review: String,
@@ -16,10 +16,20 @@ pub struct SchemaSetzeReview {
 }
 
 impl FromSql for SchemaSetzeReview {
+    /// Orden:
+    /// - satz_id
+    /// - direction
+    /// - interval
+    /// - ease_factor
+    /// - repetitions
+    /// - last_review
+    /// - next_review
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
-            id: r.get(0)?,
-            satz_id: r.get(1)?,
+            satz_id: r.get(0)?,
+            direction: r.get(1)?,
             interval: r.get(2)?,
             ease_factor: r.get(3)?,
             repetitions: r.get(4)?,
@@ -30,136 +40,104 @@ impl FromSql for SchemaSetzeReview {
         })
     }
 }
-
 #[cfg(test)]
-mod tests_schema_setze_review {
+mod tests {
+    use super::*;
+
+    use crate::helpers::error_handler::DbError;
     use rusqlite::Connection;
 
-    use crate::{
-        db::{schemas::setze_review::SchemaSetzeReview, traits::FromSql},
-        helpers::error_handler::DbError,
-    };
+    mod from_sql {
+        use super::*;
 
-    fn setup_db() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        conn.execute(
-            r#"
-            CREATE TABLE setze_review (
-                id INTEGER,
-                satz_id INTEGER,
-                interval INTEGER,
-                ease_factor REAL,
-                repetitions INTEGER,
-                last_review TEXT,
-                next_review TEXT,
-                created_at TEXT,
-                deleted_at TEXT
-            );
-            "#,
-            [],
-        )?;
+            let mut stmt = conn.prepare(
+                "SELECT 10, 'es_to_de', 3, 2.5, 7, '2025-12-04 20:00:00', '2025-12-10 20:00:00', '2025-12-04 20:00:00', NULL;",
+            )?;
 
-        conn.execute(
-            r#"
-            INSERT INTO setze_review VALUES (
-                1,
-                42,
-                3,
-                2.5,
-                7,
-                '2025-01-01 10:00:00',
-                '2025-01-04 10:00:00',
-                '2025-01-01 09:00:00',
-                NULL
-            );
-            "#,
-            [],
-        )?;
+            let out: SchemaSetzeReview = stmt.query_one([], SchemaSetzeReview::from_sql)?;
 
-        Ok(conn)
-    }
+            assert_eq!(out.satz_id, 10);
+            assert_eq!(out.direction, "es_to_de");
+            assert_eq!(out.interval, 3);
+            assert!((out.ease_factor - 2.5).abs() < f64::EPSILON);
+            assert_eq!(out.repetitions, 7);
+            assert_eq!(out.last_review, "2025-12-04 20:00:00");
+            assert_eq!(out.next_review, "2025-12-10 20:00:00");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
-    #[test]
-    fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            Ok(())
+        }
 
-        let sql = r#"
-            SELECT
-                id,
-                satz_id,
-                interval,
-                ease_factor,
-                repetitions,
-                last_review,
-                next_review,
-                created_at,
-                deleted_at
-            FROM setze_review
-        "#;
+        #[test]
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        let schema: SchemaSetzeReview = conn.query_one(sql, [], SchemaSetzeReview::from_sql)?;
+            let mut stmt = conn.prepare(
+                "SELECT 11, 'es_to_de', 1, 2.3, 1, '2025-12-04 20:00:00', '2025-12-05 20:00:00', '2025-12-04 20:00:00', '2025-12-31 00:00:00';",
+            )?;
 
-        assert_eq!(schema.id, 1);
-        assert_eq!(schema.satz_id, 42);
-        assert_eq!(schema.interval, 3);
-        assert_eq!(schema.ease_factor, 2.5);
-        assert_eq!(schema.repetitions, 7);
-        assert_eq!(schema.last_review, "2025-01-01 10:00:00");
-        assert_eq!(schema.next_review, "2025-01-04 10:00:00");
-        assert_eq!(schema.created_at, "2025-01-01 09:00:00");
-        assert_eq!(schema.deleted_at, None);
+            let out: SchemaSetzeReview = stmt.query_one([], SchemaSetzeReview::from_sql)?;
 
-        Ok(())
-    }
+            assert_eq!(out.satz_id, 11);
+            assert_eq!(out.direction, "es_to_de");
+            assert_eq!(out.interval, 1);
+            assert!((out.ease_factor - 2.3).abs() < f64::EPSILON);
+            assert_eq!(out.repetitions, 1);
+            assert_eq!(out.last_review, "2025-12-04 20:00:00");
+            assert_eq!(out.next_review, "2025-12-05 20:00:00");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
 
-    #[test]
-    fn from_sql_handles_deleted_at_present() -> Result<(), DbError> {
-        let conn = Connection::open_in_memory()?;
+            Ok(())
+        }
 
-        conn.execute(
-            r#"
-            CREATE TABLE setze_review (
-                id INTEGER,
-                satz_id INTEGER,
-                interval INTEGER,
-                ease_factor REAL,
-                repetitions INTEGER,
-                last_review TEXT,
-                next_review TEXT,
-                created_at TEXT,
-                deleted_at TEXT
-            );
-            "#,
-            [],
-        )?;
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        conn.execute(
-            r#"
-            INSERT INTO setze_review VALUES (
-                2,
-                99,
-                1,
-                1.8,
-                0,
-                '2025-02-01 12:00:00',
-                '2025-02-02 12:00:00',
-                '2025-02-01 11:00:00',
-                '2025-02-10 00:00:00'
-            );
-            "#,
-            [],
-        )?;
+            // interval should be INTEGER (u32), but we provide TEXT
+            let mut stmt = conn.prepare(
+                "SELECT 10, 'es_to_de', 'oops', 2.5, 7, '2025-12-04 20:00:00', '2025-12-10 20:00:00', '2025-12-04 20:00:00', NULL;"
+            )?;
 
-        let schema: SchemaSetzeReview = conn.query_one(
-            "SELECT * FROM setze_review",
-            [],
-            SchemaSetzeReview::from_sql,
-        )?;
+            let out: Result<SchemaSetzeReview, _> = stmt.query_one([], SchemaSetzeReview::from_sql);
 
-        assert_eq!(schema.id, 2);
-        assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-10 00:00:00"));
+            assert!(out.is_err());
+            let err = out.unwrap_err();
 
-        Ok(())
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing (index 8)
+            let mut stmt = conn.prepare(
+                "SELECT 10, 'es_to_de', 3, 2.5, 7, '2025-12-04 20:00:00', '2025-12-10 20:00:00', '2025-12-04 20:00:00';",
+            )?;
+
+            let out: Result<SchemaSetzeReview, _> = stmt.query_one([], SchemaSetzeReview::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
     }
 }

@@ -1,0 +1,24 @@
+---
+source: app/src/db/repositories/setze_audio/setze_audio_test.rs
+expression: res
+---
+[
+    SnapshotSetzeAudio {
+        satz_id: 1,
+        audio_name_es: None,
+        audio_name_de: Some(
+            "audio_de_1",
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotSetzeAudio {
+        satz_id: 2,
+        audio_name_es: Some(
+            "audio_es_2",
+        ),
+        audio_name_de: None,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

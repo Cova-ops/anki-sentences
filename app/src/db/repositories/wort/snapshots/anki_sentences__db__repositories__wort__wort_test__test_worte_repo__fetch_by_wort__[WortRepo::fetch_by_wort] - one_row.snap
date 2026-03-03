@@ -1,0 +1,31 @@
+---
+source: app/src/db/repositories/wort/wort_test.rs
+expression: ss
+---
+[
+    SnapshotWort {
+        id: 1,
+        gram_type: [
+            AdverbSentenceConnector,
+            ConjunctionCoordinating,
+        ],
+        gender: None,
+        worte_de: "weitergehen",
+        worte_es: "seguir",
+        plural: None,
+        niveau: A2,
+        example_de: "Wir gehen weiter, bis wir zu Hause sind.",
+        example_es: "Seguimos hasta llegar a casa.",
+        verb_aux: Some(
+            "sein",
+        ),
+        trennbar: Some(
+            true,
+        ),
+        reflexiv: Some(
+            false,
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

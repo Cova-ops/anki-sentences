@@ -10,6 +10,11 @@ pub struct SchemaWortGramType {
 }
 
 impl FromSql for SchemaWortGramType {
+    /// Orden:
+    /// - id_worte
+    /// - id_gram_type
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id_worte: r.get(0)?,
@@ -22,108 +27,88 @@ impl FromSql for SchemaWortGramType {
 }
 
 #[cfg(test)]
-mod tests_schema_wort_gram_type_from_sql {
+mod tests {
     use super::*;
 
     use crate::helpers::error_handler::DbError;
-    use rusqlite::{Connection, params};
+    use rusqlite::Connection;
 
-    fn setup_conn() -> Result<Connection, DbError> {
-        Ok(Connection::open_in_memory()?)
-    }
+    mod from_sql {
+        use super::*;
 
-    #[test]
-    fn from_sql_ok_with_null_deleted_at() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        let out: SchemaWortGramType = conn.query_one(
-            r#"
-            SELECT
-                ?1 as id_worte,
-                ?2 as id_gram_type,
-                ?3 as created_at,
-                NULL as deleted_at
-            "#,
-            params![10i32, 4i32, "2025-12-01 00:00:00"],
-            SchemaWortGramType::from_sql,
-        )?;
+            let mut stmt = conn.prepare("SELECT 10, 3, '2025-12-04 20:00:00', NULL;")?;
 
-        assert_eq!(out.id_worte, 10);
-        assert_eq!(out.id_gram_type, 4);
-        assert_eq!(out.created_at, "2025-12-01 00:00:00");
-        assert_eq!(out.deleted_at, None);
+            let out: SchemaWortGramType = stmt.query_one([], SchemaWortGramType::from_sql)?;
 
-        Ok(())
-    }
+            assert_eq!(out.id_worte, 10);
+            assert_eq!(out.id_gram_type, 3);
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
-    #[test]
-    fn from_sql_ok_with_deleted_at() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+            Ok(())
+        }
 
-        let out: SchemaWortGramType = conn.query_one(
-            r#"
-            SELECT
-                ?1 as id_worte,
-                ?2 as id_gram_type,
-                ?3 as created_at,
-                ?4 as deleted_at
-            "#,
-            params![99i32, 12i32, "2025-12-01 00:00:00", "2025-12-31 23:59:59"],
-            SchemaWortGramType::from_sql,
-        )?;
+        #[test]
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        assert_eq!(out.id_worte, 99);
-        assert_eq!(out.id_gram_type, 12);
-        assert_eq!(out.created_at, "2025-12-01 00:00:00");
-        assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 23:59:59"));
+            let mut stmt =
+                conn.prepare("SELECT 11, 4, '2025-12-04 20:00:00', '2025-12-31 00:00:00';")?;
 
-        Ok(())
-    }
+            let out: SchemaWortGramType = stmt.query_one([], SchemaWortGramType::from_sql)?;
 
-    #[test]
-    fn from_sql_err_when_missing_column() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+            assert_eq!(out.id_worte, 11);
+            assert_eq!(out.id_gram_type, 4);
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
 
-        // deleted_at no existe (solo 3 columnas)
-        let res: Result<SchemaWortGramType, DbError> = conn
-            .query_one(
-                r#"
-            SELECT
-                ?1 as id_worte,
-                ?2 as id_gram_type,
-                ?3 as created_at
-            "#,
-                params![1i32, 2i32, "2025-12-01 00:00:00"],
-                SchemaWortGramType::from_sql,
-            )
-            .map_err(Into::into);
+            Ok(())
+        }
 
-        assert!(res.is_err(), "should fail due to missing column index 3");
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
-    }
+            // id_worte should be INTEGER but we provide TEXT
+            let mut stmt = conn.prepare("SELECT 'wrong', 3, '2025-12-04 20:00:00', NULL;")?;
 
-    #[test]
-    fn from_sql_err_when_type_mismatch() -> Result<(), DbError> {
-        let conn = setup_conn()?;
+            let out: Result<SchemaWortGramType, _> =
+                stmt.query_one([], SchemaWortGramType::from_sql);
 
-        // id_worte viene como TEXT => r.get::<_, i32>(0) debe fallar
-        let res: Result<SchemaWortGramType, DbError> = conn
-            .query_one(
-                r#"
-            SELECT
-                'not-an-int' as id_worte,
-                ?1 as id_gram_type,
-                ?2 as created_at,
-                NULL as deleted_at
-            "#,
-                params![2i32, "2025-12-01 00:00:00"],
-                SchemaWortGramType::from_sql,
-            )
-            .map_err(Into::into);
+            assert!(out.is_err());
+            let err = out.unwrap_err();
 
-        assert!(res.is_err(), "should fail due to i32 conversion");
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
 
-        Ok(())
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing
+            let mut stmt = conn.prepare("SELECT 10, 3, '2025-12-04 20:00:00';")?;
+
+            let out: Result<SchemaWortGramType, _> =
+                stmt.query_one([], SchemaWortGramType::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
     }
 }

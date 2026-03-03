@@ -1,0 +1,26 @@
+---
+source: app/src/db/repositories/wort_gender/wort_gender_test.rs
+expression: snapshot
+---
+[
+    SnapshotWortGender {
+        gender: Maskuline,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortGender {
+        gender: Femenin,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortGender {
+        gender: Neutrum,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortGender {
+        gender: Plural,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

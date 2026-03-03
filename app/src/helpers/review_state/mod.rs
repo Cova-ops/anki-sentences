@@ -6,7 +6,7 @@ mod review_state_test;
 #[derive(Debug, Clone)]
 pub struct ReviewState {
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
 }
 
@@ -19,7 +19,7 @@ impl ReviewState {
         }
     }
 
-    pub fn from(interval: u32, ease_factor: f32, repetitions: u32) -> Self {
+    pub fn from(interval: u32, ease_factor: f64, repetitions: u32) -> Self {
         Self {
             interval: interval.max(1),
             ease_factor: ease_factor.max(1.3),
@@ -44,11 +44,11 @@ impl ReviewState {
         } else if self.repetitions == 3 {
             self.interval = 4;
         } else {
-            self.interval = (self.interval as f32 * self.ease_factor).round() as u32;
+            self.interval = (self.interval as f64 * self.ease_factor).round() as u32;
         }
 
         let ef = self.ease_factor
-            + (0.1 - (3.0 - quality as f32) * (0.08 + (3.0 - quality as f32) * 0.02));
+            + (0.1 - (3.0 - quality as f64) * (0.08 + (3.0 - quality as f64) * 0.02));
 
         self.ease_factor = ef.max(1.3);
 

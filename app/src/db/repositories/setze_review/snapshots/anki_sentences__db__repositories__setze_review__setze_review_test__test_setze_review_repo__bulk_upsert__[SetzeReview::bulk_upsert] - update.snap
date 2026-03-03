@@ -1,0 +1,28 @@
+---
+source: app/src/db/repositories/setze_review/setze_review_test.rs
+expression: snapshot
+---
+[
+    SnapshotSetzeReview {
+        satz_id: 1,
+        direction: DE2ES,
+        interval: 2,
+        ease_factor: 1.4,
+        repetitions: 100,
+        last_review: 2036-01-02T20:00:00Z,
+        next_review: 2037-01-02T20:00:00Z,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotSetzeReview {
+        satz_id: 2,
+        direction: ES2DE,
+        interval: 3,
+        ease_factor: 2.0,
+        repetitions: 200,
+        last_review: 2036-12-02T20:00:00Z,
+        next_review: 2037-12-02T20:00:00Z,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

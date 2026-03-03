@@ -12,6 +12,12 @@ pub struct SchemaWortAudio {
 }
 
 impl FromSql for SchemaWortAudio {
+    /// Orden:
+    /// - wort_id
+    /// - audio_name_es
+    /// - audio_name_de
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             wort_id: r.get(0)?,
@@ -22,112 +28,90 @@ impl FromSql for SchemaWortAudio {
         })
     }
 }
-
 #[cfg(test)]
 mod tests {
-    use crate::helpers::error_handler::DbError;
-
     use super::*;
+
+    use crate::helpers::error_handler::DbError;
     use rusqlite::Connection;
 
-    fn setup_db() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
+    mod from_sql {
+        use super::*;
 
-        conn.execute(
-            r#"
-            CREATE TABLE worte_audio (
-                wort_id INTEGER NOT NULL,
-                audio_name_es TEXT,
-                audio_name_de TEXT,
-                created_at TEXT NOT NULL,
-                deleted_at TEXT
-            );
-            "#,
-            [],
-        )?;
+        #[test]
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(conn)
-    }
+            let mut stmt =
+                conn.prepare("SELECT 5, 'casa.mp3', NULL, '2025-12-04 20:00:00', NULL; ")?;
 
-    #[test]
-    fn from_sql_ok_with_all_fields() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            let out: SchemaWortAudio = stmt.query_one([], SchemaWortAudio::from_sql)?;
 
-        conn.execute(
-            r#"
-            INSERT INTO worte_audio (
-                wort_id,
-                audio_name_es,
-                audio_name_de,
-                created_at,
-                deleted_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5);
-            "#,
-            (
-                10,
-                Some("audio_es.mp3"),
-                Some("audio_de.mp3"),
-                "2025-01-01 10:00:00",
-                Some("2025-01-02 10:00:00"),
-            ),
-        )?;
+            assert_eq!(out.wort_id, 5);
+            assert_eq!(out.audio_name_es.as_deref(), Some("casa.mp3"));
+            assert_eq!(out.audio_name_de, None);
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
-        let schema: SchemaWortAudio = conn.query_one(
-            r#"
-            SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
-            FROM worte_audio
-            "#,
-            [],
-            SchemaWortAudio::from_sql,
-        )?;
+            Ok(())
+        }
 
-        assert_eq!(schema.wort_id, 10);
-        assert_eq!(schema.audio_name_es.as_deref(), Some("audio_es.mp3"));
-        assert_eq!(schema.audio_name_de.as_deref(), Some("audio_de.mp3"));
-        assert_eq!(schema.created_at, "2025-01-01 10:00:00".to_string());
-        assert_eq!(schema.deleted_at.as_deref(), Some("2025-01-02 10:00:00"));
+        #[test]
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
-    }
+            let mut stmt = conn.prepare("SELECT 6, 'haus_es.mp3', 'haus_de.mp3', '2025-12-04 20:00:00', '2025-12-31 00:00:00';")?;
 
-    #[test]
-    fn from_sql_ok_with_null_optionals() -> Result<(), DbError> {
-        let conn = setup_db()?;
+            let out: SchemaWortAudio = stmt.query_one([], SchemaWortAudio::from_sql)?;
 
-        conn.execute(
-            r#"
-            INSERT INTO worte_audio (
-                wort_id,
-                audio_name_es,
-                audio_name_de,
-                created_at,
-                deleted_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5);
-            "#,
-            (
-                5,
-                None::<String>,
-                None::<String>,
-                "2025-01-01 12:00:00",
-                None::<String>,
-            ),
-        )?;
+            assert_eq!(out.wort_id, 6);
+            assert_eq!(out.audio_name_es.as_deref(), Some("haus_es.mp3"));
+            assert_eq!(out.audio_name_de.as_deref(), Some("haus_de.mp3"));
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
 
-        let schema: SchemaWortAudio = conn.query_one(
-            r#"
-            SELECT wort_id, audio_name_es, audio_name_de, created_at, deleted_at
-            FROM worte_audio
-            "#,
-            [],
-            SchemaWortAudio::from_sql,
-        )?;
+            Ok(())
+        }
 
-        assert_eq!(schema.wort_id, 5);
-        assert_eq!(schema.audio_name_es, None);
-        assert_eq!(schema.audio_name_de, None);
-        assert_eq!(schema.created_at, "2025-01-01 12:00:00".to_string());
-        assert_eq!(schema.deleted_at, None);
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-        Ok(())
+            // wort_id should be INTEGER but we provide TEXT
+            let mut stmt =
+                conn.prepare("SELECT 'wrong', 'casa.mp3', NULL, '2025-12-04 20:00:00', NULL;")?;
+
+            let out: Result<SchemaWortAudio, _> = stmt.query_one([], SchemaWortAudio::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing
+            let mut stmt = conn.prepare("SELECT 5, 'casa.mp3', NULL, '2025-12-04 20:00:00';")?;
+
+            let out: Result<SchemaWortAudio, _> = stmt.query_one([], SchemaWortAudio::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
     }
 }

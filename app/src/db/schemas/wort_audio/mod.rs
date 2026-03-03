@@ -11,8 +11,8 @@ pub use snapshot::*;
 pub const CREATE_STR_TABLE_WORTE_AUDIO: &str = "
 CREATE TABLE IF NOT EXISTS worte_audio(
     wort_id         INTEGER PRIMARY KEY,
-    audio_name_es   TEXT NOT NULL,
-    audio_name_de   TEXT NOT NULL,
+    audio_name_es   TEXT,
+    audio_name_de   TEXT,
 
     -- Generic
     created_at          TEXT DEFAULT CURRENT_TIMESTAMP,

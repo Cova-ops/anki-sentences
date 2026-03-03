@@ -7,6 +7,7 @@ use crate::{
         schemas::{
             setze_audio::ModelSetzeAudio,
             setze_review::{InputSetzeReview, ModelSetzeReview},
+            wort_review::EnumReviewDirection,
         },
         setze::SetzeRepo,
         setze_audio::SetzeAudioRepo,
@@ -91,6 +92,7 @@ pub fn run(
         let next = review_state.next_review_date_from(now);
         vec_new_setze_review.push(InputSetzeReview {
             satz_id,
+            direction: EnumReviewDirection::ES2DE,
             interval: review_state.interval,
             ease_factor: review_state.ease_factor,
             repetitions: review_state.repetitions,

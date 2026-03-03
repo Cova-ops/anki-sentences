@@ -41,8 +41,8 @@ impl FromStr for EnumReviewDirection {
             "de_to_es" => Ok(EnumReviewDirection::DE2ES),
 
             _ => Err(InvalidValueError {
-                field: "ReviewDirection",
-                message: format!("{s} is not a ReviewDirection valid"),
+                field: "EnumReviewDirection",
+                message: format!("{s} is not a EnumReviewDirection valid"),
                 valid_options: Some(Self::get_all_str()),
             }),
         }

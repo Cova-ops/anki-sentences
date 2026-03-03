@@ -175,7 +175,7 @@ mod tests_enum_worte_gender {
         let err = EnumWortGender::from_str("nope").unwrap_err();
 
         // Ajusta esto si cambiaste el field/message en tu InvalidValueError.
-        assert_eq!(err.field, "GramType");
+        assert_eq!(err.field, "WortGender");
         assert!(err.message.contains("nope"));
 
         assert!(err.valid_options.is_some());
@@ -184,10 +184,10 @@ mod tests_enum_worte_gender {
 
         // Si tu get_all_codes() devuelve ["maskuline","femenin","neutrum","plural"], valida eso:
         // (Si devuelve otra cosa, ajusta estas aserciones)
-        assert!(opts.iter().any(|s| *s == "maskuline"));
-        assert!(opts.iter().any(|s| *s == "femenin"));
-        assert!(opts.iter().any(|s| *s == "neutrum"));
-        assert!(opts.iter().any(|s| *s == "plural"));
+        assert!(opts.iter().any(|s| *s == "Maskuline"));
+        assert!(opts.iter().any(|s| *s == "Femenin"));
+        assert!(opts.iter().any(|s| *s == "Neutrum"));
+        assert!(opts.iter().any(|s| *s == "Plural"));
     }
 
     #[test]

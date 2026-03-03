@@ -144,12 +144,9 @@ mod test_worte_repo {
             let data = scenario_wort().update_id;
             let res = WortRepo::bulk_update(&mut conn, &data)?;
 
-            let data_without_id: Vec<_> = scenario_wort()
-                .update_id
-                .iter()
-                .cloned()
-                .map(|d| d.1)
-                .collect();
+            let data_without_id: Vec<_> =
+                scenario_wort().update_id.into_iter().map(|d| d.1).collect();
+
             assert_iter(&res, &data_without_id);
 
             let ss: Vec<SnapshotWort> = res.into_iter().map(Into::into).collect();
@@ -520,7 +517,8 @@ mod test_worte_repo {
             // This verifies DbError::with_sql(sql) is attaching the SQL.
             let mut conn = Connection::open_in_memory().unwrap();
 
-            let err = WortRepo::fetch_by_wort(&mut conn, &[]).unwrap_err();
+            let err =
+                WortRepo::fetch_by_wort(&mut conn, &[(format!("a"), format!("b"))]).unwrap_err();
 
             assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
             assert!(

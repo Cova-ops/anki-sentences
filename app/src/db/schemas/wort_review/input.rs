@@ -13,7 +13,7 @@ pub struct SqlWortReview {
     pub wort_id: i32,
     pub direction: String,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: String,
     pub next_review: String,
@@ -24,7 +24,7 @@ pub struct InputWortReview {
     pub wort_id: i32,
     pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -103,7 +103,7 @@ mod tests_sql_wort_review {
                 EnumReviewDirection::ES2DE.as_str().to_string()
             );
             assert_eq!(sql.interval, 7);
-            assert!((sql.ease_factor - 2.45).abs() < f32::EPSILON);
+            assert!((sql.ease_factor - 2.45).abs() < f64::EPSILON);
             assert_eq!(sql.repetitions, 3);
 
             assert_eq!(sql.last_review, datetime_2_string(dt1()));

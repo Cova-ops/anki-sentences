@@ -166,7 +166,7 @@ mod tests_snapshot_wort {
         fn happy_path() {
             let schema = SchemaWort {
                 id: 1,
-                gender_id: Some(1),
+                gender_id: Some(1), // Femenin
                 worte_de: "Hund".into(),
                 worte_es: "Perro".into(),
                 plural: Some("Hunde".into()),
@@ -184,7 +184,7 @@ mod tests_snapshot_wort {
 
             assert_eq!(snap.id, 1);
             assert_eq!(snap.gram_type, vec![]);
-            assert_eq!(snap.gender, Some(EnumWortGender::Maskuline));
+            assert_eq!(snap.gender, Some(EnumWortGender::Femenin));
             assert_eq!(snap.worte_de, "Hund");
             assert_eq!(snap.worte_es, "Perro");
             assert_eq!(snap.plural.as_deref(), Some("Hunde"));

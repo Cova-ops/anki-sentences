@@ -14,6 +14,14 @@ pub struct SchemaSetze {
 }
 
 impl FromSql for SchemaSetze {
+    /// Orden:
+    /// - id
+    /// - setze_spanisch
+    /// - setze_deutsch
+    /// - niveau_id
+    /// - thema
+    /// - created_at
+    /// - deleted_at
     fn from_sql(r: &rusqlite::Row<'_>) -> Result<Self, rusqlite::Error> {
         Ok(Self {
             id: r.get(0)?,
@@ -26,111 +34,98 @@ impl FromSql for SchemaSetze {
         })
     }
 }
-
 #[cfg(test)]
-mod tests_schema_setze {
-    use rusqlite::{Connection, params};
+mod tests {
+    use super::*;
 
     use crate::helpers::error_handler::DbError;
-
-    fn setup_conn() -> Result<Connection, DbError> {
-        let conn = Connection::open_in_memory()?;
-
-        conn.execute(
-            r#"
-            CREATE TABLE setze (
-                id INTEGER,
-                setze_spanisch TEXT,
-                setze_deutsch TEXT,
-                niveau_id INTEGER,
-                thema TEXT,
-                created_at TEXT,
-                deleted_at TEXT
-            );
-            "#,
-            [],
-        )?;
-
-        Ok(conn)
-    }
+    use rusqlite::Connection;
 
     mod from_sql {
-        use crate::db::{schemas::setze::SchemaSetze, traits::FromSql};
-
         use super::*;
 
         #[test]
-        fn from_sql_maps_all_fields_correctly() -> Result<(), DbError> {
-            let conn = setup_conn()?;
+        fn ok_with_null_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-            conn.execute(
-                r#"
-            INSERT INTO setze (
-                id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-            "#,
-                params![
-                    1,
-                    "Estoy aprendiendo alemán.",
-                    "Ich lerne Deutsch.",
-                    2,
-                    "learning",
-                    "2025-01-01 10:00:00",
-                    Option::<String>::None
-                ],
+            let mut stmt = conn.prepare(
+                "SELECT 1, 'Hola mundo', 'Hallo Welt', 2, 'saludos', '2025-12-04 20:00:00', NULL;",
             )?;
 
-            let sql = r#"
-            SELECT
-                id,
-                setze_spanisch,
-                setze_deutsch,
-                niveau_id,
-                thema,
-                created_at,
-                deleted_at
-            FROM setze
-        "#;
+            let out: SchemaSetze = stmt.query_one([], SchemaSetze::from_sql)?;
 
-            let schema: SchemaSetze = conn.query_one(sql, [], SchemaSetze::from_sql)?;
-
-            assert_eq!(schema.id, 1);
-            assert_eq!(schema.setze_spanisch, "Estoy aprendiendo alemán.");
-            assert_eq!(schema.setze_deutsch, "Ich lerne Deutsch.");
-            assert_eq!(schema.niveau_id, 2);
-            assert_eq!(schema.thema, "learning");
-            assert_eq!(schema.created_at, "2025-01-01 10:00:00");
-            assert_eq!(schema.deleted_at, None);
+            assert_eq!(out.id, 1);
+            assert_eq!(out.setze_spanisch, "Hola mundo");
+            assert_eq!(out.setze_deutsch, "Hallo Welt");
+            assert_eq!(out.niveau_id, 2);
+            assert_eq!(out.thema, "saludos");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at, None);
 
             Ok(())
         }
 
         #[test]
-        fn from_sql_with_deleted_at() -> Result<(), DbError> {
-            let conn = setup_conn()?;
+        fn ok_with_some_deleted_at() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
 
-            conn.execute(
-                r#"
-            INSERT INTO setze (
-                id, setze_spanisch, setze_deutsch, niveau_id, thema, created_at, deleted_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-            "#,
-                params![
-                    2,
-                    "Ella trabaja aquí.",
-                    "Sie arbeitet hier.",
-                    3,
-                    "work",
-                    "2025-01-02 12:00:00",
-                    "2025-02-01 00:00:00"
-                ],
+            let mut stmt = conn.prepare(
+                "SELECT 2, '¿Cómo estás?', 'Wie geht es dir?', 3, 'conversación', '2025-12-04 20:00:00', '2025-12-31 00:00:00';"
             )?;
 
-            let schema: SchemaSetze =
-                conn.query_one("SELECT * FROM setze", [], SchemaSetze::from_sql)?;
+            let out: SchemaSetze = stmt.query_one([], SchemaSetze::from_sql)?;
 
-            assert_eq!(schema.id, 2);
-            assert_eq!(schema.deleted_at.as_deref(), Some("2025-02-01 00:00:00"));
+            assert_eq!(out.id, 2);
+            assert_eq!(out.setze_spanisch, "¿Cómo estás?");
+            assert_eq!(out.setze_deutsch, "Wie geht es dir?");
+            assert_eq!(out.niveau_id, 3);
+            assert_eq!(out.thema, "conversación");
+            assert_eq!(out.created_at, "2025-12-04 20:00:00");
+            assert_eq!(out.deleted_at.as_deref(), Some("2025-12-31 00:00:00"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_type_mismatch() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // id should be INTEGER but we provide TEXT
+            let mut stmt = conn.prepare(
+                "SELECT 'oops', 'Hola', 'Hallo', 2, 'tema', '2025-12-04 20:00:00', NULL;",
+            )?;
+
+            let out: Result<SchemaSetze, _> = stmt.query_one([], SchemaSetze::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnType(_, _, _) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn err_missing_column() -> Result<(), DbError> {
+            let conn = Connection::open_in_memory()?;
+
+            // deleted_at column missing
+            let mut stmt = conn.prepare(
+                "SELECT 1, 'Hola mundo', 'Hallo Welt', 2, 'saludos', '2025-12-04 20:00:00';",
+            )?;
+
+            let out: Result<SchemaSetze, _> = stmt.query_one([], SchemaSetze::from_sql);
+
+            assert!(out.is_err());
+            let err = out.unwrap_err();
+
+            match err {
+                rusqlite::Error::InvalidColumnIndex(_) => {}
+                other => panic!("Unexpected error: {other:?}"),
+            }
 
             Ok(())
         }

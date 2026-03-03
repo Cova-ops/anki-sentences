@@ -1,17 +1,18 @@
+use std::str::FromStr;
+
 use chrono::{DateTime, Utc};
 
 use crate::{
-    db::schemas::setze_review::SchemaSetzeReview,
+    db::schemas::{setze_review::SchemaSetzeReview, wort_review::EnumReviewDirection},
     helpers::{error_handler::InvalidValueError, time::string_2_datetime},
 };
 
 #[derive(Debug, Clone)]
 pub struct ModelSetzeReview {
-    pub id: i32,
-
     pub satz_id: i32,
+    pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -27,8 +28,17 @@ impl TryFrom<SchemaSetzeReview> for ModelSetzeReview {
     fn try_from(value: SchemaSetzeReview) -> Result<Self, Self::Error> {
         let mut errs: Vec<_> = vec![];
 
-        let id = value.id;
         let satz_id = value.satz_id;
+
+        let direction: Option<EnumReviewDirection> =
+            match EnumReviewDirection::from_str(&value.direction) {
+                Ok(v) => Some(v),
+                Err(e) => {
+                    errs.push(e);
+                    None
+                }
+            };
+
         let interval = value.interval;
         let ease_factor = value.ease_factor;
         let repetitions = value.repetitions;
@@ -74,8 +84,8 @@ impl TryFrom<SchemaSetzeReview> for ModelSetzeReview {
         }
 
         Ok(Self {
-            id,
             satz_id,
+            direction: direction.unwrap(),
             interval,
             ease_factor,
             repetitions,
@@ -112,8 +122,8 @@ mod tests_model_setze_review {
 
     fn schema_ok() -> SchemaSetzeReview {
         SchemaSetzeReview {
-            id: 1,
             satz_id: 10,
+            direction: format!("es_to_de"),
             interval: 3,
             ease_factor: 2.5,
             repetitions: 7,
@@ -129,10 +139,10 @@ mod tests_model_setze_review {
         let raw = schema_ok();
         let model = ModelSetzeReview::try_from(raw).expect("should convert");
 
-        assert_eq!(model.id, 1);
         assert_eq!(model.satz_id, 10);
+        assert_eq!(model.direction, EnumReviewDirection::ES2DE);
         assert_eq!(model.interval, 3);
-        assert!((model.ease_factor - 2.5).abs() < f32::EPSILON);
+        assert!((model.ease_factor - 2.5).abs() < f64::EPSILON);
         assert_eq!(model.repetitions, 7);
 
         assert_eq!(
@@ -185,13 +195,12 @@ mod tests_model_setze_review {
     fn try_from_iter_ok() {
         let a = schema_ok();
         let mut b = schema_ok();
-        b.id = 2;
         b.satz_id = 11;
 
         let res = ModelSetzeReview::try_from_iter([a, b]).expect("should convert");
         assert_eq!(res.len(), 2);
-        assert_eq!(res[0].id, 1);
-        assert_eq!(res[1].id, 2);
+        assert_eq!(res[0].satz_id, 10);
+        assert_eq!(res[1].satz_id, 11);
     }
 
     #[test]
@@ -200,7 +209,7 @@ mod tests_model_setze_review {
         a.last_review = "BAD".to_string();
 
         let mut b = schema_ok();
-        b.id = 2;
+        b.satz_id = 11;
         b.next_review = "BAD".to_string();
         b.created_at = "BAD".to_string();
 

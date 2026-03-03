@@ -8,23 +8,23 @@ use crate::{
 #[derive(Debug)]
 pub struct SqlSetzeAudio {
     pub satz_id: i32,
-    pub file_path: String,
-    pub voice_id: String,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 pub struct InputSetzeAudio {
     pub satz_id: i32,
-    pub file_path: PathBuf,
-    pub voice: EnumVoiceIDElevenLabs,
+    pub audio_name_es: Option<String>,
+    pub audio_name_de: Option<String>,
 }
 
 impl From<InputSetzeAudio> for SqlSetzeAudio {
     fn from(value: InputSetzeAudio) -> Self {
         Self {
             satz_id: value.satz_id,
-            file_path: value.file_path.to_string_lossy().into_owned(),
-            voice_id: value.voice.get_key().to_string(),
+            audio_name_es: value.audio_name_es,
+            audio_name_de: value.audio_name_de,
         }
     }
 }
@@ -32,10 +32,10 @@ impl From<InputSetzeAudio> for SqlSetzeAudio {
 impl SqlInsert for SqlSetzeAudio {
     /// This orden:
     /// - satz_id
-    /// - file_path
-    /// - voice_id
+    /// - audio_name_es
+    /// - audio_name_de
     fn insert_params<'a>(&'a self) -> Vec<&'a dyn rusqlite::ToSql> {
-        vec![&self.satz_id, &self.file_path, &self.voice_id]
+        vec![&self.satz_id, &self.audio_name_es, &self.audio_name_de]
     }
 }
 
@@ -49,37 +49,48 @@ mod tests {
         use super::*;
 
         #[test]
-        fn input_setze_audio_into_sql_setze_audio_maps_fields() {
-            let voice = EnumVoiceIDElevenLabs::GermanMan;
-
+        fn all_some() {
             let input = InputSetzeAudio {
                 satz_id: 42,
-                file_path: PathBuf::from("audios/setze/satz_000042_de.mp3"),
-                voice,
+                audio_name_es: Some("hola_es.mp3".to_string()),
+                audio_name_de: Some("hallo_de.mp3".to_string()),
             };
 
             let sql: SqlSetzeAudio = input.into();
 
             assert_eq!(sql.satz_id, 42);
-            assert_eq!(sql.file_path, "audios/setze/satz_000042_de.mp3");
-            assert_eq!(sql.voice_id, voice.get_key());
+            assert_eq!(sql.audio_name_es, Some("hola_es.mp3".to_string()));
+            assert_eq!(sql.audio_name_de, Some("hallo_de.mp3".to_string()));
         }
 
         #[test]
-        fn input_setze_audio_path_is_string_lossy() {
-            let voice = EnumVoiceIDElevenLabs::SpanishWoman;
-
+        fn one_none() {
             let input = InputSetzeAudio {
                 satz_id: 1,
-                file_path: PathBuf::from("/tmp/áéíóú.mp3"),
-                voice,
+                audio_name_es: Some("solo_es.mp3".to_string()),
+                audio_name_de: None,
             };
 
             let sql: SqlSetzeAudio = input.into();
 
             assert_eq!(sql.satz_id, 1);
-            assert_eq!(sql.file_path, "/tmp/áéíóú.mp3");
-            assert_eq!(sql.voice_id, voice.get_key());
+            assert_eq!(sql.audio_name_es, Some("solo_es.mp3".to_string()));
+            assert_eq!(sql.audio_name_de, None);
+        }
+
+        #[test]
+        fn all_none() {
+            let input = InputSetzeAudio {
+                satz_id: 1,
+                audio_name_es: None,
+                audio_name_de: None,
+            };
+
+            let sql: SqlSetzeAudio = input.into();
+
+            assert_eq!(sql.satz_id, 1);
+            assert_eq!(sql.audio_name_es, None);
+            assert_eq!(sql.audio_name_de, None);
         }
     }
 
@@ -107,36 +118,30 @@ mod tests {
         fn insert_params() {
             let s = SqlSetzeAudio {
                 satz_id: 1,
-                file_path: String::from("tmp"),
-                voice_id: EnumVoiceIDElevenLabs::GermanMan.get_key().to_string(),
+                audio_name_es: Some(String::from("audio_es")),
+                audio_name_de: Some(String::from("audio_de")),
             };
 
             let params = s.insert_params();
 
             assert_eq!(to_value(params[0]), Value::Integer(1));
-            assert_eq!(to_value(params[1]), Value::Text(String::from("tmp")));
-            assert_eq!(
-                to_value(params[2]),
-                Value::Text(EnumVoiceIDElevenLabs::GermanMan.get_key().to_string())
-            );
+            assert_eq!(to_value(params[1]), Value::Text("audio_es".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("audio_de".to_string()));
         }
 
         #[test]
         fn update_params() {
             let s = SqlSetzeAudio {
                 satz_id: 1,
-                file_path: String::from("tmp"),
-                voice_id: EnumVoiceIDElevenLabs::GermanMan.get_key().to_string(),
+                audio_name_es: Some(String::from("audio_es")),
+                audio_name_de: Some(String::from("audio_de")),
             };
 
             let params = s.update_params(&99);
 
             assert_eq!(to_value(params[0]), Value::Integer(1));
-            assert_eq!(to_value(params[1]), Value::Text(String::from("tmp")));
-            assert_eq!(
-                to_value(params[2]),
-                Value::Text(EnumVoiceIDElevenLabs::GermanMan.get_key().to_string())
-            );
+            assert_eq!(to_value(params[1]), Value::Text("audio_es".to_string()));
+            assert_eq!(to_value(params[2]), Value::Text("audio_de".to_string()));
             assert_eq!(to_value(params[3]), Value::Integer(99));
         }
     }

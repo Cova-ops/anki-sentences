@@ -9,12 +9,11 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct ModelWortReview {
-    pub id: i32,
-
     pub wort_id: i32,
+
     pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -30,7 +29,6 @@ impl TryFrom<SchemaWortReview> for ModelWortReview {
     fn try_from(value: SchemaWortReview) -> Result<Self, Self::Error> {
         let mut errs = vec![];
 
-        let id = value.id;
         let wort_id = value.wort_id;
 
         let direction = match EnumReviewDirection::from_str(&value.direction) {
@@ -85,7 +83,6 @@ impl TryFrom<SchemaWortReview> for ModelWortReview {
         }
 
         Ok(Self {
-            id,
             wort_id,
             direction: direction.unwrap(),
             interval,
@@ -123,7 +120,6 @@ mod tests_model_wort_review {
 
     fn ok_schema() -> SchemaWortReview {
         SchemaWortReview {
-            id: 1,
             wort_id: 10,
             direction: "es_to_de".to_string(),
             interval: 3,
@@ -141,11 +137,10 @@ mod tests_model_wort_review {
         let s = ok_schema();
         let m = ModelWortReview::try_from(s).expect("should convert");
 
-        assert_eq!(m.id, 1);
         assert_eq!(m.wort_id, 10);
         assert_eq!(m.direction, EnumReviewDirection::ES2DE);
         assert_eq!(m.interval, 3);
-        assert!((m.ease_factor - 2.5).abs() < f32::EPSILON);
+        assert!((m.ease_factor - 2.5).abs() < f64::EPSILON);
         assert_eq!(m.repetitions, 4);
 
         // sanity: parsed datetimes exist
@@ -174,6 +169,7 @@ mod tests_model_wort_review {
             .iter()
             .find(|e| e.field == "EnumReviewDirection")
             .unwrap();
+
         assert!(e.message.contains("bad_direction"));
         assert_eq!(
             e.valid_options.as_deref(),

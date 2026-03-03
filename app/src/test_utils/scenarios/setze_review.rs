@@ -1,5 +1,6 @@
 use crate::{
-    db::schemas::setze_review::InputSetzeReview, helpers::time::string_2_datetime,
+    db::schemas::{setze_review::InputSetzeReview, wort_review::EnumReviewDirection},
+    helpers::time::string_2_datetime,
     test_utils::scenarios::Scenario,
 };
 
@@ -8,6 +9,7 @@ pub fn scenario_setze_review() -> Scenario<InputSetzeReview> {
         initial: vec![
             InputSetzeReview {
                 satz_id: 1,
+                direction: EnumReviewDirection::ES2DE,
                 interval: 5,
                 ease_factor: 1.3,
                 repetitions: 10,
@@ -16,6 +18,7 @@ pub fn scenario_setze_review() -> Scenario<InputSetzeReview> {
             },
             InputSetzeReview {
                 satz_id: 2,
+                direction: EnumReviewDirection::DE2ES,
                 interval: 1,
                 ease_factor: 2.3,
                 repetitions: 20,
@@ -26,6 +29,7 @@ pub fn scenario_setze_review() -> Scenario<InputSetzeReview> {
         update: vec![
             InputSetzeReview {
                 satz_id: 1,
+                direction: EnumReviewDirection::DE2ES,
                 interval: 2,
                 ease_factor: 1.4,
                 repetitions: 100,
@@ -34,6 +38,7 @@ pub fn scenario_setze_review() -> Scenario<InputSetzeReview> {
             },
             InputSetzeReview {
                 satz_id: 2,
+                direction: EnumReviewDirection::ES2DE,
                 interval: 3,
                 ease_factor: 2.0,
                 repetitions: 200,

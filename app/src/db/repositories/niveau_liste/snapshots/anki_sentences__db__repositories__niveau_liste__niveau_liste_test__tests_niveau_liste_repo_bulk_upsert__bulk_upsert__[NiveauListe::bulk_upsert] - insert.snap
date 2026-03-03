@@ -1,0 +1,36 @@
+---
+source: app/src/db/repositories/niveau_liste/niveau_liste_test.rs
+expression: snapshot
+---
+[
+    SnapshotNiveauListe {
+        niveau: A1,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotNiveauListe {
+        niveau: A2,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotNiveauListe {
+        niveau: B1,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotNiveauListe {
+        niveau: B2,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotNiveauListe {
+        niveau: C1,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotNiveauListe {
+        niveau: C2,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

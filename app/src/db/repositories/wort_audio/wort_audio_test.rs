@@ -5,12 +5,16 @@ mod test_wort_audio_repo {
     use crate::{
         db::{
             init_schemas,
-            schemas::wort_audio::{InputWortAudio, SchemaWortAudio, SnapshotWortAudio},
+            schemas::{
+                wort::InputWort,
+                wort_audio::{InputWortAudio, SchemaWortAudio, SnapshotWortAudio},
+            },
             seeders::init_data,
+            wort::WortRepo,
             wort_audio::WortAudioRepo,
         },
         helpers::{error_handler::DbError, time::string_2_datetime},
-        test_utils::scenarios::scenario_wort_audio,
+        test_utils::scenarios::{scenario_wort, scenario_wort_audio},
     };
 
     fn assert_iter(res: &[SchemaWortAudio], data: &[InputWortAudio]) {
@@ -35,6 +39,9 @@ mod test_wort_audio_repo {
             let mut conn = Connection::open_in_memory()?;
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
+
+            let data: Vec<InputWort> = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             Ok(conn)
         }
@@ -115,6 +122,9 @@ mod test_wort_audio_repo {
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
 
+            let data: Vec<InputWort> = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
+
             let data = scenario_wort_audio().initial;
             WortAudioRepo::bulk_upsert(&mut conn, &data)?;
 
@@ -138,9 +148,15 @@ mod test_wort_audio_repo {
         #[test]
         fn data() -> Result<(), DbError> {
             let mut conn = init_conn()?;
+            let ids_fetch: Vec<i32> = vec![1, 2];
 
-            let data = scenario_wort_audio().initial;
-            let res = WortAudioRepo::fetch_by_id(&mut conn, &[1, 2])?;
+            let data: Vec<InputWortAudio> = scenario_wort_audio()
+                .initial
+                .into_iter()
+                .filter(|f| ids_fetch.contains(&f.wort_id))
+                .collect();
+
+            let res = WortAudioRepo::fetch_by_id(&mut conn, &ids_fetch)?;
 
             assert_iter(&res, &data);
 
@@ -192,6 +208,9 @@ mod test_wort_audio_repo {
             let mut conn = Connection::open_in_memory()?;
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
+
+            let data: Vec<InputWort> = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_audio().initial;
             WortAudioRepo::bulk_upsert(&mut conn, &data)?;
@@ -267,7 +286,7 @@ mod test_wort_audio_repo {
 
         use super::*;
         use crate::{
-            db::views::wort_audio_missing::SnapshotWortAudioMissing,
+            db::views::wort_audio_missing::{SchemaWortAudioMissing, SnapshotWortAudioMissing},
             test_utils::scenarios::scenario_wort,
         };
 
@@ -275,6 +294,9 @@ mod test_wort_audio_repo {
             let mut conn = Connection::open_in_memory()?;
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
+
+            let data: Vec<InputWort> = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             Ok(conn)
         }
@@ -310,7 +332,9 @@ mod test_wort_audio_repo {
             let data = scenario_wort_audio().initial;
             WortAudioRepo::bulk_upsert(&mut conn, &data)?;
 
-            let res = WortAudioRepo::fetch_worte_without_audio(&mut conn)?;
+            let res: Vec<SchemaWortAudioMissing> =
+                WortAudioRepo::fetch_worte_without_audio(&mut conn)?;
+
             let data: Vec<_> = data
                 .into_iter()
                 .filter(|f| f.audio_name_es.is_none() || f.audio_name_de.is_none())
@@ -320,23 +344,39 @@ mod test_wort_audio_repo {
                 .initial
                 .into_iter()
                 .enumerate()
-                .map(|(idx, w)| (idx, w))
+                .map(|(idx, w)| (idx + 1, w)) // AUTOINCREMENT on SQL start on 1
                 .collect();
 
-            assert_eq!(res.len(), data.len());
             for (i, wort_audio) in data.iter().enumerate() {
                 let wort = hash_wort
-                    .remove(&(res[i].id as usize))
-                    .expect("id_wort in scenario_wort_audio, musst exist in scenario_wort");
+                    .get(&(res[i].id as usize))
+                    .expect("This only panic if on scenario_wort_audio live an wort_id that doesn't exists on scenario_wort");
 
-                let wort_es = wort.worte_es;
-                let wort_de = wort.worte_de;
+                let wort_es = wort.worte_es.as_ref();
+                let wort_de = wort.worte_de.as_ref();
 
                 assert_eq!(res[i].wort_es, wort_es);
                 assert_eq!(res[i].wort_de, wort_de);
                 assert_eq!(res[i].audio_name_es, wort_audio.audio_name_es);
                 assert_eq!(res[i].audio_name_de, wort_audio.audio_name_de);
             }
+
+            // We need to discard the words that already have both audios (es, de)
+            {
+                let ids_remove: Vec<i32> = scenario_wort_audio()
+                    .initial
+                    .into_iter()
+                    .filter(|f| f.audio_name_es.is_some() && f.audio_name_de.is_some())
+                    .map(|d| d.wort_id)
+                    .collect();
+
+                for id in ids_remove {
+                    hash_wort.remove(&(id as usize))
+                        .expect("This only panic if on scenario_wort_audio live an wort_id that doesn't exists on scenario_wort");
+                }
+            }
+
+            assert_eq!(res.len(), hash_wort.len());
 
             let snapshot: Vec<SnapshotWortAudioMissing> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!(
@@ -377,6 +417,9 @@ mod test_wort_audio_repo {
             let mut conn = Connection::open_in_memory()?;
             init_schemas(&mut conn)?;
             init_data(&mut conn)?;
+
+            let data: Vec<InputWort> = scenario_wort().initial;
+            WortRepo::bulk_insert(&mut conn, &data)?;
 
             let data = scenario_wort_audio().initial;
             WortAudioRepo::bulk_upsert(&mut conn, &data)?;
@@ -485,7 +528,7 @@ mod test_wort_audio_repo {
             // This verifies DbError::with_sql(sql) is attaching the SQL.
             let mut conn = Connection::open_in_memory().unwrap();
 
-            let err = WortAudioRepo::delete_by_id(&mut conn, &[]).unwrap_err();
+            let err = WortAudioRepo::delete_by_id(&mut conn, &[1]).unwrap_err();
 
             assert!(err.sql.is_some(), "expected DbError.sql to be Some(sql)");
             assert!(

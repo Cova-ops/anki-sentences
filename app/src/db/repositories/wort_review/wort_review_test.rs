@@ -17,7 +17,6 @@ mod test_worte_review_repo {
         assert_eq!(res.len(), data.len());
 
         for (i, satz) in data.iter().enumerate() {
-            assert!(res[i].id > 0);
             assert_eq!(res[i].wort_id, satz.wort_id);
             assert_eq!(res[i].direction, satz.direction.as_str());
             assert_eq!(res[i].interval, satz.interval);
@@ -47,10 +46,9 @@ mod test_worte_review_repo {
         fn empty() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data = scenario_wort_review().initial;
             let res = WortReviewRepo::bulk_upsert(&mut conn, &[])?;
 
-            assert_iter(&res, &data);
+            assert_iter(&res, &[]);
 
             let snapshot: Vec<SnapshotWortReview> = res.into_iter().map(Into::into).collect();
             insta::assert_debug_snapshot!("[WortReview::bulk_upsert] - empty", snapshot);
@@ -211,28 +209,39 @@ mod test_worte_review_repo {
         fn data_es() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data = scenario_wort_review().initial;
-
-            let data_es: Vec<i32> = data
-                .iter()
-                .filter(|f| f.direction == EnumReviewDirection::ES2DE)
-                .map(|d| d.wort_id)
+            let ids_words: Vec<i32> = scenario_wort()
+                .initial
+                .into_iter()
+                .enumerate()
+                .map(|(idx, _)| (idx + 1) as i32)
                 .collect();
 
             let res =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::ES2DE)?;
-            assert_eq!(res, data_es);
+            assert_eq!(res, ids_words);
 
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_es_before",
                 res
             );
 
+            let data = scenario_wort_review().initial;
+            let ids_words_in_scenario_wort_review: Vec<i32> = data
+                .iter()
+                .filter(|f| f.direction == EnumReviewDirection::ES2DE)
+                .map(|d| d.wort_id)
+                .collect();
             WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
-            let res =
+            let res: Vec<i32> =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::ES2DE)?;
-            assert_eq!(res, Vec::<i32>::new());
+
+            let ids_words_not_in_scenario_wort_review: Vec<i32> = ids_words
+                .into_iter()
+                .filter(|f| !ids_words_in_scenario_wort_review.contains(f))
+                .collect();
+
+            assert_eq!(res, ids_words_not_in_scenario_wort_review);
 
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_es_after",
@@ -246,28 +255,39 @@ mod test_worte_review_repo {
         fn data_de() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let data = scenario_wort_review().initial;
-
-            let data_de: Vec<i32> = data
-                .iter()
-                .filter(|f| f.direction == EnumReviewDirection::DE2ES)
-                .map(|d| d.wort_id)
+            let ids_words: Vec<i32> = scenario_wort()
+                .initial
+                .into_iter()
+                .enumerate()
+                .map(|(idx, _)| (idx + 1) as i32)
                 .collect();
 
-            let res =
+            let res: Vec<i32> =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::DE2ES)?;
-            assert_eq!(res, data_de);
+            assert_eq!(res, ids_words);
 
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_de_before",
                 res
             );
 
+            let data = scenario_wort_review().initial;
+            let ids_words_in_scenario_wort_review: Vec<i32> = data
+                .iter()
+                .filter(|f| f.direction == EnumReviewDirection::DE2ES)
+                .map(|d| d.wort_id)
+                .collect();
             WortReviewRepo::bulk_upsert(&mut conn, &data)?;
 
-            let res =
+            let res: Vec<i32> =
                 WortReviewRepo::fetch_new_wort_id_4_review(&mut conn, EnumReviewDirection::DE2ES)?;
-            assert_eq!(res, Vec::<i32>::new());
+
+            let ids_words_not_in_scenario_wort_review: Vec<i32> = ids_words
+                .into_iter()
+                .filter(|f| !ids_words_in_scenario_wort_review.contains(f))
+                .collect();
+
+            assert_eq!(res, ids_words_not_in_scenario_wort_review);
 
             insta::assert_debug_snapshot!(
                 "[WortReview::fetch_new_wort_id_4_review] - data_de_after",
@@ -333,7 +353,7 @@ mod test_worte_review_repo {
             let data = scenario_wort().initial;
             WortRepo::bulk_insert(&mut conn, &data)?;
 
-            let today = Utc::now();
+            let today: DateTime<Utc> = Utc::now();
             let data = scenario_wort_review().initial;
 
             // We modify the next_review value, to make some exercise for fetch
@@ -353,13 +373,12 @@ mod test_worte_review_repo {
         fn all() -> Result<(), DbError> {
             let mut conn = init_conn()?;
 
-            let today = Utc::now();
+            let tomorrow = Utc::now() + Duration::days(1);
             let data = scenario_wort_review().initial;
 
-            // We modify the next_review value, to make some exercise for fetch
             let data: Vec<i32> = data.into_iter().map(|d| d.wort_id).collect();
 
-            let res = fetch_all(&mut conn, today)?;
+            let res = fetch_all(&mut conn, tomorrow)?;
             assert_eq!(res, data);
 
             insta::assert_debug_snapshot!("[WortReview::fetch_review_wort_id_by_day] - all", res);
@@ -374,7 +393,7 @@ mod test_worte_review_repo {
             let mut conn = init_conn()?;
 
             let today = Utc::now();
-            let tomorrow = today + Duration::days(1);
+            let too_late = today + Duration::days(30);
 
             let data = scenario_wort_review().initial;
 
@@ -384,7 +403,7 @@ mod test_worte_review_repo {
                 .filter(|f| f.direction == EnumReviewDirection::ES2DE)
                 .cloned()
                 .map(|d| InputWortReview {
-                    next_review: tomorrow,
+                    next_review: too_late,
                     ..d
                 })
                 .collect();
@@ -398,7 +417,8 @@ mod test_worte_review_repo {
                 .map(|d| d.wort_id)
                 .collect();
 
-            let res = fetch_all(&mut conn, today)?;
+            let tomorrow = today + Duration::days(1);
+            let res = fetch_all(&mut conn, tomorrow)?;
             assert_eq!(res, data);
 
             insta::assert_debug_snapshot!(
@@ -514,7 +534,9 @@ mod test_worte_review_repo {
                 vec_out.extend(res);
             }
 
-            let data: Vec<_> = data.into_iter().map(|d| d.wort_id).collect();
+            let mut data: Vec<i32> = data.into_iter().map(|d| d.wort_id).collect();
+            data.sort_unstable();
+            data.dedup();
 
             assert_eq!(vec_out, data);
 
@@ -566,7 +588,6 @@ mod test_worte_review_repo {
         fn fetch_all_data(conn: &Connection) -> Result<Vec<SchemaWortReview>, DbError> {
             let sql = "
                     SELECT 
-                        id,
                         wort_id,
                         direction,
                         interval,
@@ -579,7 +600,7 @@ mod test_worte_review_repo {
                     FROM 
                         worte_review wr
                     ORDER BY
-                        wr.id ASC;
+                        wr.wort_id ASC;
                 ";
 
             let mut stmt = conn.prepare(sql).map_err(DbError::with_sql(sql))?;
@@ -640,10 +661,14 @@ mod test_worte_review_repo {
 
             let fetch_before = fetch_all_data(&conn)?;
             let id_remove: i32 = fetch_before.iter().map(|d| d.wort_id).next().unwrap();
+            let data_removed: Vec<&SchemaWortReview> = fetch_before
+                .iter()
+                .filter(|f| f.wort_id == id_remove)
+                .collect();
 
             // The table is empty, so this should be empty
             let res = WortReviewRepo::delete_by_id(&mut conn, &[id_remove])?;
-            assert_eq!(res, 1);
+            assert_eq!(res, data_removed.len());
 
             let fetch_after = fetch_all_data(&conn)?;
             let fetch_before: Vec<_> = fetch_before
@@ -651,7 +676,7 @@ mod test_worte_review_repo {
                 .filter(|f| f.wort_id != id_remove)
                 .collect();
 
-            // Check if it only remove 1 row
+            // Check if it only remove the rows with the correct id
             assert_eq!(fetch_before, fetch_after);
 
             insta::assert_debug_snapshot!("[WortReview::delete_by_id] - delete_one", res);

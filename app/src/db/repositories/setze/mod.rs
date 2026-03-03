@@ -39,7 +39,7 @@ impl SetzeRepo {
         "#;
 
         let mut out: Vec<SchemaSetze> = Vec::with_capacity(data.len());
-        let mut stmt = tx.prepare(sql)?;
+        let mut stmt = tx.prepare(sql).map_err(DbError::with_sql(sql))?;
 
         for d in data {
             let params: SqlSetze = d.to_owned().into();
@@ -70,7 +70,7 @@ impl SetzeRepo {
             ORDER BY s.id ASC;
             ";
 
-        let mut stmt = conn.prepare(sql)?;
+        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(sql))?;
 
         let ids = stmt
             .query([])
@@ -103,7 +103,7 @@ impl SetzeRepo {
             ORDER BY setze_deutsch"
         );
 
-        let mut stmt = conn.prepare(&sql)?;
+        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(&sql))?;
 
         let rows = stmt
             .query(params_from_iter(ids))
@@ -130,7 +130,7 @@ impl SetzeRepo {
             ORDER BY setze_deutsch"
         );
 
-        let mut stmt = conn.prepare(&sql)?;
+        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(&sql))?;
 
         let rows = stmt
             .query_one(params![id], SchemaSetze::from_sql)
@@ -143,14 +143,14 @@ impl SetzeRepo {
     pub fn fetch_id_without_audio(conn: &Connection) -> Result<Vec<i32>, DbError> {
         let sql = "
             SELECT
-                s.id,
+                s.id
             FROM setze s
-            LEFT JOIN setze_audio sa ON s.id = sa.wort_id 
+            LEFT JOIN setze_audio sa ON s.id = sa.satz_id 
             WHERE s.deleted_at IS NULL AND sa.satz_id is NULL
             ORDER BY s.id ASC;
         ";
 
-        let mut stmt = conn.prepare_cached(sql)?;
+        let mut stmt = conn.prepare(&sql).map_err(DbError::with_sql(sql))?;
 
         let raws = stmt
             .query([])

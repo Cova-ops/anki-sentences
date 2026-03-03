@@ -44,7 +44,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn from_input_to_sql_all_some() {
+        fn all_some() {
             let input = InputWortAudio {
                 wort_id: 42,
                 audio_name_es: Some("hola_es.mp3".to_string()),
@@ -59,7 +59,7 @@ mod tests {
         }
 
         #[test]
-        fn from_input_to_sql_one_none() {
+        fn one_none() {
             let input = InputWortAudio {
                 wort_id: 7,
                 audio_name_es: Some("solo_es.mp3".to_string()),
@@ -74,7 +74,7 @@ mod tests {
         }
 
         #[test]
-        fn from_input_to_sql_all_none() {
+        fn all_none() {
             let input = InputWortAudio {
                 wort_id: 99,
                 audio_name_es: None,

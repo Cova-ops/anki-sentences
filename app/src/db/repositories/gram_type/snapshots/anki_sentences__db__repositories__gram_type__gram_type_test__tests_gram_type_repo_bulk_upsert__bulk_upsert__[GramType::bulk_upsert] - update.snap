@@ -1,0 +1,211 @@
+---
+source: app/src/db/repositories/gram_type/gram_type_test.rs
+expression: snapshot
+---
+[
+    SnapshotGramType {
+        gram: NounCommon,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: NounProper,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: VerbMain,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: VerbModal,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: VerbAuxiliary,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: VerbSeparable,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: VerbReflexive,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: Adjective,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: AdverbTime,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: AdverbPlace,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: AdverbManner,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: AdverbDegree,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: AdverbSentenceConnector,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounPersonal,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounPossessive,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounReflexive,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounDemonstrative,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounRelative,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounInterrogative,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PronounIndefinite,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ArticleDefinite,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ArticleIndefinite,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: DeterminerQuantifier,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PrepositionDative,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PrepositionAkkusative,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PrepositionGenitive,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PrepositionTwoWay,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ConjunctionCoordinating,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ConjunctionSubordinating,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ParticleModal,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ParticleFocus,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ParticleNegation,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: ParticleAnswer,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: NumeralCardinal,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: NumeralOrdinal,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: Interjection,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: FixedPhrase,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PrefixSeparable,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PatternVerbDativ,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PatternVerbAkkusativ,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotGramType {
+        gram: PatternVerbDatAkk,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

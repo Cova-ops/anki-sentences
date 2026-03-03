@@ -1,0 +1,8 @@
+---
+source: app/src/db/repositories/wort_review/wort_review_test.rs
+expression: vec_out
+---
+[
+    1,
+    2,
+]

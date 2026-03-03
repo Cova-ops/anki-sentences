@@ -1,0 +1,82 @@
+---
+source: app/src/db/repositories/wort/wort_test.rs
+expression: ss
+---
+[
+    SnapshotWort {
+        id: 1,
+        gram_type: [
+            PronounInterrogative,
+            PatternVerbDatAkk,
+            AdverbSentenceConnector,
+        ],
+        gender: Some(
+            Femenin,
+        ),
+        worte_de: "weitergehen test",
+        worte_es: "seguir test",
+        plural: Some(
+            "plural test",
+        ),
+        niveau: B1,
+        example_de: "Wir gehen weiter, bis wir zu Hause sind test.",
+        example_es: "Seguimos hasta llegar a casa test.",
+        verb_aux: Some(
+            "haben",
+        ),
+        trennbar: Some(
+            false,
+        ),
+        reflexiv: Some(
+            true,
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWort {
+        id: 2,
+        gram_type: [
+            AdverbPlace,
+            ParticleNegation,
+            Adjective,
+        ],
+        gender: None,
+        worte_de: "müde werden, test",
+        worte_es: "ponerse cansado, test",
+        plural: Some(
+            "1234567890",
+        ),
+        niveau: C2,
+        example_de: "Ich werde nach der Arbeit immer müde.",
+        example_es: "Siempre me pongo cansado después del trabajo.",
+        verb_aux: None,
+        trennbar: None,
+        reflexiv: None,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWort {
+        id: 3,
+        gram_type: [
+            VerbAuxiliary,
+        ],
+        gender: None,
+        worte_de: "Frist test",
+        worte_es: "plazo (de entrega) test",
+        plural: None,
+        niveau: A2,
+        example_de: "tes tes test",
+        example_es: "1234567890",
+        verb_aux: Some(
+            "some",
+        ),
+        trennbar: Some(
+            true,
+        ),
+        reflexiv: Some(
+            true,
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

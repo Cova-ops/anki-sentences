@@ -89,7 +89,7 @@ mod tests_snapshot_wort_gender {
             let snap: SnapshotWortGender = schema.into();
 
             assert_eq!(snap.gender, EnumWortGender::Maskuline);
-            assert_eq!(snap.created_at, "2026-02-10 10:00:00");
+            assert_eq!(snap.created_at, "<created_at>");
             assert_eq!(snap.deleted_at, None);
         }
 

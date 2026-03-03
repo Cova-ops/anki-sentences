@@ -4,12 +4,10 @@ use crate::db::schemas::wort_review::{EnumReviewDirection, ModelWortReview, Sche
 
 #[derive(Debug)]
 pub struct SnapshotWortReview {
-    pub id: i32,
-
     pub wort_id: i32,
     pub direction: EnumReviewDirection,
     pub interval: u32,
-    pub ease_factor: f32,
+    pub ease_factor: f64,
     pub repetitions: u32,
     pub last_review: DateTime<Utc>,
     pub next_review: DateTime<Utc>,
@@ -22,8 +20,6 @@ pub struct SnapshotWortReview {
 impl From<ModelWortReview> for SnapshotWortReview {
     fn from(value: ModelWortReview) -> Self {
         Self {
-            id: value.id,
-
             wort_id: value.wort_id,
             direction: value.direction,
             interval: value.interval,
@@ -57,7 +53,6 @@ mod tests {
 
         fn model_ok(deleted: bool) -> ModelWortReview {
             ModelWortReview {
-                id: 1,
                 wort_id: 10,
                 direction: EnumReviewDirection::ES2DE,
                 interval: 4,
@@ -80,7 +75,6 @@ mod tests {
 
             let snap = SnapshotWortReview::from(model);
 
-            assert_eq!(snap.id, 1);
             assert_eq!(snap.wort_id, 10);
             assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 4);
@@ -106,7 +100,6 @@ mod tests {
 
             let snap = SnapshotWortReview::from(model);
 
-            assert_eq!(snap.id, 1);
             assert_eq!(snap.wort_id, 10);
             assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 4);
@@ -126,9 +119,8 @@ mod tests {
         #[test]
         fn happy_path() {
             let schema = SchemaWortReview {
-                id: 20,
                 wort_id: 1,
-                direction: String::from("es_2_de"),
+                direction: String::from("es_to_de"),
                 interval: 2,
                 ease_factor: 1.3,
                 repetitions: 10,
@@ -140,7 +132,6 @@ mod tests {
 
             let snap: SnapshotWortReview = schema.into();
 
-            assert_eq!(snap.id, 20);
             assert_eq!(snap.wort_id, 1);
             assert_eq!(snap.direction, EnumReviewDirection::ES2DE);
             assert_eq!(snap.interval, 2);
@@ -161,7 +152,6 @@ mod tests {
         #[test]
         fn panics_on_invalid_schema() {
             let invalid = SchemaWortReview {
-                id: 20,
                 wort_id: 1,
                 direction: String::from("NOT_VALID_DIRECTION"),
                 interval: 2,

@@ -1,0 +1,46 @@
+---
+source: app/src/db/repositories/wort_audio/wort_audio_test.rs
+expression: snapshot
+---
+[
+    SnapshotWortAudio {
+        wort_id: 1,
+        audio_name_es: Some(
+            "audio_es_1_test",
+        ),
+        audio_name_de: Some(
+            "audio_de_1_test",
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortAudio {
+        wort_id: 2,
+        audio_name_es: Some(
+            "audio_es_2_test",
+        ),
+        audio_name_de: Some(
+            "audio_de_2_test",
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortAudio {
+        wort_id: 3,
+        audio_name_es: Some(
+            "audio_es_3_test",
+        ),
+        audio_name_de: Some(
+            "audio_de_3_test",
+        ),
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+    SnapshotWortAudio {
+        wort_id: 4,
+        audio_name_es: None,
+        audio_name_de: None,
+        created_at: "<created_at>",
+        deleted_at: None,
+    },
+]

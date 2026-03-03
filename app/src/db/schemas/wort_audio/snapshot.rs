@@ -56,7 +56,7 @@ mod tests {
         }
 
         #[test]
-        fn snapshot_from_model_without_deleted_at() {
+        fn without_deleted_at() {
             let model = model_ok(false);
 
             let snap = SnapshotWortAudio::from(model);
@@ -70,7 +70,7 @@ mod tests {
         }
 
         #[test]
-        fn snapshot_from_model_with_deleted_at() {
+        fn with_deleted_at() {
             let model = model_ok(true);
 
             let snap = SnapshotWortAudio::from(model);
