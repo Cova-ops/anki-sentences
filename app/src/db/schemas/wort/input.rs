@@ -1,6 +1,6 @@
 use crate::db::{
     schemas::{
-        gram_type::EnumGramType, niveau_liste::EnumNiveauListe, wort_audio::SqlWortAudio,
+        gram_type::EnumGramType, niveau_liste::EnumNiveauListe,
         wort_gender::EnumWortGender,
     },
     traits::{SqlInsert, SqlUpdate},

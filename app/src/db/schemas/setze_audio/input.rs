@@ -1,9 +1,5 @@
-use std::path::PathBuf;
 
-use crate::{
-    db::traits::{SqlInsert, SqlUpdate},
-    services::tts::eleven_labs::EnumVoiceIDElevenLabs,
-};
+use crate::db::traits::{SqlInsert, SqlUpdate};
 
 #[derive(Debug)]
 pub struct SqlSetzeAudio {

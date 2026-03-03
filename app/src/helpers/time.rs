@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Local, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Duration, NaiveDate, NaiveDateTime, TimeZone, Utc};
 
 use crate::helpers::error_handler::InvalidValueError;
 

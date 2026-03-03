@@ -10,11 +10,8 @@ mod test_setze_review_repo {
             setze::SetzeRepo,
             setze_review::SetzeReviewRepo,
         },
-        helpers::{
-            error_handler::DbError,
-            time::{datetime_2_string, string_2_datetime},
-        },
-        test_utils::scenarios::{scenario_setze, scenario_setze_audio, scenario_setze_review},
+        helpers::{error_handler::DbError, time::datetime_2_string},
+        test_utils::scenarios::{scenario_setze, scenario_setze_review},
     };
 
     use rusqlite::Connection;

@@ -8,6 +8,8 @@ pub use enums::*;
 pub use input::*;
 pub use model::*;
 pub use schema::*;
+
+#[allow(unused_imports)]
 pub use snapshot::*;
 
 pub const CREATE_STR_TABLE_WORTE_REVIEW: &str = "
