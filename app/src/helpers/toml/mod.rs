@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::format,
     fs,
     path::{Path, PathBuf},
 };
@@ -74,6 +75,32 @@ impl ProfileConfig {
         Ok(())
     }
 
+    #[cfg(test)]
+    pub fn new_test(temp_dir: &tempfile::TempDir) -> Self {
+        let name_profile: String = format!("testing");
+
+        let profile_path: PathBuf = temp_dir
+            .path()
+            .join(DIR_CONFIG)
+            .join(DIR_PROFILES)
+            .join(&name_profile);
+
+        let database_path: PathBuf = profile_path.join(format!("{name_profile}.sql"));
+        let path_audios: PathBuf = profile_path.join(DIR_ASSETS).join(DIR_AUDIOS);
+
+        fs::create_dir_all(&profile_path).unwrap();
+        fs::create_dir_all(&path_audios).unwrap();
+
+        Self {
+            name_profile,
+            database_path,
+            audios_worte_path: path_audios.join(DIR_WORTE),
+            audios_setze_path: path_audios.join(DIR_SETZE),
+            audio_enabled: false, // For now the audios is disable just to not consume tokens for
+                                  // external apis
+        }
+    }
+
     pub fn new(name_profile: &str) -> Self {
         let lower = name_profile.to_owned().to_lowercase();
 
@@ -109,14 +136,38 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn new(config_file_path: &Path, assets_general_path: &Path) -> Self {
-        let assets_general_path = assets_general_path.to_owned();
-        let audio_artikel_path = assets_general_path.join(DIR_AUDIO_ARTIKEL);
+        let assets_general_path: PathBuf = assets_general_path.to_owned();
+        let audio_artikel_path: PathBuf = assets_general_path.join(DIR_AUDIO_ARTIKEL);
 
         Self {
             profiles: HashMap::from([("Default".into(), ProfileConfig::default())]),
             actual_profile: "Default".into(),
 
             assets_general_path,
+            audio_artikel_path,
+
+            config_file_path: Some(config_file_path.to_owned()),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn new_test(temp_dir: &tempfile::TempDir) -> Self {
+        let config_dir: PathBuf = temp_dir.path().join(DIR_CONFIG);
+        let config_file_path: PathBuf = config_dir.join(CONFIG_FILE_NAME);
+        let dir_assets_general: PathBuf = config_dir.join(DIR_ASSETS_GENERAL);
+
+        let audio_artikel_path: PathBuf = dir_assets_general.join(DIR_AUDIO_ARTIKEL);
+
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::create_dir_all(&config_file_path).unwrap();
+        fs::create_dir_all(&dir_assets_general).unwrap();
+        fs::create_dir_all(&audio_artikel_path).unwrap();
+
+        Self {
+            profiles: HashMap::from([("Testing".into(), ProfileConfig::new_test(&temp_dir))]),
+            actual_profile: "Testing".into(),
+
+            assets_general_path: dir_assets_general,
             audio_artikel_path,
 
             config_file_path: Some(config_file_path.to_owned()),
@@ -194,7 +245,7 @@ impl AppConfig {
 
     fn get_profile_mut(&mut self, profile: &str) -> Result<&mut ProfileConfig, ConfigError> {
         self.profiles.get_mut(profile).ok_or(0).map_err(|_| ConfigError{
-message: String::from(
+            message: String::from(
             r#"Profile {profile} not founded. Try with "anki-sentences db use <name_profile>""#), action: String::from("get_profile_mut")
         }
         )

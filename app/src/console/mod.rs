@@ -11,7 +11,7 @@ pub mod cli;
 pub fn menu_main(config: &mut AppConfig) -> Result<(), AppError> {
     // clean_screen();
 
-    let cli = Cli::parse();
+    let cli: Cli = Cli::parse();
 
     match cli.cmd {
         Command::Review { cmd } => commands::review::run(cmd, config)?,

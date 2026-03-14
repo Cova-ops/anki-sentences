@@ -4,7 +4,7 @@ use rusqlite::Connection;
 
 use crate::helpers::error_handler::DbError;
 
-pub fn get_conn(path: &Path) -> Result<Connection, DbError> {
+pub fn get_conn(path: &Path) -> Result<rusqlite::Connection, DbError> {
     let conn = Connection::open(path)?;
 
     conn.execute_batch(

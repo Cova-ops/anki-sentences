@@ -8,7 +8,7 @@ use crate::{
         audios::ManageAudios,
         error_handler::{AppError, AppErrorKind, AudioError},
     },
-    services::tts::eleven_labs::LanguageVoice,
+    services::tts::language_voice::LanguageVoice,
 };
 
 pub struct AudioPlayer {
@@ -25,7 +25,7 @@ impl AudioPlayer {
     pub fn play(&self, file: File) -> Result<(), AppError> {
         let sink = Sink::connect_new(self.stream.mixer());
 
-        // Abre el archivo mp3
+        // Open mp3 file
         let source = Decoder::new(BufReader::new(file)).map_err(|e| AppError {
             kind: AppErrorKind::Audio(AudioError::Decoder(e)),
             context: vec![],
@@ -47,11 +47,12 @@ impl AudioPlayer {
         gender: &Option<EnumWortGender>,
         lang: LanguageVoice,
     ) -> Result<(), AppError> {
-        if id_wort.is_none() {
-            return Ok(());
-        }
+        let id_wort: i32 = match id_wort {
+            Some(v) => *v,
+            _ => return Ok(()),
+        };
 
-        let id_wort = id_wort.unwrap();
+        // Add audio artikel if it is German and is a Sustantive
         if lang == LanguageVoice::Deutsch {
             if let Some(gender) = gender.as_ref() {
                 let path_artikel = manage_audio.get_audio_artikel(gender);
@@ -62,7 +63,7 @@ impl AudioPlayer {
             }
         }
 
-        let path_word = manage_audio.get_audio_worte(*id_wort, lang);
+        let path_word = manage_audio.get_audio_worte(id_wort, lang);
         if let Ok(Some(path)) = path_word {
             self.play(path)?;
         }

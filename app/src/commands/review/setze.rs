@@ -17,7 +17,6 @@ use crate::{
     utils,
 };
 
-use chrono::Utc;
 use rand::seq::SliceRandom;
 
 pub fn run(
@@ -33,13 +32,12 @@ pub fn run(
         _ => todo!("Aguantame papito"),
     };
 
-    let ids_audios = if config.is_audio_enable()? {
+    let ids_audios: Vec<_> = if config.is_audio_enable()? {
         SetzeAudioRepo::fetch_by_id(&conn, &ids_setze)?
     } else {
         Vec::new()
     };
-    let ids_audios = ModelSetzeAudio::try_from_iter(ids_audios)?;
-
+    let ids_audios: Vec<ModelSetzeAudio> = ModelSetzeAudio::try_from_iter(ids_audios)?;
     let hash_audios: HashSet<i32> = ids_audios.iter().map(|ia| ia.satz_id).collect();
 
     if !no_shuffle {
@@ -65,7 +63,7 @@ pub fn run(
 
     // Obtenemos si estas oraciones ya tenian informacion hsitorica de revisiones anteriores
     let vec: Vec<_> = SetzeReviewRepo::fetch_by_satz_id(&conn, &setze_ids)?;
-    let vec_setze_review: Vec<_> = ModelSetzeReview::try_from_iter(vec)?;
+    let vec_setze_review: Vec<ModelSetzeReview> = ModelSetzeReview::try_from_iter(vec)?;
 
     let hash_setze_review: HashMap<i32, ModelSetzeReview> = vec_setze_review
         .into_iter()
@@ -73,7 +71,7 @@ pub fn run(
         .collect();
 
     let mut vec_new_setze_review: Vec<InputSetzeReview> = vec![];
-    let now = Utc::now();
+    let now: chrono::DateTime<_> = chrono::Utc::now();
 
     // Recorremos el arreglo de palabras que respondio el usuario
     for satz in r.1 {
@@ -93,9 +91,9 @@ pub fn run(
         vec_new_setze_review.push(InputSetzeReview {
             satz_id,
             direction: EnumReviewDirection::ES2DE,
-            interval: review_state.interval,
-            ease_factor: review_state.ease_factor,
-            repetitions: review_state.repetitions,
+            interval: review_state.interval(),
+            ease_factor: review_state.ease_factor(),
+            repetitions: review_state.repetitions(),
             last_review: now,
             next_review: next,
         })

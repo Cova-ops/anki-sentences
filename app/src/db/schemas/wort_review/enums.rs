@@ -1,8 +1,10 @@
 use std::str::FromStr;
 
-use crate::{helpers::error_handler::InvalidValueError, services::tts::eleven_labs::LanguageVoice};
+use crate::{
+    helpers::error_handler::InvalidValueError, services::tts::language_voice::LanguageVoice,
+};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EnumReviewDirection {
     ES2DE,
     DE2ES,

@@ -1,4 +1,9 @@
-use std::{env, path::Path};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
+
+use rusqlite::Connection;
 
 use crate::{
     console::cli::TypeFile,
@@ -21,9 +26,11 @@ use crate::{
         error_handler::{AppError, DbError},
         toml::AppConfig,
     },
-    services::tts::{self, eleven_labs::LanguageVoice},
+    services::tts::{self, language_voice::LanguageVoice},
     utils,
 };
+
+mod tests;
 
 const TEXT_INSTRUCTIONS: &str = r##"
 INSTRUCCIONES PARA AGREGAR UN NUEVO ARCHIVO DE PALABRAS (CSV)
@@ -124,25 +131,25 @@ Para poder agregar el archivo por favor pon la ruta donde se encuentra tu CSV. L
 Para regresar al menu principal favor de escribir "exit".
 "##;
 
-fn process_audio(
-    text: &str,
-    wort_id: i32,
-    manage_audios: &ManageAudios,
-    lang: LanguageVoice,
-) -> Result<String, AppError> {
-    let audio_bytes: Vec<u8> = tts::eleven_labs::generate_tts(text, lang)?;
-    let audio_path = manage_audios.save_audio_worte(audio_bytes, wort_id, lang)?;
-    let audio_name = utils::path::get_filename_from_path(&audio_path)?;
-
-    Ok(audio_name)
-}
-
 fn try_audio(
     text_es: &str,
     text_de: &str,
     wort_id: i32,
     manage_audios: &ManageAudios,
 ) -> (Option<String>, Option<String>) {
+    fn process_audio(
+        text: &str,
+        wort_id: i32,
+        manage_audios: &ManageAudios,
+        lang: LanguageVoice,
+    ) -> Result<String, AppError> {
+        let audio_bytes: Vec<u8> = tts::eleven_labs::generate_tts(text, lang)?;
+        let audio_path = manage_audios.save_audio_worte(audio_bytes, wort_id, lang)?;
+        let audio_name = utils::path::get_filename_from_path(&audio_path)?;
+
+        Ok(audio_name)
+    }
+
     let path_es = match process_audio(text_es, wort_id, manage_audios, LanguageVoice::Spanisch) {
         Ok(name) => Some(name),
         Err(err) => {
@@ -162,6 +169,7 @@ fn try_audio(
     (path_es, path_de)
 }
 
+#[derive(Debug)]
 enum ManageWortRepeatedResponse {
     Skip,
     ReplaceData(i32),
@@ -191,7 +199,7 @@ fn manage_wort_repeated(
 
     if old_gender_id != new_gender_id {
         diffs.push((
-            "gender ".to_owned(),
+            "gender".to_owned(),
             fmt_gender(old_gender_id),
             fmt_gender(new_gender_id),
         ));
@@ -342,16 +350,10 @@ fn manage_wort_repeated(
     }
 }
 
-pub fn run<P>(config: &AppConfig, path: P, type_file: TypeFile) -> Result<(), AppError>
-where
-    P: AsRef<Path>,
-{
+pub fn run(config: &AppConfig, path: &str, type_file: TypeFile) -> Result<(), AppError> {
     let ext_valid = &["csv"];
 
-    utils::path::validate_save_filename(&path, ext_valid)?;
-
-    let base_dir = env::current_dir()?;
-    let path_file = base_dir.join(path);
+    let path_file: PathBuf = utils::path::validate_save_filename(&path, ext_valid)?;
 
     let new_data = match type_file {
         TypeFile::CSV => csv::extract_worte_csv(&path_file)?,
@@ -360,7 +362,7 @@ where
 
     println!();
     println!("Procesando {} nuevas palabras.", new_data.len());
-    let mut conn = get_conn(config.get_database_path()?)?;
+    let mut conn: rusqlite::Connection = get_conn(config.get_database_path()?)?;
 
     let mut vec_new_worte: Vec<InputWort> = vec![];
     let mut vec_update_worte: Vec<(i32, InputWort)> = vec![];

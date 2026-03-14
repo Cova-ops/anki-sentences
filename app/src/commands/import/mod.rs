@@ -8,7 +8,7 @@ mod wort;
 
 pub fn run(cmd: ExportImportCmd, config: &AppConfig) -> Result<(), AppError> {
     match cmd {
-        ExportImportCmd::Worte { path, type_file } => wort::run(config, path, type_file)?,
+        ExportImportCmd::Worte { path, type_file } => wort::run(config, &path, type_file)?,
         _ => todo!("Aguantame papito"),
     };
 

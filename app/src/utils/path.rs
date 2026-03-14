@@ -1,40 +1,32 @@
 use std::{
     env,
+    ffi::OsStr,
     path::{Path, PathBuf},
 };
 
 use crate::helpers::error_handler::{AppError, AppErrorKind, CsvParseError};
 
-pub fn validate_save_filename<P, S>(name: P, ext: &[S]) -> Result<(), AppError>
-where
-    P: AsRef<Path>,
-    S: AsRef<str>,
-{
-    let name = name.as_ref();
+pub fn validate_save_filename(name: &str, ext: &[impl AsRef<str>]) -> Result<PathBuf, AppError> {
+    let file_path: PathBuf = normalize_path(name)?;
+    let file_name: &OsStr = match file_path.extension() {
+        Some(v) => v,
+        _ => {
+            return Err(AppError {
+                kind: AppErrorKind::Csv(CsvParseError {
+                    file: file_path.to_owned(),
+                    row: None,
+                    column: None,
+                    message: format!("Error with extension"),
+                }),
+                context: vec![],
+            });
+        }
+    };
 
-    let file_name = get_filename_from_path(name)?;
-
-    if !file_name
-        .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '.')
-    {
+    if !ext.iter().any(|x| file_name == x.as_ref()) {
         return Err(AppError {
             kind: AppErrorKind::Csv(CsvParseError {
-                file: name.to_owned(),
-                row: None,
-                column: None,
-                message: String::from(
-                    "File name can only contain Alphanumerics and '_', '-', '.'.",
-                ),
-            }),
-            context: vec![],
-        });
-    }
-
-    if !ext.iter().any(|x| file_name.ends_with(x.as_ref())) {
-        return Err(AppError {
-            kind: AppErrorKind::Csv(CsvParseError {
-                file: name.to_owned(),
+                file: file_path.to_owned(),
                 row: None,
                 column: None,
                 message: format!("Extension not allowed"),
@@ -43,7 +35,14 @@ where
         });
     }
 
-    Ok(())
+    Ok(file_path)
+}
+
+fn normalize_path(input: &str) -> std::io::Result<PathBuf> {
+    let expanded: String = shellexpand::tilde(input).into_owned();
+    let path: PathBuf = PathBuf::from(expanded);
+
+    path.canonicalize()
 }
 
 pub fn path_to_string(path: &Path) -> Result<String, AppErrorKind> {

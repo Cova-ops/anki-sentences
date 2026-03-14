@@ -5,9 +5,9 @@ mod review_state_test;
 
 #[derive(Debug, Clone)]
 pub struct ReviewState {
-    pub interval: u32,
-    pub ease_factor: f64,
-    pub repetitions: u32,
+    interval: u32,
+    ease_factor: f64,
+    repetitions: u32,
 }
 
 impl ReviewState {
@@ -65,5 +65,15 @@ impl ReviewState {
 
     pub fn next_review_date_from(&self, from: DateTime<Utc>) -> DateTime<Utc> {
         from + Duration::days(self.interval as i64)
+    }
+
+    pub fn interval(&self) -> u32 {
+        self.interval
+    }
+    pub fn ease_factor(&self) -> f64 {
+        self.ease_factor
+    }
+    pub fn repetitions(&self) -> u32 {
+        self.repetitions
     }
 }

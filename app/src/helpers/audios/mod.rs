@@ -7,7 +7,7 @@ use std::{
 use crate::{
     db::schemas::wort_gender::EnumWortGender,
     helpers::error_handler::{AppError, AppErrorKind},
-    services::{self, tts::eleven_labs::LanguageVoice},
+    services::{self, tts::language_voice::LanguageVoice},
 };
 
 pub mod audio_player;

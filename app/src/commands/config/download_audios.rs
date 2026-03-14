@@ -4,7 +4,7 @@ use crate::{
         views::wort_audio_missing::ModelWortAudioMissing, wort_audio::WortAudioRepo,
     },
     helpers::{audios::ManageAudios, error_handler::AppError, toml::AppConfig},
-    services::tts::{self, eleven_labs::LanguageVoice},
+    services::tts::{self, language_voice::LanguageVoice},
     utils,
 };
 

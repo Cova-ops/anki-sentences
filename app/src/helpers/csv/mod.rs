@@ -1,5 +1,5 @@
 use csv::{ReaderBuilder, StringRecord};
-use std::{fs::File, path::Path, str::FromStr};
+use std::{collections::HashMap, fs::File, path::Path, str::FromStr};
 
 use crate::{
     db::schemas::{
@@ -10,13 +10,18 @@ use crate::{
     traits::string::StringConvertion,
 };
 
-pub enum CsvType {
+#[cfg(test)]
+mod test;
+
+pub(super) enum EnumCsvType {
     Setze,
     Worte,
 }
 
-static HEADER_SETZE_CSV: [&str; 4] = ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];
-static HEADER_WORTE_CSV: [&str; 11] = [
+pub(super) static HEADER_SETZE_CSV: [&str; 4] =
+    ["setze_spanisch", "setze_deutsch", "thema", "schwirig_id"];
+
+pub(super) static HEADER_WORTE_CSV: [&str; 11] = [
     "gram_type",
     "gender_id",
     "worte_de",
@@ -33,11 +38,14 @@ static HEADER_WORTE_CSV: [&str; 11] = [
 /// Función para validar si un archivo tiene la estructura adecuada
 /// params:
 /// - path: Ruta local donde se aloja el CSV.
-/// - type_file: CsvType Tipo de archivo a subir
+/// - type_file: EnumCsvType Tipo de archivo a subir
 ///
 /// return:
 /// Regresa un Result ó Report segun el caso
-pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<Vec<StringRecord>, AppError> {
+pub(super) fn is_csv_valid(
+    path: &Path,
+    type_file: EnumCsvType,
+) -> Result<Vec<StringRecord>, AppError> {
     let file = File::open(path).map_err(|e| CsvParseError {
         file: path.to_owned(),
         row: None,
@@ -46,8 +54,8 @@ pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<Vec<StringRecord>
     })?;
 
     let header_csv: &'static [&'static str] = match type_file {
-        CsvType::Setze => &HEADER_SETZE_CSV,
-        CsvType::Worte => &HEADER_WORTE_CSV,
+        EnumCsvType::Setze => &HEADER_SETZE_CSV,
+        EnumCsvType::Worte => &HEADER_WORTE_CSV,
     };
 
     let mut reader = ReaderBuilder::new().has_headers(true).from_reader(file);
@@ -87,7 +95,7 @@ pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<Vec<StringRecord>
         }
     }
 
-    let mut vec_out = vec![];
+    let mut vec_out: Vec<StringRecord> = vec![];
     for (i, result) in reader.records().enumerate() {
         let line = result.map_err(|e| CsvParseError {
             file: path.to_owned(),
@@ -102,7 +110,7 @@ pub fn is_csv_valid(path: &Path, type_file: CsvType) -> Result<Vec<StringRecord>
 }
 
 pub fn extract_sentences_csv(path: &Path) -> Result<Vec<InputSetze>, AppError> {
-    let records = is_csv_valid(path, CsvType::Setze)?;
+    let records = is_csv_valid(path, EnumCsvType::Setze)?;
 
     let mut vec_out: Vec<InputSetze> = Vec::new();
     for (i, value) in records.into_iter().enumerate() {
@@ -182,12 +190,49 @@ pub fn extract_sentences_csv(path: &Path) -> Result<Vec<InputSetze>, AppError> {
     Ok(vec_out)
 }
 
+/// This function extract the data from the CSV and convert into Vec<InputWort>
+/// Considerations:
+/// - For duplicated words, it only the first one
 pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
-    let records = is_csv_valid(path, CsvType::Setze)?;
+    let records = is_csv_valid(path, EnumCsvType::Worte)?;
 
-    let mut vec_result: Vec<InputWort> = Vec::new();
+    // (worte_es, worte_de) is the key for duplicated
+    let mut hash_input = HashMap::<(String, String), InputWort>::new();
+    let mut vec_out: Vec<InputWort> = vec![];
     for (i, value) in records.into_iter().enumerate() {
         if value.is_empty() {
+            continue;
+        }
+
+        let worte_de: String = match value.get(2) {
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("worte_de"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
+
+        let worte_es: String = match value.get(3) {
+            Some(v) if v.trim().len() > 0 => v.to_string(),
+            _ => {
+                return Err(CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("worte_es"),
+                    message: String::from("Cannot be empty"),
+                }
+                .into());
+            }
+        };
+
+        // Check is it is duplicated
+        if hash_input.contains_key(&(worte_es.clone(), worte_de.clone())) {
+            println!("Line repetead on line {} skipping it.", i + 1);
             continue;
         }
 
@@ -217,16 +262,17 @@ pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
                 .into());
             }
 
-            let gram_type = EnumGramType::from_str(gt).map_err(|e| CsvParseError {
-                file: path.to_owned(),
-                row: Some(i + 1),
-                column: Some("gram_type"),
-                message: e.message,
-            })?;
+            let gram_type: EnumGramType =
+                EnumGramType::from_str(gt).map_err(|e| CsvParseError {
+                    file: path.to_owned(),
+                    row: Some(i + 1),
+                    column: Some("gram_type"),
+                    message: e.message,
+                })?;
             vec_gram_type.push(gram_type);
         }
 
-        let gender = match value.get(1) {
+        let gender: Option<EnumWortGender> = match value.get(1) {
             Some(v) if v.trim().is_empty() => None,
             Some(v) => Some(EnumWortGender::from_str(v).map_err(|e| CsvParseError {
                 file: path.to_owned(),
@@ -237,38 +283,12 @@ pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
             None => None,
         };
 
-        let worte_de = match value.get(2) {
-            Some(v) if v.trim().len() > 0 => v.to_string(),
-            _ => {
-                return Err(CsvParseError {
-                    file: path.to_owned(),
-                    row: Some(i + 1),
-                    column: Some("worte_de"),
-                    message: String::from("Cannot be empty"),
-                }
-                .into());
-            }
-        };
-
-        let worte_es = match value.get(3) {
-            Some(v) if v.trim().len() > 0 => v.to_string(),
-            _ => {
-                return Err(CsvParseError {
-                    file: path.to_owned(),
-                    row: Some(i + 1),
-                    column: Some("worte_es"),
-                    message: String::from("Cannot be empty"),
-                }
-                .into());
-            }
-        };
-
-        let plural = match value.get(4) {
+        let plural: Option<String> = match value.get(4) {
             Some(v) if v.trim().len() > 0 => Some(v.to_owned()),
             _ => None,
         };
 
-        let niveau = match value.get(5) {
+        let niveau: EnumNiveauListe = match value.get(5) {
             Some(v) if v.trim().len() > 0 => {
                 EnumNiveauListe::from_str(v).map_err(|e| CsvParseError {
                     file: path.to_owned(),
@@ -288,41 +308,52 @@ pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
             }
         };
 
-        let example_de = match value.get(6) {
+        let example_de: String = match value.get(6) {
             Some(v) if v.trim().len() > 0 => v.to_string(),
             _ => {
                 return Err(CsvParseError {
                     file: path.to_owned(),
                     row: Some(i + 1),
-                    column: Some("niveau"),
+                    column: Some("example_de"),
                     message: String::from("Cannot be empty"),
                 }
                 .into());
             }
         };
 
-        let example_es = match value.get(7) {
+        let example_es: String = match value.get(7) {
             Some(v) if v.trim().len() > 0 => v.to_string(),
             _ => {
                 return Err(CsvParseError {
                     file: path.to_owned(),
                     row: Some(i + 1),
-                    column: Some("niveau"),
+                    column: Some("example_es"),
                     message: String::from("Cannot be empty"),
                 }
                 .into());
             }
         };
 
-        let verb_aux = value.get(8).map(|s| s.to_string());
-        let trennbar = value.get(9).map(|s| s.to_bool());
-        let reflexiv = value.get(10).map(|s| s.to_bool());
+        let verb_aux: Option<String> = match value.get(8) {
+            Some(v) if v.trim().len() > 0 => Some(v.to_string()),
+            _ => None,
+        };
 
-        vec_result.push(InputWort {
+        let trennbar: Option<bool> = match value.get(9) {
+            Some(v) if v.trim().len() > 0 => Some(v.to_bool()),
+            _ => None,
+        };
+
+        let reflexiv: Option<bool> = match value.get(10) {
+            Some(v) if v.trim().len() > 0 => Some(v.to_bool()),
+            _ => None,
+        };
+
+        let input = InputWort {
             gram_type: vec_gram_type,
             gender,
-            worte_de,
-            worte_es,
+            worte_de: worte_de.clone(),
+            worte_es: worte_es.clone(),
             plural,
             niveau,
             example_de,
@@ -330,8 +361,11 @@ pub fn extract_worte_csv(path: &Path) -> Result<Vec<InputWort>, AppError> {
             verb_aux,
             trennbar,
             reflexiv,
-        });
+        };
+
+        hash_input.insert((worte_es, worte_de), input.clone());
+        vec_out.push(input);
     }
 
-    Ok(vec_result)
+    Ok(vec_out)
 }

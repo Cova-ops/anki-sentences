@@ -14,7 +14,7 @@ use crate::{
         error_handler::AppError,
         ui,
     },
-    services::tts::eleven_labs::LanguageVoice,
+    services::tts::language_voice::LanguageVoice,
     utils,
 };
 
@@ -203,6 +203,7 @@ Consideraciones:
 Por favor traducela...
 "##;
 
+/// This funtion does:
 /// return:
 /// - Seguir o no seguir con el proceso:
 ///   - 0 Finishing sentences
@@ -441,6 +442,7 @@ What do you want to do?
 
 "##;
 
+/// Exercise to train German words just by the sound of the word
 /// return:
 /// - Seguir o no seguir con el proceso:
 ///   - 0 Finishing sentences
@@ -496,6 +498,7 @@ pub fn make_worte_exercise_speak(
                 None => &w.worte_de,
             },
         };
+
         println!(
             "{}",
             TEXT_WORTE_SPEAK
@@ -507,7 +510,7 @@ pub fn make_worte_exercise_speak(
                         .into_iter()
                         .map(|r| format!("{} ", r.to_name()))
                         .collect::<Vec<_>>()
-                        .join(",")
+                        .join(", ")
                 )
         );
 

@@ -1,0 +1,9 @@
+---
+source: app/src/helpers/review_state/review_state_test.rs
+expression: out.rounded()
+---
+ReviewState {
+    interval: 10,
+    ease_factor: 2.6,
+    repetitions: 4,
+}

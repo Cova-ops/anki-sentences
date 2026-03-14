@@ -56,10 +56,10 @@ impl FromStr for EnumWortGender {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_ref() {
-            "maskuline" => Ok(Self::Maskuline),
-            "femenin" => Ok(Self::Femenin),
-            "neutrum" => Ok(Self::Neutrum),
-            "plural" => Ok(Self::Plural),
+            "maskuline" | "der" => Ok(Self::Maskuline),
+            "femenin" | "die" => Ok(Self::Femenin),
+            "neutrum" | "das" => Ok(Self::Neutrum),
+            "plural" | "die (pl)" => Ok(Self::Plural),
 
             _ => Err(InvalidValueError {
                 field: "WortGender",

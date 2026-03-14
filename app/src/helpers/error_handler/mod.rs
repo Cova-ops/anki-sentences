@@ -1,8 +1,9 @@
 use std::{
-    collections::HashMap,
     fmt::{self},
     path::PathBuf,
 };
+
+use reqwest::header::{self, HeaderMap};
 
 pub mod result;
 
@@ -104,7 +105,25 @@ impl From<ApiError> for AppError {
 impl From<dotenvy::Error> for AppError {
     fn from(value: dotenvy::Error) -> Self {
         Self {
-            kind: AppErrorKind::Internal(format!("Error loading env: {value}")),
+            kind: AppErrorKind::Internal(format!("Error loading envs: {value}")),
+            context: vec![],
+        }
+    }
+}
+
+impl From<std::env::VarError> for AppError {
+    fn from(value: std::env::VarError) -> Self {
+        Self {
+            kind: AppErrorKind::Internal(format!("Error getting env value: {value}")),
+            context: vec![],
+        }
+    }
+}
+
+impl From<reqwest::header::InvalidHeaderValue> for AppError {
+    fn from(value: reqwest::header::InvalidHeaderValue) -> Self {
+        Self {
+            kind: AppErrorKind::Internal(format!("Error creationg headers: {value}")),
             context: vec![],
         }
     }
@@ -120,11 +139,21 @@ impl AppError {
     }
 }
 
+impl From<serde_json::Error> for AppError {
+    fn from(value: serde_json::Error) -> Self {
+        Self {
+            kind: AppErrorKind::JSON(format!("Error serialize JSON: {value}")),
+            context: vec![],
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum AppErrorKind {
     Io(std::io::Error),
     Toml(TomlErrors),
     Csv(CsvParseError),
+    JSON(String),
     Validation(ValidationError),
     Db(DbError),
     Config(ConfigError),
@@ -136,7 +165,7 @@ pub enum AppErrorKind {
 #[derive(Debug, Clone)]
 pub struct ApiError {
     pub url: Option<String>,
-    pub headers: HashMap<String, String>,
+    pub headers: HeaderMap<reqwest::header::HeaderValue>,
     pub method: String,
     pub payload: Option<String>,
     pub response: Option<String>,

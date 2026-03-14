@@ -1,7 +1,7 @@
 use crate::{
     console::cli::ReviewCmd,
     helpers::{error_handler::AppError, toml::AppConfig},
-    services::tts::eleven_labs::LanguageVoice,
+    services::tts::language_voice::LanguageVoice,
 };
 
 mod setze;

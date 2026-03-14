@@ -20,7 +20,6 @@ fn main() -> Result<(), AppError> {
 
 fn run() -> Result<(), AppError> {
     let mut config = AppConfig::load_config()?;
-    let name_db = config.get_database_path()?;
 
     helpers::audios::ManageAudios::new(
         config.get_path_audios_worte()?,
@@ -29,7 +28,8 @@ fn run() -> Result<(), AppError> {
     )
     .check_audios_artikel()?;
 
-    db::init_db(name_db)?;
+    let mut conn = db::get_conn(config.get_database_path()?)?;
+    db::init_db(&mut conn)?;
     console::menu_main(&mut config)?;
 
     Ok(())

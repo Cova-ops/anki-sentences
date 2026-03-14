@@ -5,8 +5,6 @@ pub mod seeders;
 pub mod traits;
 pub mod views;
 
-use std::path::Path;
-
 pub use connection::*;
 pub use repositories::*;
 
@@ -15,9 +13,8 @@ use crate::{
     helpers::error_handler::AppError,
 };
 
-pub fn init_db(name_db: &Path) -> Result<(), AppError> {
-    let mut conn = get_conn(name_db)?;
-    init_schemas(&mut conn)?;
-    init_data(&mut conn)?;
+pub fn init_db(conn: &mut rusqlite::Connection) -> Result<(), AppError> {
+    init_schemas(conn)?;
+    init_data(conn)?;
     Ok(())
 }
